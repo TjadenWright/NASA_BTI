@@ -4,7 +4,7 @@ layout = [[sg.Text("Please Select Your Rover!")], [sg.Button("Excavator Rover")]
           [sg.Button("Battery Swapper Rover")], [sg.Button("Main Base Station")]]
 
 # Create the window
-window = sg.Window("Demo", layout)
+window = sg.Window("1", layout)
 
 # Create an event loop
 while True:
