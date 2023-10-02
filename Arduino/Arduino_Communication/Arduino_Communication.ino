@@ -1,3 +1,5 @@
+// gets data from python and runs PWM through PIN5 and PIN6 as LED's for testing.
+
 const int ledPin1 = 5;  // Define a pin for the first LED
 const int ledPin2 = 6;  // Define a pin for the second LED
 
