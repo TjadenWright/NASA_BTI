@@ -1,6 +1,6 @@
 from distance_class import aruco_detect
 
-calib_data_path = r"C:\Users\tj10c\Downloads\NASA_BTI-main\NASA_BTI-main\Camera Calibration" # <--- copy from file explorer the location of the code (so that it can make folders/files)
+calib_data_path = "/workspaces/NASA_BTI/Camera_Cal" # <--- copy from file explorer the location of the code (so that it can make folders/files)
 url_OR_cam_numb = 0                        # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                          # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
 Resolution = (1280, 720)                   # <--- change camera resolution (if change reclaibrate)
