@@ -11,8 +11,7 @@ sys.path.append(class_folder_path)                                      # set th
 
 from Distance_ClassV2 import aruco_detect
 
-url_OR_cam_numb =  calib_data_path + "/Videos/720p.mp4"               # <--- camera # if on usb, camera ip if over ethernet/wireless
-print(url_OR_cam_numb)
+url_OR_cam_numb = 1                        # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                          # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
 Resolution = (1280, 720)                   # <--- change camera resolution (if change reclaibrate)
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
