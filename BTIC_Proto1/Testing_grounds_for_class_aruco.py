@@ -26,7 +26,7 @@ Resolution = (640, 480)                    # <--- change camera resolution (if c
 FPS_video = 5                              # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 VERBOSE = True                             # <--- do you want diagnostic data?
-baud_rate = 115200                         # <--- make this the same as the arduino
+baud_rate = 9600                           # <--- make this the same as the arduino
 
 # setup camera parameters
 a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=VERBOSE, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video)

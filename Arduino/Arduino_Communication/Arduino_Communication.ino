@@ -16,7 +16,7 @@ int dir1 = 1;
 int dir2 = 1;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(front_PWM1, OUTPUT);
   pinMode(front_PWM2, OUTPUT);
   pinMode(front_DIR1, OUTPUT);

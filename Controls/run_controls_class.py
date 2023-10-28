@@ -19,7 +19,7 @@ prev_Select = 0
 #### values to change ###
 controller_numb = 0                        # <--- controller # used.
 VERBOSE = False                            # <--- do you want diagnostic data?
-baud_rate = 115200                         # <--- make this the same as the arduino
+baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
 
 # setup the rover controls class.
