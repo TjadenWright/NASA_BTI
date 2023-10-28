@@ -10,11 +10,11 @@ sys.path.append(class_folder_path)                                      # set th
 
 from Controls_ClassV2 import Rover_Controls
 from Distance_ClassV2 import aruco_detect
-import numpy as np
 import math
+import time 
 
-Direction = 0 # 1 -> right, -1 left
-Velocity = 0 # 1 -> fastest forward, -1 -> fastest backwards
+# Initialize your variables
+move = 0
 
 # toggle variables for selecting mode (manual vs auto)
 mode = 0
@@ -24,14 +24,16 @@ prev_Select = 0
 #### values to change ###
 url_OR_cam_numb = 1                        # <--- camera # if on usb, camera ip if over ethernet/wireless
 controller_numb = 0                        # <--- controller # used.
-Resolution = (640, 480)                    # <--- change camera resolution (if change reclaibrate)
+Resolution = (1280, 720)                   # <--- change camera resolution (if change reclaibrate)
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-calib_file = "MultiMatrix.npz"             # <--- file that stores the matricies. Must end it .npz
+calib_file = "MultiMatrix720.npz"          # <--- file that stores the matricies. Must end it .npz
 VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 115200                         # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
+Center_spot = 30                           # <--- how many cm from the aruco tag right or left side do you want the rover to drive to?
+time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to account for not seeing a tag (makes it less jerky)
 
 # setup camera parameters
 a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video, calib_file=calib_file) 
@@ -66,6 +68,21 @@ def convert_position_to_direction_velocity(target_x, target_y):
     
     return direction, velocity
 
+def scale_range(value, old_min, old_max, new_min, new_max):
+    # Check if the value is within the old range
+    if value < old_min or value > old_max:
+        raise ValueError("Value is outside the old range")
+
+    # Calculate the scaling factor
+    old_range = old_max - old_min
+    new_range = new_max - new_min
+    scaling_factor = new_range / old_range
+
+    # Scale the value to the new range
+    scaled_value = new_min + (value - old_min) * scaling_factor
+
+    return scaled_value
+
 # setup the rover controls class.
 rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
@@ -86,6 +103,10 @@ while not rc1.Get_Button_From_Controller():            # keep getting data till 
         if(mode == 0):
             mode+=1
             rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
+            last_spotted_time = time.time()
+            prev_spotted = 1
+            x_prev = 0
+            z_prev = 0
         else:
             mode = 0
             rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
@@ -97,27 +118,55 @@ while not rc1.Get_Button_From_Controller():            # keep getting data till 
         #print("manual")
 
     if(mode == 1): # auto mode
-        x, y, z, move, x_screen = a1.aruco_tag(calc_aruco=True, pic_out=True)
-        
+        x_new, y, z_new, spotted, ids = a1.aruco_tag(calc_aruco=True, pic_out=True)
+
         if (a1.wait_key()):
             break
-        if(move):            
-            Direction_prev = Direction
-            Direction = -(2*x_screen-1)
-            # Direction = dir_val*angle/math.pi
-            if(Direction == np.nan):
-                Direction = Direction_prev
-                
-            Velocity = 0.7 # fixed at 70% velocity
-        # if don't move set all to zero
+        
+        # Calculate the time difference
+        time_difference = time.time() - last_spotted_time
+
+        if(spotted):
+            # Update the timestamp
+            last_spotted_time = time.time()
+            x = x_new
+            z = z_new
+            Velocity = 0.7
+
+        elif(time_difference <= time_delay_not_seeing_tag):
+            # Use the previous values of x and z if spotted is False and it's been less than 0.5 seconds
+            x = x_prev
+            z = z_prev
+            Velocity = 0.7
         else:
-            Direction = 0
+            # Reset x and z if it's been 0.5 seconds or more since the last True spotted value
+            x = 0
+            z = 0
             Velocity = 0
-            
+
+        # Calculate the angle to the target (in radians)
+        angle = math.atan2(z, x-Center_spot) # find the angle
+        # 1.18 to 1.96
+
+        # max and min of angles
+        if(angle > 1.96):
+            angle = 1.96
+        elif(angle < 1.18):
+            angle = 1.18
+
+        unit = scale_range(angle, 1.18, 1.96, -1, 1)
+
+        Direction = unit
+
+        print("x: ", round(x-Center_spot,2), "z: ", round(z,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
+
         # send out data to the arduino
         rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
-        print(str(rc1.Motor_PWM(Direction, Velocity)) + " Auto Mode")
-    
+        #print(str(rc1.Motor_PWM(Direction, Velocity)) + " Auto Mode")
+        prev_spotted = spotted
+        x_prev = x
+        z_prev = z
+
     # get the states for the button
     prev_Select = Select
 

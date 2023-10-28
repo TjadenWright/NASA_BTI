@@ -40,74 +40,64 @@ class aruco_detect:
 
     # setup the aruco marker dictionary
     def aruco_marker_dict(self):
-        self.marker_dict = aruco.Dictionary_get(aruco.DICT_4X4_100)
+        self.marker_dict = aruco.Dictionary_get(aruco.DICT_7X7_100)
         self.param_markers = aruco.DetectorParameters_create()
 
     # get the tag data
-    def aruco_tag(self, calc_aruco = True, pic_out = True):
-        move = False # if move not triggered assume everything is at 0
+    def aruco_tag(self, calc_aruco=True, pic_out=True):
+        # Read from the camera
+        _, frame = self.cap.read()
         
-        # read from camera
-        __, frame = self.cap.read()
+        # Initialize variables to keep track of the closest Aruco tag
+        closest_distance = float('inf')
+        closest_x = 0
+        closest_y = 0
+        closest_z = 0
+        closest_move = False
+        closest_ids = None
         
-        # if you want to look for tags
-        if(calc_aruco):
-            # convert the image to grey scale
+        # If you want to look for Aruco tags
+        if calc_aruco:
+            # Convert the image to grayscale
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # get the corners of the aruco tags
+            # Get the corners of the Aruco tags
             marker_corners, marker_IDs, reject = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.param_markers)
             
-            # if there is a marker
+            # If there are markers
             if marker_corners:
-                # get the pose of the marker (rotational and translational)
+                # Get the pose of the markers (rotational and translational)
                 rVec, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corners, self.MARKER_SIZE, self.cam_mat, self.dist_coef)
-
-                # get the number of ids (in one frame)
-                total_markers = range(0, marker_IDs.size)
-
-                # go through each of the ids (displaying an overlay on them)
-                for ids, corners, i in zip(marker_IDs, marker_corners, total_markers):
-                    # make lines around the aruco tag.
+                
+                # Iterate through the markers
+                for i, (ids, corners) in enumerate(zip(marker_IDs, marker_corners)):
+                    # Calculate the distance from the camera to the Aruco tag
+                    distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
+                    
+                    # If this tag is closer than the previous closest one, update the variables
+                    if distance < closest_distance:
+                        closest_distance = distance
+                        closest_x = round(tVec[i][0][0], 1)
+                        closest_y = round(tVec[i][0][1], 1)
+                        closest_z = round(tVec[i][0][2], 1)
+                        closest_move = True  # Tell the rover to move
+                        closest_ids = ids[0]
+                    
+                    # Make lines around the Aruco tag
                     cv2.polylines(frame, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
 
-                    # get the corners individualy
+                    # Get the corners individually
                     corners = corners.reshape(4, 2)
                     corners = corners.astype(int)
                     top_right = corners[0].ravel()
                     top_left = corners[1].ravel()
                     bottom_right = corners[2].ravel()
                     bottom_left = corners[3].ravel()
-                    
-                            # # find the center coordinates
-                            # center_x = (top_right[0] + top_left[0] + bottom_right[0] + bottom_left[0]) // 4
-                            # center_y = (top_right[1] + top_left[1] + bottom_right[1] + bottom_left[1]) // 4
-
-                    # get the x, y, z of the aruco tag.
-                    x = round(tVec[i][0][0],1)
-                    y = round(tVec[i][0][1],1)
-                    z = round(tVec[i][0][2],1)
-
-                    # based on the center of the screen
-                    center_x = (top_right[0] + top_left[0] + bottom_right[0] + bottom_left[0]) // 4
-                    center_y = (top_right[1] + top_left[1] + bottom_right[1] + bottom_left[1]) // 4
-                    
-                    center_x_pix = float(center_x)/float(self.w)
-                    center_y_pix = float(center_y)/float(self.h)
-
-                    move = True # tell the rover to move.
-
-                                # # get the (relative x and y on the screen)
-                                # x = float(center_x)/float(1920)
-                                # y = float(center_y)/float(1080)
-                    
-                    # calculate the distance from the camera to the aruco tag
-                    distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2) # get the euclidian distance
 
                     # Draw the pose of the marker with the x, y, z lines
                     cv2.drawFrameAxes(frame, self.cam_mat, self.dist_coef, rVec[i], tVec[i], self.MARKER_SIZE)
-                    
-                    # draw the distance vector at the top right
+
+                    # Draw the distance vector at the top right
                     cv2.putText(
                         frame,
                         f"id: {ids[0]} Dist: {round(distance, 2)}",
@@ -119,10 +109,10 @@ class aruco_detect:
                         cv2.LINE_AA,
                     )
 
-                    # draw the x, y z at the bottom right
+                    # Draw the x, y, z at the bottom right
                     cv2.putText(
                         frame,
-                        f"x:{round(tVec[i][0][0],1)} y: {round(tVec[i][0][1],1)} z: {round(tVec[i][0][2],1)}",
+                        f"x: {round(tVec[i][0][0], 1)} y: {round(tVec[i][0][1], 1)} z: {round(tVec[i][0][2], 1)}",
                         (bottom_right[0], bottom_right[1]),
                         cv2.FONT_HERSHEY_PLAIN,
                         1.0,
@@ -139,21 +129,19 @@ class aruco_detect:
             self.frame_count = 0
             self.start_time = time.time()
         
-        # print the fps at on the screen
-        cv2.putText(frame, str(int(self.fps)), (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        # Print the FPS on the screen
+        cv2.putText(frame, str(int(self.fps)), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         
-        # show an image if the pic_out is true
-        if(pic_out == True):
+        # Show an image if pic_out is True
+        if pic_out:
             cv2.imshow("frame", frame)
         else:
             print("fps: ", int(self.fps))
         
-        if not move:
-            x, y, z = (0,0,0)
-            center_x_pix, center_y_pix = (0,0)
+        # Return the closest Aruco tag's information
+        return closest_x, closest_y, closest_z, closest_move, closest_ids
 
-        # return the x, y, z, and move variables
-        return x, y, z, move, center_x_pix
+
         
     def release(self):
         self.cap.release()
@@ -174,9 +162,9 @@ class aruco_detect:
 
         return image, ret
 
-    def take_picks(self, Chess_Board_Dimensions = (9, 6), images_folder = "/images", url_OR_cam_numb = "http://192.168.4.20:8080/video"):
+    def take_picks(self, Chess_Board_Dimensions = (9, 6), images_folder = "images", url_OR_cam_numb = "http://192.168.4.20:8080/video"):
         n = 0
-        img_path = self.calib_data_path + images_folder
+        img_path = self.calib_data_path + "/" + images_folder
         Dir_Check = os.path.isdir(img_path)
 
         if not Dir_Check:  # if directory does not exist, a new one is created
@@ -229,8 +217,8 @@ class aruco_detect:
 
         print("Total saved Images:", n)
 
-    def make_calibration_table(self, Chess_Board_Dimensions = (9, 6), images_folder = "/images", SQUARE_SIZE = 20):
-        img_path = self.calib_data_path + images_folder
+    def make_calibration_table(self, Chess_Board_Dimensions = (9, 6), images_folder = "images", SQUARE_SIZE = 20):
+        img_path = self.calib_data_path + "/" + images_folder
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         path = self.calib_data_path + "/" + self.calib_file
         CHECK_DIR = os.path.isdir(img_path)
