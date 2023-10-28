@@ -1,27 +1,78 @@
-// gets data from python and runs PWM through PIN5 and PIN6 as LED's for testing.
+// front
+const int front_PWM1 = 11;
+const int front_PWM2 = 10;
+const int front_DIR1 = 13;
+const int front_DIR2 = 12;
 
-const int ledPin1 = 5;  // Define a pin for the first LED
-const int ledPin2 = 6;  // Define a pin for the second LED
+// backc:\Users\tj10c\Downloads\esphome-basen-bms-main\esphome-basen-bms-main\esp32-ble-example.yaml
+const int back_PWM1 = 9;
+const int back_PWM2 = 6;
+const int back_DIR1 = 8;
+const int back_DIR2 = 7;
 
-int val1;
-int val2;
+int val1 = 0; // Default PWM value for motor 1
+int val2 = 0; // Default PWM value for motor 2
+int dir1 = 1;
+int dir2 = 1;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(ledPin1, OUTPUT);
-  pinMode(ledPin2, OUTPUT);
+  pinMode(front_PWM1, OUTPUT);
+  pinMode(front_PWM2, OUTPUT);
+  pinMode(front_DIR1, OUTPUT);
+  pinMode(front_DIR2, OUTPUT);
+  pinMode(back_PWM1, OUTPUT);
+  pinMode(back_PWM2, OUTPUT);
+  pinMode(back_DIR1, OUTPUT);
+  pinMode(back_DIR2, OUTPUT);
+
+  // pinMode(front_PWM1_test, OUTPUT);
+  // pinMode(front_PWM2_test, OUTPUT);
+  // pinMode(front_DIR1_test, OUTPUT);
+  // pinMode(front_DIR2_test, OUTPUT);
+  // pinMode(back_PWM1_test, OUTPUT);
+  // pinMode(back_PWM2_test, OUTPUT);
+  // pinMode(back_DIR1_test, OUTPUT);
+  // pinMode(back_DIR2_test, OUTPUT);
 }
 
 void loop() {
   if (Serial.available() > 0) {
-    String data = Serial.readStringUntil('\n'); // Read the data until a newline character is received
-    sscanf(data.c_str(), "%d,%d", &val1, &val2); // Parse the integers from the received data
+    String data = Serial.readStringUntil('\n');
+    int parsedCount = sscanf(data.c_str(), "%d,%d,%d,%d", &val1, &val2, &dir1, &dir2);
 
-    // Now, you can use val1 and val2 as your two integers
-    // For example, you can control two LEDs based on these values
-    analogWrite(ledPin1, val1);
-    analogWrite(ledPin2, val2);
+    if (parsedCount == 3) {
+      // Only 3 integers were received, set dir2 equal to dir1
+      dir2 = dir1;
+    }
   }
-}
 
-// analogWrite(ledPin, command);
+  analogWrite(front_PWM1, val2);
+  analogWrite(back_PWM1, val2);
+  analogWrite(front_PWM2, val1);
+  analogWrite(back_PWM2, val1);
+
+  digitalWrite(front_DIR1, dir2);
+  digitalWrite(front_DIR2, dir2);
+  digitalWrite(back_DIR1, dir1);
+  digitalWrite(back_DIR2, dir1);
+
+  // for(int i =0; i < 255; i++){
+  //   analogWrite(front_PWM1, i);
+  //   analogWrite(back_PWM1, i);
+  //   analogWrite(front_PWM2, i);
+  //   analogWrite(back_PWM2, i);
+
+  //   digitalWrite(front_DIR1, HIGH);
+  //   digitalWrite(front_DIR2, HIGH);
+  //   digitalWrite(back_DIR1, HIGH);
+  //   digitalWrite(back_DIR2, HIGH);
+
+  //   Serial.println(i);
+  //   delay(100);
+
+  //   String data = Serial.readStringUntil('\n');
+  //   sscanf(data.c_str(), "%d,%d", &val1, &val2);
+  // }
+
+}

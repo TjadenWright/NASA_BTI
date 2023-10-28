@@ -5,7 +5,7 @@ import time
 import os
 
 class aruco_detect:
-    def __init__(self, calib_data_path = r"C:\Users\tj10c\Downloads\practice", MARKER_SIZE = 8, verbose = True, w = 1280, h = 720, fps_vid = 10):
+    def __init__(self, calib_data_path = r"C:\Users\tj10c\Downloads\practice", MARKER_SIZE = 8, verbose = True, w = 1280, h = 720, fps_vid = 10, calib_file = "MultiMatrix.npz"):
         self.calib_data_path = calib_data_path  # camera calibration data path
         self.verbose = verbose                  # debugging purpose
         self.MARKER_SIZE = MARKER_SIZE          # how big is the marker?
@@ -15,10 +15,11 @@ class aruco_detect:
         self.w = w
         self.h = h
         self.fps_vid = fps_vid
+        self.calib_file = calib_file
 
     # setup camera with its calibrated data
     def calibrated_cam_data(self, url_OR_cam_numb = "http://192.168.4.20:8080/video"):
-        calib_data = np.load(self.calib_data_path + "/MultiMatrix.npz") # zip file of the caibration data
+        calib_data = np.load(self.calib_data_path + "/" + self.calib_file) # zip file of the caibration data
         # distance and matrix vectors
         self.cam_mat = calib_data["camMatrix"]
         self.dist_coef = calib_data["distCoef"]
@@ -231,7 +232,7 @@ class aruco_detect:
     def make_calibration_table(self, Chess_Board_Dimensions = (9, 6), images_folder = "/images", SQUARE_SIZE = 20):
         img_path = self.calib_data_path + images_folder
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        path = self.calib_data_path + "/MultiMatrix.npz"
+        path = self.calib_data_path + "/" + self.calib_file
         CHECK_DIR = os.path.isdir(img_path)
 
         if not CHECK_DIR:

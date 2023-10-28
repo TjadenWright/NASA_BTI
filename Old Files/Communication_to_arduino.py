@@ -1,5 +1,6 @@
 import serial.tools.list_ports
 from Driving import get_side_motor
+import time
 
 # Find the Arduino port automatically (assuming there's only one Arduino connected)
 arduino_port = None
@@ -23,4 +24,6 @@ while True:
     data = f"{int(sides[0])},{int(sides[1])}\n"
     serial_inst.write(data.encode('utf-8'))
     serial_inst.flush()  # Ensure data is sent immediately
+
+    # time.sleep(0.1)
 

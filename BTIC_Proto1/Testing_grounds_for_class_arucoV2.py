@@ -2,12 +2,14 @@ import os
 import sys
 
 # Navigate up one directory level to access the class folder
-calib_data_path = os.path.dirname(os.path.abspath(__file__))
-class_folder_path = os.path.join(calib_data_path, '../Python Class')
-sys.path.append(class_folder_path)
+current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
+parent_directory = os.path.dirname(current_file_path)                   # get the data parent directory (go back one folder in the directory)
+class_folder_path = os.path.join(current_file_path, '../Python Class')  # get the class data path
+calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get the caibrated data path
+sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up       
 
-from Controls_Class import Rover_Controls
-from Distance_Class import aruco_detect
+from Controls_ClassV2 import Rover_Controls
+from Distance_ClassV2 import aruco_detect
 import numpy as np
 import math
 
@@ -20,18 +22,21 @@ Select = 0
 prev_Select = 0
 
 #### values to change ###
-url_OR_cam_numb = 0                        # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = 1                        # <--- camera # if on usb, camera ip if over ethernet/wireless
 controller_numb = 0                        # <--- controller # used.
 Resolution = (640, 480)                    # <--- change camera resolution (if change reclaibrate)
-FPS_video = 5                              # <--- change fps (no need to recalibrate)
+FPS_video = 30                             # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
-VERBOSE = True                             # <--- do you want diagnostic data?
+Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
+calib_file = "MultiMatrix.npz"             # <--- file that stores the matricies. Must end it .npz
+VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 115200                         # <--- make this the same as the arduino
+PC_or_PI = "PC"                            # <--- PC or pi?
 
 # setup camera parameters
-a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=VERBOSE, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video)
+a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video, calib_file=calib_file) 
 
-# setup camera used
+# start up the camera with calibrated data and resolution and fps
 a1.calibrated_cam_data(url_OR_cam_numb=url_OR_cam_numb)
 
 # use a marker dictionary
@@ -62,11 +67,14 @@ def convert_position_to_direction_velocity(target_x, target_y):
     return direction, velocity
 
 # setup the rover controls class.
-rc1 = Rover_Controls(verbose=VERBOSE)
+rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 # setup communication with the arduino
-rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
+if(PC_or_PI == "PC"):
+    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino')
+else:
+    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller():            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
@@ -85,7 +93,7 @@ while not rc1.Get_Button_From_Controller():            # keep getting data till 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
         rc1.Write_message(data=rc1.Motor_PWM_controller()) # send PWM data to the arduino
-        print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
+        print(str(rc1.Controller_To_PWM_and_DIR())  + " Manual Mode")
         #print("manual")
 
     if(mode == 1): # auto mode
