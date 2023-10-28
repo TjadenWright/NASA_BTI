@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 
 # Navigate up one directory level to access the class folder
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
@@ -10,14 +11,17 @@ sys.path.append(class_folder_path)                                      # set th
 
 from Distance_ClassV2 import aruco_detect
 
-url_OR_cam_numb = 1                        # <--- camera # if on usb, camera ip if over ethernet/wireless
-recal_cam = True                           # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
+url_OR_cam_numb =  calib_data_path + "/Videos/720p.mp4"               # <--- camera # if on usb, camera ip if over ethernet/wireless
+print(url_OR_cam_numb)
+recal_cam = False                          # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
 Resolution = (1280, 720)                   # <--- change camera resolution (if change reclaibrate)
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
 images_folder = "images720"                # <--- folder to store images in calibration
 calib_file = "MultiMatrix720.npz"          # <--- file that stores the matricies. Must end it .npz
+
+max_dist = 0
 
 a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video, calib_file=calib_file) # <--- sets up the class
 
@@ -34,11 +38,16 @@ a1.aruco_marker_dict() # makes the aruco dictionary (can go into class and chang
 # while loop for sensing data
 while True:
     # display the camera along with aruco tag tracking data.
-    x, y, z, move, __ = a1.aruco_tag(calc_aruco=True, pic_out=True) # <--- if you want see the aruco tag, then if you want a picture to be dispayed.
+    x, y, z, spotted, __ = a1.aruco_tag(calc_aruco=True, pic_out=True) # <--- if you want see the aruco tag, then if you want a picture to be dispayed.
     ## IF MOVE IS TRUE, THIS WILL TELL YOU IT SEES AN ARUCO TAG!!!!!
 
-    # if move:
-    #   do something??   <----------------------------------
+    dist = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+
+    if(spotted):
+        if(dist > max_dist):
+            max_dist = dist
+    
+    print("results: ", round(max_dist,2), " cm") # look at the last one
 
     if (a1.wait_key()):
         break
