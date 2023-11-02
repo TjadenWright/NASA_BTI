@@ -34,6 +34,8 @@ baud_rate = 9600                           # <--- make this the same as the ardu
 PC_or_PI = "PC"                            # <--- PC or pi?
 Center_spot = 30                           # <--- how many cm from the aruco tag right or left side do you want the rover to drive to?
 time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to account for not seeing a tag (makes it less jerky)
+scale = 1                                  # <--- scale of output image
+DICT_MXM_L = "DICT_7X7_100"                # <--- dictionary used
 
 # setup camera parameters
 a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, h=Resolution[1], w=Resolution[0], fps_vid=FPS_video, calib_file=calib_file) 
@@ -42,7 +44,7 @@ a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verb
 a1.calibrated_cam_data(url_OR_cam_numb=url_OR_cam_numb)
 
 # use a marker dictionary
-a1.aruco_marker_dict()
+a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L)
 
 # convert coordiantes to direction and velocity
 def convert_position_to_direction_velocity(target_x, target_y):
@@ -118,7 +120,7 @@ while not rc1.Get_Button_From_Controller():            # keep getting data till 
         #print("manual")
 
     if(mode == 1): # auto mode
-        x_new, y, z_new, spotted, ids = a1.aruco_tag(calc_aruco=True, pic_out=True)
+        x_new, y, z_new, spotted, ids = a1.aruco_tag(calc_aruco=True, pic_out=True, scale=scale)
 
         if (a1.wait_key()):
             break

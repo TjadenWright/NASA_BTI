@@ -34,17 +34,44 @@ class aruco_detect:
 
         # get the camera feed
         self.cap = cv2.VideoCapture(url_OR_cam_numb) #give the server id shown in IP webcam App
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.w)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.h)
         self.cap.set(cv2.CAP_PROP_FPS, self.fps_vid)
+        self.actual_frame_rate = self.cap.get(cv2.CAP_PROP_FPS)
 
     # setup the aruco marker dictionary
-    def aruco_marker_dict(self):
-        self.marker_dict = aruco.Dictionary_get(aruco.DICT_7X7_100)
+    def aruco_marker_dict(self, DICT_MXM_L = "DICT_4X4_100"):
+        # dictionary of aruco tags
+        ARUCO_DICT = {
+            "DICT_4X4_50": cv2.aruco.DICT_4X4_50,
+            "DICT_4X4_100": cv2.aruco.DICT_4X4_100,
+            "DICT_4X4_250": cv2.aruco.DICT_4X4_250,
+            "DICT_4X4_1000": cv2.aruco.DICT_4X4_1000,
+            "DICT_5X5_50": cv2.aruco.DICT_5X5_50,
+            "DICT_5X5_100": cv2.aruco.DICT_5X5_100,
+            "DICT_5X5_250": cv2.aruco.DICT_5X5_250,
+            "DICT_5X5_1000": cv2.aruco.DICT_5X5_1000,
+            "DICT_6X6_50": cv2.aruco.DICT_6X6_50,
+            "DICT_6X6_100": cv2.aruco.DICT_6X6_100,
+            "DICT_6X6_250": cv2.aruco.DICT_6X6_250,
+            "DICT_6X6_1000": cv2.aruco.DICT_6X6_1000,
+            "DICT_7X7_50": cv2.aruco.DICT_7X7_50,
+            "DICT_7X7_100": cv2.aruco.DICT_7X7_100,
+            "DICT_7X7_250": cv2.aruco.DICT_7X7_250,
+            "DICT_7X7_1000": cv2.aruco.DICT_7X7_1000,
+            "DICT_ARUCO_ORIGINAL": cv2.aruco.DICT_ARUCO_ORIGINAL,
+            "DICT_APRILTAG_16h5": cv2.aruco.DICT_APRILTAG_16h5,
+            "DICT_APRILTAG_25h9": cv2.aruco.DICT_APRILTAG_25h9,
+            "DICT_APRILTAG_36h10": cv2.aruco.DICT_APRILTAG_36h10,
+            "DICT_APRILTAG_36h11": cv2.aruco.DICT_APRILTAG_36h11
+        }
+
+        self.marker_dict = aruco.Dictionary_get(ARUCO_DICT[DICT_MXM_L])
         self.param_markers = aruco.DetectorParameters_create()
 
     # get the tag data
-    def aruco_tag(self, calc_aruco=True, pic_out=True):
+    def aruco_tag(self, calc_aruco=True, pic_out=True, scale = 1):
         # Read from the camera
         _, frame = self.cap.read()
         
@@ -130,19 +157,18 @@ class aruco_detect:
             self.start_time = time.time()
         
         # Print the FPS on the screen
-        cv2.putText(frame, str(int(self.fps)), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(frame, f"Frame Rate: {self.fps:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         
         # Show an image if pic_out is True
         if pic_out:
-            cv2.imshow("frame", frame)
+            resized_frame = cv2.resize(frame, None, fx=scale, fy=scale)
+            cv2.imshow("frame", resized_frame)
         else:
             print("fps: ", int(self.fps))
         
         # Return the closest Aruco tag's information
         return closest_x, closest_y, closest_z, closest_move, closest_ids
 
-
-        
     def release(self):
         self.cap.release()
         cv2.destroyAllWindows()
@@ -182,13 +208,8 @@ class aruco_detect:
 
         while True:
             _, frame = cap.read()
-            copyFrame = frame.copy()
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            image, board_detected = self.detect_checker_board(
-                frame, gray, criteria, Chess_Board_Dimensions
-            )
-            # print(ret)
+            frame_cp = frame.copy()
+          
             cv2.putText(
                 frame,
                 f"saved_img : {n}",
@@ -203,12 +224,11 @@ class aruco_detect:
             cv2.imshow("frame", frame)
 
             key = cv2.waitKey(1)
-
             if key == ord("q"):
                 break
-            if key == ord("s") and board_detected == True:
+            if key == ord("s"):
                 # the checker board image gets stored
-                cv2.imwrite(f"{img_path}/image{n}.png", copyFrame)
+                cv2.imwrite(f"{img_path}/image{n}.png", frame_cp)
 
                 print(f"saved image number {n}")
                 n += 1  # the image counter: incrementing
