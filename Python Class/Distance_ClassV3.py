@@ -5,6 +5,7 @@ import time
 import os
 import threading
 import queue
+import multiprocessing
 
 class aruco_detect:
     def __init__(self, calib_data_path = None, MARKER_SIZE = 8, verbose = True, Input_Res=(1280, 720), Output_Res = (640, 480), fps_vid = 10, calib_file = "MultiMatrix.npz", num_threads=4):
@@ -21,16 +22,19 @@ class aruco_detect:
         self.frame = None                       # start with a frame
 
         # distances
-        self.closest_x = 0
-        self.closest_y = 0
-        self.closest_z = 0
-        self.closest_move = False
-        self.closest_ids = None
+        self.x_values = []
+        self.y_values = []
+        self.z_values = []
+        self.move_flags = []
+        self.ids_list = []
 
         # Number of threads for marker detection
         self.num_threads = num_threads
         self.thread_pool = []          # Create a thread pool
         self.frame_queue = queue.Queue()
+        self.data_queue = queue.Queue()
+
+        self.max_retries = 3  # Maximum number of retries
 
     # setup camera with its calibrated data
     def calibrated_cam_data(self):
@@ -49,20 +53,29 @@ class aruco_detect:
 
     def camera_init(self, url_OR_cam_numb = 0):
         # get the camera feed
+        retries = 0
         while True:
+            print("Setting up camera.")
             self.cap = cv2.VideoCapture(url_OR_cam_numb) # give the server id shown in IP webcam App
             if self.cap.isOpened():          # check if webcam was sucessfully open
                 print("Camera connected.")   # if webcam was open print
                 break
+            # still waiting
             print("Waiting for camera...")   # elif not print wait and wait a second.
-            time.sleep(1)
-        
+            # didn't connect
+            if retries == self.max_retries - 1:
+                print("Camera has failed to connect.")
+                return False
+            retries+=1
+
         # once connection is made set the format
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.Input_Res[0])
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.Input_Res[1])
         self.cap.set(cv2.CAP_PROP_FPS, self.fps_vid)
         self.actual_frame_rate = self.cap.get(cv2.CAP_PROP_FPS)
+
+        return True
 
     # setup the aruco marker dictionary
     def aruco_marker_dict(self, DICT_MXM_L = "DICT_4X4_100"):
@@ -102,6 +115,11 @@ class aruco_detect:
         marker_corners, marker_IDs, reject = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.param_markers)
 
         closest_distance = float('inf')
+        self.x_values = []
+        self.y_values = []
+        self.z_values = []
+        self.move_flags = []
+        self.ids_list = []
 
         # If there are markers
         if marker_corners:
@@ -113,14 +131,18 @@ class aruco_detect:
                 # Calculate the distance from the camera to the Aruco tag
                 distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
                 
-                # If this tag is closer than the previous closest one, update the variables
+                # Append the marker information to respective lists
+                self.x_values.append(round(tVec[i][0][0], 1))
+                self.y_values.append(round(tVec[i][0][1], 1))
+                self.z_values.append(round(tVec[i][0][2], 1))
+                self.ids_list.append(ids[0])
+                
+                # Check if this tag is closer than the previous closest one
                 if distance < closest_distance:
                     closest_distance = distance
-                    self.closest_x = round(tVec[i][0][0], 1)
-                    self.closest_y = round(tVec[i][0][1], 1)
-                    self.closest_z = round(tVec[i][0][2], 1)
-                    self.closest_move = True  # Tell the rover to move
-                    self.closest_ids = ids[0]
+                    self.move_flags = [False] * len(marker_IDs)  # Reset all move_flags to False
+                    self.move_flags[i] = True  # Set the closest marker's move_flag to True
+
                 
                 # Make lines around the Aruco tag
                 cv2.polylines(self.frame, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
@@ -129,9 +151,9 @@ class aruco_detect:
                 corners = corners.reshape(4, 2)
                 corners = corners.astype(int)
                 top_right = corners[0].ravel()
-                top_left = corners[1].ravel()
+                # top_left = corners[1].ravel()
                 bottom_right = corners[2].ravel()
-                bottom_left = corners[3].ravel()
+                # bottom_left = corners[3].ravel()
 
                 # Draw the pose of the marker with the x, y, z lines
                 cv2.drawFrameAxes(self.frame, self.cam_mat, self.dist_coef, rVec[i], tVec[i], 9)
@@ -185,21 +207,21 @@ class aruco_detect:
         else:
             print(f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)")
 
-        return self.closest_x, self.closest_y, self.closest_z, self.closest_move, self.closest_ids
+        return self.x_values, self.y_values, self.z_values, self.move_flags, self.ids_list
 
     def release(self):
         self.cap.release()
         cv2.destroyAllWindows()
 
-    def wait_key(self):
+    def wait_key(self, key_value = "q"):
         key = cv2.waitKey(1)
-        if key == ord("q"):
+        if key == ord(key_value):
             return True
         else:
             return False
-
+    
     ### These functions are for calibration ####
-    def take_picks(self, images_folder = "images", scale = 1):
+    def take_picks(self, images_folder = "images"):
         # initialization
         n = 0 # set value of saved to 0
         img_path = self.calib_data_path + "/" + images_folder  # go to image path
@@ -320,29 +342,51 @@ class aruco_detect:
         # Get the corners of the Aruco tags
         marker_corners, marker_IDs, reject = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.param_markers)
 
-        frame_with_markers = self.frame.copy() # Create a copy of the frame
+        # initialize the frame with markers
+        frame_with_markers = self.frame.copy()  # Create a copy of the frame
 
+        # intitlaize the closest distance to infinity
         closest_distance = float('inf')
+        
+        # initialize data sent back
+        x_values = []
+        y_values = []
+        z_values = []
+        dist_list = []
+        ids_list = []
+
+        # Initialize self.move_flags with False values
+        self.move_flags = [False] * len(marker_corners)
 
         # If there are markers
         if marker_corners:
             # Get the pose of the markers (rotational and translational)
-            rVec, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corners, 9, self.cam_mat, self.dist_coef)
+            rVec, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corners, self.MARKER_SIZE, self.cam_mat, self.dist_coef)
 
             # Iterate through the markers
             for i, (ids, corners) in enumerate(zip(marker_IDs, marker_corners)):
+                tVec_i = tVec[i][0]  # Extract tVec[i][0] for readability
+                x, y, z = tVec_i[0], tVec_i[2], tVec_i[1] # y and z flipped for mapping
+
                 # Calculate the distance from the camera to the Aruco tag
-                distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
-                
-                # If this tag is closer than the previous closest one, update the variables
-                if distance < closest_distance:
-                    closest_distance = distance
-                    self.closest_x = round(tVec[i][0][0], 1)
-                    self.closest_y = round(tVec[i][0][1], 1)
-                    self.closest_z = round(tVec[i][0][2], 1)
-                    self.closest_move = True  # Tell the rover to move
-                    self.closest_ids = ids[0]
-                
+                distance = np.sqrt(x**2 + y**2 + z**2)
+
+                # Append the marker information to respective lists
+                x_values.append(round(tVec[i][0][0], 1))
+                y_values.append(round(tVec[i][0][2], 1))  # flipped y and z for readability
+                z_values.append(round(tVec[i][0][1], 1))
+                ids_list.append(ids[0])
+                dist_list.append(distance)
+
+                # data to send back
+                data = {
+                    'x': x_values,
+                    'y': y_values,
+                    'z': z_values,
+                    'dist': dist_list,
+                    'ids': ids_list
+                }
+
                 # Make lines around the Aruco tag
                 cv2.polylines(frame_with_markers, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
 
@@ -350,9 +394,9 @@ class aruco_detect:
                 corners = corners.reshape(4, 2)
                 corners = corners.astype(int)
                 top_right = corners[0].ravel()
-                top_left = corners[1].ravel()
+                # top_left = corners[1].ravel()
                 bottom_right = corners[2].ravel()
-                bottom_left = corners[3].ravel()
+                # bottom_left = corners[3].ravel()
 
                 # Draw the pose of the marker with the x, y, z lines
                 cv2.drawFrameAxes(frame_with_markers, self.cam_mat, self.dist_coef, rVec[i], tVec[i], 9)
@@ -372,7 +416,7 @@ class aruco_detect:
                 # Draw the x, y, z at the bottom right
                 cv2.putText(
                     frame_with_markers,
-                    f"x: {round(tVec[i][0][0], 1)} y: {round(tVec[i][0][1], 1)} z: {round(tVec[i][0][2], 1)}",
+                    f"x: {round(tVec[i][0][0], 1)} y: {round(tVec[i][0][2], 1)} z: {round(tVec[i][0][1], 1)}", # y and z flipped
                     (bottom_right[0], bottom_right[1]),
                     cv2.FONT_HERSHEY_PLAIN,
                     1.0,
@@ -382,8 +426,9 @@ class aruco_detect:
                 )
 
             self.frame_queue.put(frame_with_markers)
+            self.data_queue.put(data)
 
-    def aruco_tags_threaded(self, pic_out=True):
+    def aruco_tags_threaded(self, pic_out=True, FPS_read=True):
         # Read a frame
         __, self.frame = self.cap.read()
 
@@ -416,12 +461,27 @@ class aruco_detect:
         else:
             frame_with_markers = self.frame  # Use the original captured frame
 
+        # data queue
+        if not self.data_queue.empty():
+            data = self.data_queue.get()
+            x_values = data['x']
+            y_values = data['y']
+            z_values = data['z']
+            dist_list = data['dist']
+            ids_list = data['ids']
+        else:
+            x_values = []
+            y_values = []
+            z_values = []
+            dist_list = []
+            ids_list = []
+
         # Display the frame
         if pic_out:
             display_frame = cv2.resize(frame_with_markers, self.Output_Res)
             cv2.putText(display_frame, f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow('Video', display_frame)
-        else:
+        elif FPS_read:
             print(f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)")
 
-        return self.closest_x, self.closest_y, self.closest_z, self.closest_move, self.closest_ids
+        return x_values, y_values, z_values, dist_list, ids_list
