@@ -10,7 +10,7 @@ calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get th
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up
 
 from Distance_ClassV3 import aruco_detect
-from Localization import localization
+from Localization_Class import localization
 
 url_OR_cam_numb = 0                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                                     # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
