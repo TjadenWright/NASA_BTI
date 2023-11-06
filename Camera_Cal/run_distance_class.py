@@ -47,7 +47,7 @@ if get_cam:
     # while loop for sensing data
     while True:
         # # display the camera along with aruco tag tracking data.
-        x, y, z, dist, tags_ids = a1.aruco_tags_threaded(pic_out=True) # <--- if you want a picture to be dispayed.
+        x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags_threaded(pic_out=True) # <--- if you want a picture to be dispayed.
 
         # find closest tag
         if dist:
