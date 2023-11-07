@@ -125,7 +125,7 @@ class localization:
                 self.camera_x, self.camera_y, self.camera_z = np.dot(R_tc, -initial_position)
 
                 # convert that to the cameras position and that tags position is 0,0,0
-                print("for maker id: ", self.actual_tag, " its location is now: ", self.actual_tag_loc)
+                print("for maker id: ", self.actual_tag[0], " its location is now: ", self.actual_tag_loc[0][0])
                 print("camera location: ", self.camera_x, self.camera_y, self.camera_z)
 
                 self.calibration_bool = False # we are done with calibration
@@ -138,18 +138,17 @@ class localization:
             actual_location_index = np.where(self.actual_tag == tags_ids[calc_location_index[0]]) # find the spot in the saved array
             self.cal_seen_move[actual_location_index] = 3 # move and see
 
-            # print(actual_tag_loc[actual_location_index, 0], x[calc_location_index[0]])
-
             if(actual_location_index[0] >= 0 and actual_location_index[0] >= 0): # if we found something
                 # use that location to get the location of the camera
                 # Assuming you have the rotation vector as [drx, dry, drz]
                 roll_marker, yaw_marker, pitch_marker = self.convert_rot_to_ypr(rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]])
 
+                camera_roll = roll_marker-self.actual_tag_loc[actual_location_index, 3][0, 0]
+                camera_pitch = yaw_marker-self.actual_tag_loc[actual_location_index, 5][0, 0]
+                camera_yaw = pitch_marker-self.actual_tag_loc[actual_location_index, 4][0, 0]
+
                 # Calculate the localized position by transforming the initial position
-                localized_position = self.two_ypr_diff_localization(roll_marker-self.actual_tag_loc[actual_location_index, 3][0, 0],
-                                                                    yaw_marker-self.actual_tag_loc[actual_location_index, 5][0, 0], 
-                                                                    pitch_marker-self.actual_tag_loc[actual_location_index, 4][0, 0], 
-                                                                    x[calc_location_index[0]], y[calc_location_index[0]], z[calc_location_index[0]])
+                localized_position = self.two_ypr_diff_localization(camera_roll, camera_pitch, camera_yaw, x[calc_location_index[0]], y[calc_location_index[0]], z[calc_location_index[0]])
 
                 self.camera_x = float(self.actual_tag_loc[actual_location_index, 0] - localized_position[0])
                 self.camera_y = float(self.actual_tag_loc[actual_location_index, 1] - localized_position[1])
@@ -170,8 +169,14 @@ class localization:
                         self.sample_actual_tag[sample_actual_location_index, 1] +=1 # increment the samples
                         if self.sample_actual_tag[sample_actual_location_index, 1] < 30:
                             # <------------- sanples of translational and rotational
+                            # Assuming you have the rotation vector as [drx, dry, drz]
+                            R_ct, _ = cv2.Rodrigues(np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]]))
+                            R_tc = R_ct.T
+                            # get the roll,pitch,yaw
+                            roll_marker_calc, yaw_marker_calc, pitch_marker_calc = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
                             self.sample_tag_loc[sample_actual_location_index, :, int(self.sample_actual_tag[sample_actual_location_index, 1])] = [self.camera_x + x[calc_location_index[i]], self.camera_y + y[calc_location_index[i]], 
-                                                                                                                                               self.camera_z + z[calc_location_index[i]]]# add another sample
+                                                                                                                                               self.camera_z + z[calc_location_index[i]], roll_marker_calc - camera_roll, 
+                                                                                                                                               pitch_marker_calc - camera_pitch, yaw_marker_calc - camera_yaw]# add another sample
                         else: # done sampling
                             # after 30 samples
                             # get the median of the samples and convert rx, ry, rz to roll, pitch, yaw
@@ -183,8 +188,14 @@ class localization:
                     else: # havent sampled start doing so.
                         self.sample_actual_tag = np.append(self.sample_actual_tag, [tags_ids[calc_location_index[i]], 1]).reshape(-1, 2) # save new tag sample at 1 sample
                         # <------------- sanples of translational and rotational
+                        # Assuming you have the rotation vector as [drx, dry, drz]
+                        R_ct, _ = cv2.Rodrigues(np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]]))
+                        R_tc = R_ct.T
+                        # get the roll,pitch,yaw
+                        roll_marker_calc, yaw_marker_calc, pitch_marker_calc = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
                         new_data = np.array([[self.camera_x + x[calc_location_index[i]], self.camera_y + y[calc_location_index[i]], 
-                                                        self.camera_z + z[calc_location_index[i]]]] + [[0,0,0] for _ in range(29)]).reshape(1,6,30)
+                                              self.camera_z + z[calc_location_index[i]], roll_marker_calc - camera_roll, 
+                                              pitch_marker_calc - camera_pitch, yaw_marker_calc - camera_yaw]] + [[0,0,0,0,0,0] for _ in range(29)]).reshape(1,6,30)
                         self.sample_tag_loc = np.append(self.sample_tag_loc, new_data).reshape(-1, 6, 30) # save new tag location with respect to camera
 
             # Find the indices where actual tags are not in tags_ids
