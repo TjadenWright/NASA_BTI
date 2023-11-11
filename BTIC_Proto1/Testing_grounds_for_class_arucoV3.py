@@ -24,14 +24,14 @@ Select = 0
 prev_Select = 0
 
 #### values to change ###
-url_OR_cam_numb = 1                        # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = "http://192.168.4.20:8080/video"    # <--- camera # if on usb, camera ip if over ethernet/wireless
 controller_numb = 0                        # <--- controller # used.
-Input_Res = (1280, 720)                    # <--- change camera resolution (if change reclaibrate)
+Input_Res = (3840, 2160)                    # <--- change camera resolution (if change reclaibrate)
 Output_Res = (640, 480)                    # <--- output resolution
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-calib_file = "MultiMatrix720.npz"          # <--- file that stores the matricies. Must end it .npz
+calib_file = "MultiMatrix4k.npz"          # <--- file that stores the matricies. Must end it .npz
 VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
@@ -105,7 +105,7 @@ if get_cam:
 
     # setup communication with the arduino
     if(PC_or_PI == "PC"):
-        rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino')
+        rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino Mega 2560')
     else:
         rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 
@@ -113,13 +113,14 @@ if get_cam:
     while not rc1.Get_Button_From_Controller():            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
         # handels different key presses
         l1.handler()
-        # get location from opencv
+
+        # # get location from opencv
         x_calc, y_calc, z_calc, dist, ids = a1.aruco_tags_threaded(pic_out=True, FPS_read = False) # <--- if you want a picture to be dispayed.
 
-        # get origin tag (tag at 0,0,0)
+        # # get origin tag (tag at 0,0,0)
         l1.get_origin_tag(a1, ids, dist, x_calc, y_calc, z_calc)
 
-        # compute other tags (reference to other tags)
+        # # compute other tags (reference to other tags)
         l1.compute_tag_camera_location(ids, dist, x_calc, y_calc, z_calc)
         
         # get the button to change mode
@@ -133,14 +134,16 @@ if get_cam:
                 last_spotted_time = time.time()
                 prev_spotted = 1
                 x_prev = 0
-                z_prev = 0
+                y_prev = 0
+                Velocity = 0
+                first_time = True
             else:
                 mode = 0
                 rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
 
         # different modes (manual vs auto)
         if(mode == 0): # manual mode
-            rc1.Write_message(data=rc1.Motor_PWM_controller()) # send PWM data to the arduino
+            rc1.Write_message(data=rc1.Controller_To_PWM_and_DIR()) # send PWM data to the arduino
             print(str(rc1.Controller_To_PWM_and_DIR())  + " Manual Mode")
             #print("manual")
 
@@ -154,8 +157,9 @@ if get_cam:
                 tag_to_move_to = -1
                 spotted = False
 
-            x_new = x_calc[tag_to_move_to]
-            y_new = y_calc[tag_to_move_to]
+            if(tag_to_move_to != -1):
+                x_new = x_calc[tag_to_move_to]
+                y_new = y_calc[tag_to_move_to]
 
             # Calculate the time difference
             time_difference = time.time() - last_spotted_time
@@ -166,8 +170,9 @@ if get_cam:
                 x = x_new
                 y = y_new
                 Velocity = 0.7
+                first_time = False
 
-            elif(time_difference <= time_delay_not_seeing_tag):
+            elif(time_difference <= time_delay_not_seeing_tag and not first_time):
                 # Use the previous values of x and z if spotted is False and it's been less than 0.5 seconds
                 x = x_prev
                 y = y_prev
@@ -208,6 +213,8 @@ if get_cam:
         l1.show_tags()
         # display the camera on the map
         l1.show_camera()
+
+        l1.legend()
 
         # quit the program
         if a1.wait_key("q") or l1.update_pygames_screen():
