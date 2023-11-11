@@ -1,3 +1,9 @@
+// prototype
+#include <Servo.h>
+Servo Servo1;
+
+int servoPin = 5;
+
 // front
 const int front_PWM1 = 11;
 const int front_PWM2 = 10;
@@ -25,6 +31,9 @@ void setup() {
   pinMode(back_PWM2, OUTPUT);
   pinMode(back_DIR1, OUTPUT);
   pinMode(back_DIR2, OUTPUT);
+
+  // prototye
+  Servo1.attach(servoPin);
 
   // pinMode(front_PWM1_test, OUTPUT);
   // pinMode(front_PWM2_test, OUTPUT);
@@ -74,5 +83,8 @@ void loop() {
   //   String data = Serial.readStringUntil('\n');
   //   sscanf(data.c_str(), "%d,%d", &val1, &val2);
   // }
+
+  // prototype
+  Servo1.write(90); // 90 degrees
 
 }
