@@ -4,7 +4,7 @@ import cv2
 import math
 
 class localization:
-    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720)):
+    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samples = 100):
         self.scaling_factor = scaling_factor # scaling factor
         self.camera_x = camera_x             # camera x 
         self.camera_y = camera_y             # camera y
@@ -13,13 +13,15 @@ class localization:
         self.zoom_step = zoom_step           # zoom step
         self.Output_Res = Output_Res         # output res
 
+        self.samples = samples
+
         self.actual_tag = np.array([])
         self.actual_tag_loc = np.array([]).reshape(-1, 6)
         self.cal_seen_move = np.array([])
 
         # get a sampler array
         self.sample_actual_tag = np.array([]).reshape(-1, 2)
-        self.sample_tag_loc = np.array([]).reshape(-1, 6, 30)
+        self.sample_tag_loc = np.array([]).reshape(-1, 6, self.samples)
 
         self.zoom_factor = max(0.1, min(5.0, zoom_factor))
 
@@ -39,6 +41,8 @@ class localization:
         self.R_flip[0,0] = 1.0
         self.R_flip[1,1] =-1.0
         self.R_flip[2,2] =-1.0
+
+        # self.camera_roll = 0
 
     def init_pygame(self):
         # Initialize Pygame
@@ -60,7 +64,7 @@ class localization:
 
         # Collect 30 samples of x, y, and z for the specified marker
         sample_count = 0
-        while sample_count < 30:
+        while sample_count < self.samples:
             x, y, z, _, tags_ids, rVx, rVy, rVz = aruco_class.aruco_tags_threaded(pic_out=False, FPS_read=False)
             closest_marker_index = tags_ids.index(marker_id) if marker_id in tags_ids else -1
 
@@ -97,7 +101,7 @@ class localization:
 
             # get a sampler array
             self.sample_actual_tag = np.array([]).reshape(-1, 2)
-            self.sample_tag_loc = np.array([]).reshape(-1, 6, 30)
+            self.sample_tag_loc = np.array([]).reshape(-1, 6, self.samples)
 
             if len(tags_ids) > 0:
                 # Find the closest marker
@@ -141,7 +145,7 @@ class localization:
             if(actual_location_index[0] >= 0 and actual_location_index[0] >= 0): # if we found something
                 # use that location to get the location of the camera
                 # Assuming you have the rotation vector as [drx, dry, drz]
-                roll_marker, yaw_marker, pitch_marker = self.convert_rot_to_ypr(rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]])
+                roll_marker, pitch_marker, yaw_marker = self.convert_rot_to_ypr(rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]])
 
                 camera_roll = roll_marker-self.actual_tag_loc[actual_location_index, 3][0, 0]
                 camera_pitch = yaw_marker-self.actual_tag_loc[actual_location_index, 5][0, 0]
@@ -167,16 +171,27 @@ class localization:
                     # print(self.sample_tag_loc)
                     if sample_actual_location_index[0] >= 0: # we are
                         self.sample_actual_tag[sample_actual_location_index, 1] +=1 # increment the samples
-                        if self.sample_actual_tag[sample_actual_location_index, 1] < 30:
-                            # <------------- sanples of translational and rotational
+                        if self.sample_actual_tag[sample_actual_location_index, 1] < self.samples:
+                        # <------------- sanples of translational and rotational
                             # Assuming you have the rotation vector as [drx, dry, drz]
-                            R_ct, _ = cv2.Rodrigues(np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]]))
-                            R_tc = R_ct.T
-                            # get the roll,pitch,yaw
-                            roll_marker_calc, yaw_marker_calc, pitch_marker_calc = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
-                            self.sample_tag_loc[sample_actual_location_index, :, int(self.sample_actual_tag[sample_actual_location_index, 1])] = [self.camera_x + x[calc_location_index[i]], self.camera_y + y[calc_location_index[i]], 
-                                                                                                                                               self.camera_z + z[calc_location_index[i]], roll_marker_calc - camera_roll, 
-                                                                                                                                               pitch_marker_calc - camera_pitch, yaw_marker_calc - camera_yaw]# add another sample
+                            roll_marker, pitch_marker, yaw_marker = self.convert_rot_to_ypr(rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]])
+                            # save location and pose
+                            # get pose with respect to camera
+                            roll_marker_calc = roll_marker + camera_roll
+                            pitch_marker_calc = pitch_marker + camera_pitch
+                            yaw_marker_calc = yaw_marker + camera_yaw
+
+                            # localization based on camera (also with respect to the first tag)
+                            localized_position = self.two_ypr_diff_localization(roll_marker_calc-self.actual_tag_loc[0, 3], pitch_marker_calc-self.actual_tag_loc[0, 4], yaw_marker_calc-self.actual_tag_loc[0, 5], x[calc_location_index[i]],
+                                                                                y[calc_location_index[i]], z[calc_location_index[i]])
+
+                            # add location of camera to that
+                            x_calc = localized_position[0] + self.camera_x
+                            y_calc = localized_position[1] + self.camera_y
+                            z_calc = localized_position[2] + self.camera_z
+
+                            # save the sample
+                            self.sample_tag_loc[sample_actual_location_index, :, int(self.sample_actual_tag[sample_actual_location_index, 1])] = [x_calc, y_calc, z_calc, roll_marker_calc, pitch_marker_calc, yaw_marker_calc]# add another sample
                         else: # done sampling
                             # after 30 samples
                             # get the median of the samples and convert rx, ry, rz to roll, pitch, yaw
@@ -187,16 +202,27 @@ class localization:
 
                     else: # havent sampled start doing so.
                         self.sample_actual_tag = np.append(self.sample_actual_tag, [tags_ids[calc_location_index[i]], 1]).reshape(-1, 2) # save new tag sample at 1 sample
-                        # <------------- sanples of translational and rotational
+                    # <------------- sanples of translational and rotational
                         # Assuming you have the rotation vector as [drx, dry, drz]
-                        R_ct, _ = cv2.Rodrigues(np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]]))
-                        R_tc = R_ct.T
-                        # get the roll,pitch,yaw
-                        roll_marker_calc, yaw_marker_calc, pitch_marker_calc = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
-                        new_data = np.array([[self.camera_x + x[calc_location_index[i]], self.camera_y + y[calc_location_index[i]], 
-                                              self.camera_z + z[calc_location_index[i]], roll_marker_calc - camera_roll, 
-                                              pitch_marker_calc - camera_pitch, yaw_marker_calc - camera_yaw]] + [[0,0,0,0,0,0] for _ in range(29)]).reshape(1,6,30)
-                        self.sample_tag_loc = np.append(self.sample_tag_loc, new_data).reshape(-1, 6, 30) # save new tag location with respect to camera
+                        roll_marker, yaw_marker, pitch_marker = self.convert_rot_to_ypr(rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]])
+                        # save location and pose
+                        # get pose with respect to camera
+                        roll_marker_calc = roll_marker + camera_roll
+                        pitch_marker_calc = pitch_marker + camera_pitch
+                        yaw_marker_calc = yaw_marker + camera_yaw
+
+                        # localization based on camera (also with respect to the first tag)
+                        localized_position = self.two_ypr_diff_localization(roll_marker_calc-self.actual_tag_loc[0, 3], pitch_marker_calc-self.actual_tag_loc[0, 4], yaw_marker_calc-self.actual_tag_loc[0, 5], x[calc_location_index[i]],
+                                                                                y[calc_location_index[i]], z[calc_location_index[i]])
+                        # add location of camera to that
+                        x_calc = localized_position[0] + self.camera_x
+                        y_calc = localized_position[1] + self.camera_y
+                        z_calc = localized_position[2] + self.camera_z
+
+                        # start a new data set
+                        new_data = np.array([[x_calc, y_calc, z_calc, roll_marker_calc, pitch_marker_calc, yaw_marker_calc]] + [[0,0,0,0,0,0] for _ in range(self.samples-1)]).reshape(1,6,self.samples)
+                        # make a new column in the sample array
+                        self.sample_tag_loc = np.append(self.sample_tag_loc, new_data).reshape(-1, 6, self.samples) # save new tag location with respect to camera
 
             # Find the indices where actual tags are not in tags_ids
             indices_not_in_tags_ids = np.where(~np.isin(self.actual_tag, tags_ids))
@@ -255,6 +281,14 @@ class localization:
         coord_text_rect = coord_text.get_rect(center=(pygame_camera_x, pygame_camera_y + 20))
         self.screen.blit(coord_text, coord_text_rect)
 
+        # # Calculate the arrow coordinates
+        # arrow_length = 20  # Length of the arrow
+        # arrow_x = pygame_camera_x + arrow_length * np.cos(self.camera_roll)
+        # arrow_y = pygame_camera_y + arrow_length * np.sin(self.camera_roll)
+
+        # # Draw the arrow
+        # pygame.draw.line(self.screen, (255, 0, 0), (pygame_camera_x, pygame_camera_y), (arrow_x, arrow_y), 3)
+
     def update_pygames_screen(self):
         # Update Pygame screen
         pygame.display.flip()
@@ -295,7 +329,6 @@ class localization:
         n = np.linalg.norm(I - shouldBeIdentity)
         return n < 1e-6
 
-
     # Calculates rotation matrix to euler angles
     # The result is the same as MATLAB except the order
     # of the euler angles ( x and z are swapped ).
@@ -323,12 +356,14 @@ class localization:
         R_ct, _ = cv2.Rodrigues(np.array([rx, ry, rz]))
         R_tc = R_ct.T
         
-        roll_marker, yaw_marker, pitch_marker = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
+        roll_marker, pitch_marker, yaw_marker = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
 
-        return roll_marker, yaw_marker, pitch_marker
+        return roll_marker, pitch_marker, yaw_marker
     
     def two_ypr_diff_localization(self, roll, pitch, yaw, x, y, z):
         # Create transformation matrices for yaw, pitch, and roll rotations
+        roll=-roll
+        pitch=-pitch
         R_yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0],
                         [np.sin(yaw), np.cos(yaw), 0],
                         [0, 0, 1]])

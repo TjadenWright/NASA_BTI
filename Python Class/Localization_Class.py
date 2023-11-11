@@ -24,6 +24,11 @@ class localization:
         self.calibration_bool = False
         self.end_program = False
 
+        # Define colors
+        self.GREEN = (0, 255, 0)
+        self.RED = (255, 0, 0)
+        self.GRAY = (192, 192, 192)
+
     def init_pygame(self):
         # Initialize Pygame
         pygame.init()
@@ -44,7 +49,7 @@ class localization:
         # Collect 30 samples of x, y, and z for the specified marker
         sample_count = 0
         while sample_count < 30:
-            x, y, z, _, tags_ids = aruco_class.aruco_tags_threaded(pic_out=False, FPS_read=False)
+            x, y, z, _, tags_ids, __, ___, ____ = aruco_class.aruco_tags_threaded(pic_out=False, FPS_read=False)
             closest_marker_index = tags_ids.index(marker_id) if marker_id in tags_ids else -1
 
             if closest_marker_index != -1:
@@ -198,6 +203,16 @@ class localization:
         coord_text = self.coord_font.render(f"({self.camera_x:.2f}, {self.camera_y:.2f})", True, (255, 255, 255))
         coord_text_rect = coord_text.get_rect(center=(pygame_camera_x, pygame_camera_y + 20))
         self.screen.blit(coord_text, coord_text_rect)
+
+    def legend(self):
+        # Draw the key in the top left corner
+        key_x, key_y = 10, 10
+        key_spacing = 30
+
+        for i, (text, color) in enumerate(zip(["Going Towards", "Online, Not Going Towards", "Offline"], [self.GREEN, self.RED, self.GRAY])):
+            pygame.draw.circle(self.screen, color, (key_x + 10, key_y + 10 + i * key_spacing), 5)  # Draw dots
+            key_text_surface = self.font.render(text, True, (255, 255, 255))
+            self.screen.blit(key_text_surface, (key_x + 30, key_y + i * key_spacing))
 
     def update_pygames_screen(self):
         # Update Pygame screen
