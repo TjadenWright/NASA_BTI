@@ -2,9 +2,10 @@ import pygame
 import numpy as np
 import cv2
 import math
+from scipy.spatial.transform import Rotation
 
 class localization:
-    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samples = 100):
+    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samplesCal = 100, samplesLoc = 10):
         self.scaling_factor = scaling_factor # scaling factor
         self.camera_x = camera_x             # camera x 
         self.camera_y = camera_y             # camera y
@@ -13,7 +14,8 @@ class localization:
         self.zoom_step = zoom_step           # zoom step
         self.Output_Res = Output_Res         # output res
 
-        self.samples = samples
+        self.samples = samplesCal
+        self.samplesLoc = samplesLoc
 
         self.actual_tag = np.array([])
         self.actual_tag_loc = np.array([]).reshape(-1, 6)
@@ -22,6 +24,8 @@ class localization:
         # get a sampler array
         self.sample_actual_tag = np.array([]).reshape(-1, 2)
         self.sample_tag_loc = np.array([]).reshape(-1, 6, self.samples)
+        # sample camera and current tag
+        self.sample_tag_camera = np.array([]).reshape(2, 6, self.samplesLoc)
 
         self.zoom_factor = max(0.1, min(5.0, zoom_factor))
 
@@ -42,7 +46,7 @@ class localization:
         self.R_flip[1,1] =-1.0
         self.R_flip[2,2] =-1.0
 
-        # self.camera_roll = 0
+        self.camera_roll = 0
 
     def init_pygame(self):
         # Initialize Pygame
@@ -109,28 +113,15 @@ class localization:
                 closest_marker_id = tags_ids[index]  # take the tag id and filter it
 
                 # Call calibration function for the closest marker
-                dx, dy, dz, drx, dry, drz = self.calibrate_first_marker(aruco_class, x, y, z, tags_ids, closest_marker_id)
-                
-                # Assuming you have the rotation vector as [drx, dry, drz]
-                R_ct, _ = cv2.Rodrigues(np.array([drx, dry, drz]))
-                R_tc = R_ct.T
-                
-                roll_marker, yaw_marker, pitch_marker = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
+                _, _, _, drx, dry, drz = self.calibrate_first_marker(aruco_class, x, y, z, tags_ids, closest_marker_id)
 
                 # set that in the coordinates
                 self.actual_tag = np.append(self.actual_tag, closest_marker_id)
-                self.actual_tag_loc = np.append(self.actual_tag_loc, [0, 0, 0, roll_marker, pitch_marker, yaw_marker]).reshape(-1, 6)
+                self.actual_tag_loc = np.append(self.actual_tag_loc, [0, 0, 0, drx, dry, drz]).reshape(-1, 6)
                 self.cal_seen_move = np.append(self.cal_seen_move, 3) # seen and closest one
 
-                # Initial position estimate based on ArUco tag
-                initial_position = np.array([dx, dy, dz])
-
-                # Transform the initial position into camera coordinate system
-                self.camera_x, self.camera_y, self.camera_z = np.dot(R_tc, -initial_position)
-
-                # convert that to the cameras position and that tags position is 0,0,0
-                print("for maker id: ", self.actual_tag[0], " its location is now: ", self.actual_tag_loc[0][0])
-                print("camera location: ", self.camera_x, self.camera_y, self.camera_z)
+                # convert that to the that tags position is 0,0,0
+                print("for maker id: ", self.actual_tag[0], " its location is now: ", self.actual_tag_loc[:][0])
 
                 self.calibration_bool = False # we are done with calibration
     
@@ -142,22 +133,20 @@ class localization:
             actual_location_index = np.where(self.actual_tag == tags_ids[calc_location_index[0]]) # find the spot in the saved array
             self.cal_seen_move[actual_location_index] = 3 # move and see
 
-            if(actual_location_index[0] >= 0 and actual_location_index[0] >= 0): # if we found something
+            if(actual_location_index[0] >= 0 and calc_location_index[0] >= 0): # if we found something
                 # use that location to get the location of the camera
-                # Assuming you have the rotation vector as [drx, dry, drz]
-                roll_marker, pitch_marker, yaw_marker = self.convert_rot_to_ypr(rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]])
+                [self.camera_x, self.camera_y, self.camera_z], camera_pose = self.calculatePos(
+                    np.array([x[calc_location_index[0]], y[calc_location_index[0]], z[calc_location_index[0]]]),
+                    np.array([rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]]]),
+                    np.array([self.actual_tag_loc[actual_location_index[0], 0][0], self.actual_tag_loc[actual_location_index[0], 1][0], self.actual_tag_loc[actual_location_index[0], 2][0]]),
+                    np.array([self.actual_tag_loc[actual_location_index[0], 3][0], self.actual_tag_loc[actual_location_index[0], 4][0], self.actual_tag_loc[actual_location_index[0], 5][0]])
+                )
 
-                camera_roll = roll_marker-self.actual_tag_loc[actual_location_index, 3][0, 0]
-                camera_pitch = yaw_marker-self.actual_tag_loc[actual_location_index, 5][0, 0]
-                camera_yaw = pitch_marker-self.actual_tag_loc[actual_location_index, 4][0, 0]
-
-                # Calculate the localized position by transforming the initial position
-                localized_position = self.two_ypr_diff_localization(camera_roll, camera_pitch, camera_yaw, x[calc_location_index[0]], y[calc_location_index[0]], z[calc_location_index[0]])
-
-                self.camera_x = float(self.actual_tag_loc[actual_location_index, 0] - localized_position[0])
-                self.camera_y = float(self.actual_tag_loc[actual_location_index, 1] - localized_position[1])
-                self.camera_z = float(self.actual_tag_loc[actual_location_index, 2] - localized_position[2])
-
+                camera_pose = camera_pose[:, 0]
+                # print(pose[:, 0])
+                angles = self.rotationVectorToEulerAngles(camera_pose)
+                # print(angles)
+                self.camera_roll = -angles[2]
             # take samples of the tags that haven't got a actual location:
             # for i in range(1, len(calc_location_index)): # leave out the first one since that's assumed to be calibrated
             # we have the new camera x,z so we can relate that to the distance the tag is away.
@@ -174,24 +163,17 @@ class localization:
                         if self.sample_actual_tag[sample_actual_location_index, 1] < self.samples:
                         # <------------- sanples of translational and rotational
                             # Assuming you have the rotation vector as [drx, dry, drz]
-                            roll_marker, pitch_marker, yaw_marker = self.convert_rot_to_ypr(rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]])
-                            # save location and pose
-                            # get pose with respect to camera
-                            roll_marker_calc = roll_marker + camera_roll
-                            pitch_marker_calc = pitch_marker + camera_pitch
-                            yaw_marker_calc = yaw_marker + camera_yaw
+                            tag_position_world, rvec_tag_world = self.tag_camera_to_world(np.array([self.camera_x, self.camera_y, self.camera_z]),
+                                                                                        camera_pose, 
+                                                                                        np.array([x[calc_location_index[i]], y[calc_location_index[i]], z[calc_location_index[i]]]),
+                                                                                        np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]])
+                            )
+                            rvec_tag_world = rvec_tag_world.T[:][0]
 
-                            # localization based on camera (also with respect to the first tag)
-                            localized_position = self.two_ypr_diff_localization(roll_marker_calc-self.actual_tag_loc[0, 3], pitch_marker_calc-self.actual_tag_loc[0, 4], yaw_marker_calc-self.actual_tag_loc[0, 5], x[calc_location_index[i]],
-                                                                                y[calc_location_index[i]], z[calc_location_index[i]])
-
-                            # add location of camera to that
-                            x_calc = localized_position[0] + self.camera_x
-                            y_calc = localized_position[1] + self.camera_y
-                            z_calc = localized_position[2] + self.camera_z
-
+                            print(tag_position_world, rvec_tag_world)
                             # save the sample
-                            self.sample_tag_loc[sample_actual_location_index, :, int(self.sample_actual_tag[sample_actual_location_index, 1])] = [x_calc, y_calc, z_calc, roll_marker_calc, pitch_marker_calc, yaw_marker_calc]# add another sample
+                            self.sample_tag_loc[sample_actual_location_index, :, int(self.sample_actual_tag[sample_actual_location_index, 1])] = [tag_position_world[0], tag_position_world[1], tag_position_world[2], 
+                                                                                                                                                  rvec_tag_world[0], rvec_tag_world[1], rvec_tag_world[2]]# add another sample
                         else: # done sampling
                             # after 30 samples
                             # get the median of the samples and convert rx, ry, rz to roll, pitch, yaw
@@ -204,23 +186,18 @@ class localization:
                         self.sample_actual_tag = np.append(self.sample_actual_tag, [tags_ids[calc_location_index[i]], 1]).reshape(-1, 2) # save new tag sample at 1 sample
                     # <------------- sanples of translational and rotational
                         # Assuming you have the rotation vector as [drx, dry, drz]
-                        roll_marker, yaw_marker, pitch_marker = self.convert_rot_to_ypr(rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]])
-                        # save location and pose
-                        # get pose with respect to camera
-                        roll_marker_calc = roll_marker + camera_roll
-                        pitch_marker_calc = pitch_marker + camera_pitch
-                        yaw_marker_calc = yaw_marker + camera_yaw
+                        tag_position_world, rvec_tag_world = self.tag_camera_to_world(np.array([self.camera_x, self.camera_y, self.camera_z]),
+                                                                                      camera_pose, 
+                                                                                      np.array([x[calc_location_index[i]], y[calc_location_index[i]], z[calc_location_index[i]]]),
+                                                                                      np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]])
+                        )
+                        rvec_tag_world = rvec_tag_world.T[:][0]
 
-                        # localization based on camera (also with respect to the first tag)
-                        localized_position = self.two_ypr_diff_localization(roll_marker_calc-self.actual_tag_loc[0, 3], pitch_marker_calc-self.actual_tag_loc[0, 4], yaw_marker_calc-self.actual_tag_loc[0, 5], x[calc_location_index[i]],
-                                                                                y[calc_location_index[i]], z[calc_location_index[i]])
-                        # add location of camera to that
-                        x_calc = localized_position[0] + self.camera_x
-                        y_calc = localized_position[1] + self.camera_y
-                        z_calc = localized_position[2] + self.camera_z
+                        print(tag_position_world, rvec_tag_world)
 
                         # start a new data set
-                        new_data = np.array([[x_calc, y_calc, z_calc, roll_marker_calc, pitch_marker_calc, yaw_marker_calc]] + [[0,0,0,0,0,0] for _ in range(self.samples-1)]).reshape(1,6,self.samples)
+                        new_data = np.array([[tag_position_world[0], tag_position_world[1], tag_position_world[2], 
+                                              rvec_tag_world[0], rvec_tag_world[1], rvec_tag_world[2]]] + [[0,0,0,0,0,0] for _ in range(self.samples-1)]).reshape(1,6,self.samples)
                         # make a new column in the sample array
                         self.sample_tag_loc = np.append(self.sample_tag_loc, new_data).reshape(-1, 6, self.samples) # save new tag location with respect to camera
 
@@ -281,13 +258,13 @@ class localization:
         coord_text_rect = coord_text.get_rect(center=(pygame_camera_x, pygame_camera_y + 20))
         self.screen.blit(coord_text, coord_text_rect)
 
-        # # Calculate the arrow coordinates
-        # arrow_length = 20  # Length of the arrow
-        # arrow_x = pygame_camera_x + arrow_length * np.cos(self.camera_roll)
-        # arrow_y = pygame_camera_y + arrow_length * np.sin(self.camera_roll)
+        # Calculate the arrow coordinates
+        arrow_length = 20  # Length of the arrow
+        arrow_x = pygame_camera_x + arrow_length * np.cos(self.camera_roll-math.pi/2)
+        arrow_y = pygame_camera_y + arrow_length * np.sin(self.camera_roll-math.pi/2)
 
-        # # Draw the arrow
-        # pygame.draw.line(self.screen, (255, 0, 0), (pygame_camera_x, pygame_camera_y), (arrow_x, arrow_y), 3)
+        # Draw the arrow
+        pygame.draw.line(self.screen, (255, 0, 0), (pygame_camera_x, pygame_camera_y), (arrow_x, arrow_y), 3)
 
     def update_pygames_screen(self):
         # Update Pygame screen
@@ -322,6 +299,48 @@ class localization:
             key_text_surface = self.font.render(text, True, (255, 255, 255))
             self.screen.blit(key_text_surface, (key_x + 30, key_y + i * key_spacing))
 
+    # Calculate position data from stored values and current values
+    def calculatePos(self, tvec, rvec, tvec_orig, rvec_orig, rotation_threshold=0.1):
+        tvec = np.transpose(tvec)
+        tvec_orig = np.transpose(tvec_orig)
+        R = cv2.Rodrigues(rvec)[0]
+        dRot = cv2.Rodrigues(rvec_orig)[0]
+        tvec = -R.T.dot(tvec)
+        tvec = tvec_orig + dRot.dot(tvec)
+        tvec = np.transpose(tvec)
+
+        # Calculate the rotation vector (rvec) representing the rotation of the camera
+        R_combined = np.dot(R, dRot.T)
+        rvec_camera, __ = cv2.Rodrigues(R_combined)
+
+        return tvec, -rvec_camera
+
+    def tag_camera_to_world(self, tvec_camera, rvec_camera, tvec_tag_camera, rvec_tag_camera):
+        # Convert rotation vectors to rotation matrices
+        R_camera, _ = cv2.Rodrigues(rvec_camera)
+        R_tag_camera, _ = cv2.Rodrigues(rvec_tag_camera)
+
+        # Transform tag coordinates from camera to world
+        tag_position_world = R_camera.dot(tvec_tag_camera) + tvec_camera
+
+        # Transform tag pose from camera to world
+        R_tag_world = R_camera.T.dot(R_tag_camera)
+
+        # Convert rotation matrix to rotation vector
+        rvec_tag_world, _ = cv2.Rodrigues(R_tag_world)
+
+        return tag_position_world, rvec_tag_world
+
+
+
+    # Get position in marker's coordinate system
+    def TranslationInMarker(rvec, tvec):
+        tvec = np.transpose(tvec)
+        R = cv2.Rodrigues(rvec)[0]
+        tvec = -R.T.dot(tvec)
+        tvec = np.transpose(tvec)
+        return tvec
+
     def isRotationMatrix(self, R):
         Rt = np.transpose(R)
         shouldBeIdentity = np.dot(Rt, R)
@@ -329,55 +348,12 @@ class localization:
         n = np.linalg.norm(I - shouldBeIdentity)
         return n < 1e-6
 
-    # Calculates rotation matrix to euler angles
-    # The result is the same as MATLAB except the order
-    # of the euler angles ( x and z are swapped ).
-    def rotationMatrixToEulerAngles(self, R):
-        assert (self.isRotationMatrix(R))
+    # Calculates rotation vector to euler angles
+    def rotationVectorToEulerAngles(self, rvec):
+        r = Rotation.from_rotvec(rvec)
+        return r.as_euler('xyz')
 
-        sy = math.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
-
-        singular = sy < 1e-6
-
-        if not singular:
-            x = math.atan2(R[2, 1], R[2, 2])
-            y = math.atan2(-R[2, 0], sy)
-            z = math.atan2(R[1, 0], R[0, 0])
-        else:
-            x = math.atan2(-R[1, 2], R[1, 1])
-            y = math.atan2(-R[2, 0], sy)
-            z = 0
-
-        return np.array([x, y, z])
-    
-    def convert_rot_to_ypr(self, rx, ry, rz):
-        # use that location to get the location of the camera
-        # Assuming you have the rotation vector as [drx, dry, drz]
-        R_ct, _ = cv2.Rodrigues(np.array([rx, ry, rz]))
-        R_tc = R_ct.T
-        
-        roll_marker, pitch_marker, yaw_marker = self.rotationMatrixToEulerAngles(np.dot(self.R_flip, R_tc))
-
-        return roll_marker, pitch_marker, yaw_marker
-    
-    def two_ypr_diff_localization(self, roll, pitch, yaw, x, y, z):
-        # Create transformation matrices for yaw, pitch, and roll rotations
-        roll=-roll
-        pitch=-pitch
-        R_yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0],
-                        [np.sin(yaw), np.cos(yaw), 0],
-                        [0, 0, 1]])
-
-        R_pitch = np.array([[np.cos(pitch), 0, np.sin(pitch)],
-                            [0, 1, 0],
-                            [-np.sin(pitch), 0, np.cos(pitch)]])
-
-        R_roll = np.array([[1, 0, 0],
-                        [0, np.cos(roll), -np.sin(roll)],
-                        [0, np.sin(roll), np.cos(roll)]])
-
-        # Combine the rotation matrices to get the final transformation matrix
-        R_combined = np.dot(R_yaw, np.dot(R_pitch, R_roll))
-
-        # Calculate the localized position by transforming the initial position
-        return np.dot(R_combined, [x, y, z]) # location x,y,z
+    # Calculates rotation matrix to rotation vector
+    def rotationMatrixToRotationVector(self, dR):
+        r = Rotation.from_dcm(dR)
+        return r.as_rotvec()
