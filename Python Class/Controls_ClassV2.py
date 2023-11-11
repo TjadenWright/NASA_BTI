@@ -1,6 +1,7 @@
 # controls class
 
 import pygame
+import pygame.joystick
 import serial.tools.list_ports
 import time
 
@@ -28,7 +29,7 @@ class Rover_Controls:
         left_x = self.joystick.get_axis(0)
         left_y = self.joystick.get_axis(1)
         right_x = self.joystick.get_axis(2)
-        right_y = self.joystick.get_axis(3)
+        right_y = self.joystick.get_axis(5)
 
         # Get D-pad buttons
         hat = self.joystick.get_hat(0)
@@ -38,8 +39,8 @@ class Rover_Controls:
         dpad_right = max(0, hat[0])
 
         # Get trigger analog
-        L2_trigger = self.joystick.get_axis(4)
-        R2_trigger = self.joystick.get_axis(5)
+        L2_trigger = self.joystick.get_axis(3)
+        R2_trigger = self.joystick.get_axis(4)
 
         # Get joystick buttons using list comprehension
         buttons = [self.joystick.get_button(i) for i in range(self.joystick.get_numbuttons())]
@@ -65,7 +66,8 @@ class Rover_Controls:
         buttons[9] = temp
 
         # return controller inputs for that pass-through
-        return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger] + buttons
+        return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger, buttons[2],
+                buttons[1], buttons[0], buttons[3], buttons[10], buttons[11], buttons[4], buttons[7], buttons[12], buttons[5], buttons[6]]
 
     def USB_Controller_PI(self):
         pygame.event.get()  # Get pygame events
@@ -190,7 +192,7 @@ class Rover_Controls:
         arduino_port = None
         ports = serial.tools.list_ports.comports()
         for port in ports:
-            print(port.device)
+            print(port.description)
             if arduino_name in port.description:  # Adjust the description as needed
                 arduino_port = port.device
                 break
@@ -199,6 +201,7 @@ class Rover_Controls:
             print("Arduino not found. Check the connection or adjust the description.")
             exit(1)
 
+        print(arduino_port)
         # Set up the serial connection
         self.serial_inst = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
         time.sleep(1)

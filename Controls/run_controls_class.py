@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 # Navigate up one directory level to access the class folder
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
@@ -28,7 +29,7 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 
 # setup communication with the arduino
 if(PC_or_PI == "PC"):
-    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino')
+    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Latte')
 else:
     rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 

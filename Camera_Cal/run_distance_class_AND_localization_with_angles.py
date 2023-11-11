@@ -55,7 +55,7 @@ if get_cam:
         # handels different key presses
         l1.handler()
         # get location from opencv
-        x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags_threaded(pic_out=False, FPS_read = False) # <--- if you want a picture to be dispayed.
+        x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags_threaded(pic_out=True, FPS_read = False) # <--- if you want a picture to be dispayed.
 
         # get origin tag (tag at 0,0,0)
         l1.get_origin_tag(a1, tags_ids, dist, x, y, z)
