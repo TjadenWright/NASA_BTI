@@ -4,6 +4,7 @@ import pygame
 import pygame.joystick
 import serial.tools.list_ports
 import time
+from pygame.locals import *
 
 class Rover_Controls:
     def __init__(self, verbose = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
@@ -15,10 +16,10 @@ class Rover_Controls:
         self.countR = 0
         self.countL = 0
         self.PC_or_PI = PC_or_PI
-    
-    def setup_USB_Controller(self, controller_numb = 0):
         pygame.init()
         pygame.joystick.init()
+    
+    def setup_USB_Controller(self, controller_numb = 0):
         self.joystick = pygame.joystick.Joystick(controller_numb)  # get joystick from pygame.
         self.joystick.init()                                       # initialize the joystick.
 

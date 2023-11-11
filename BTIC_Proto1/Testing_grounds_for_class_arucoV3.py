@@ -12,8 +12,8 @@ calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get th
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up       
 
 from Controls_ClassV2 import Rover_Controls
-from Distance_ClassV3 import aruco_detect
-from Localization_Class import localization
+from Distance_ClassV4 import aruco_detect
+from Localization_ClassV2 import localization
 
 # Initialize your variables
 move = 0
@@ -24,14 +24,14 @@ Select = 0
 prev_Select = 0
 
 #### values to change ###
-url_OR_cam_numb = "http://192.168.4.20:8080/video"    # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = 0    # <--- camera # if on usb, camera ip if over ethernet/wireless
 controller_numb = 0                        # <--- controller # used.
-Input_Res = (3840, 2160)                    # <--- change camera resolution (if change reclaibrate)
+Input_Res = (1920, 1080)                    # <--- change camera resolution (if change reclaibrate)
 Output_Res = (640, 480)                    # <--- output resolution
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
-MARKER_SIZE = 8                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
+MARKER_SIZE = 6.5                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-calib_file = "MultiMatrix4k.npz"          # <--- file that stores the matricies. Must end it .npz
+calib_file = "MultiMatrix1080.npz"          # <--- file that stores the matricies. Must end it .npz
 VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
@@ -109,25 +109,33 @@ if get_cam:
     else:
         rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 
+    calib = False
+    calibrate = False
+
     # run the code for manual and automatic.
     while not rc1.Get_Button_From_Controller():            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
         # handels different key presses
         l1.handler()
 
         # # get location from opencv
-        x_calc, y_calc, z_calc, dist, ids = a1.aruco_tags_threaded(pic_out=True, FPS_read = False) # <--- if you want a picture to be dispayed.
+        x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags_threaded(pic_out=True, FPS_read = False) # <--- if you want a picture to be dispayed.
 
-        # # get origin tag (tag at 0,0,0)
-        l1.get_origin_tag(a1, ids, dist, x_calc, y_calc, z_calc)
+        prev_calib = calib
 
-        # # compute other tags (reference to other tags)
-        l1.compute_tag_camera_location(ids, dist, x_calc, y_calc, z_calc)
-        
+        # get origin tag (tag at 0,0,0)
+        calib = l1.get_origin_tag(a1, ids, dist, x_calc, y_calc, z_calc)
+
+        if(prev_calib == False and calib == True):
+            calibrate = True
+
+        # compute other tags (reference to other tags)
+        l1.compute_tag_camera_location(ids, dist, x_calc, y_calc, z_calc, rVx, rVy, rVz)
+
         # get the button to change mode
         Select = rc1.Get_Button_From_Controller(stop_button="Select") # select button is pressed or not
 
         # toggle the mode
-        if Select == 1 and  prev_Select == 0:
+        if Select == 1 and prev_Select == 0:
             if(mode == 0):
                 mode+=1
                 rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
@@ -137,6 +145,7 @@ if get_cam:
                 y_prev = 0
                 Velocity = 0
                 first_time = True
+                calibrate = False
             else:
                 mode = 0
                 rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
@@ -148,63 +157,66 @@ if get_cam:
             #print("manual")
 
         elif(mode == 1): # auto mode
+            
+            l1.controller_handler(rc1.Get_Button_From_Controller("Start"), rc1.Get_Button_From_Controller("Dpad_Up"), rc1.Get_Button_From_Controller("Dpad_Down"))
 
-            # find closest tag
-            if dist:
-                tag_to_move_to = np.argmin(dist)
-                spotted = True
-            else:
-                tag_to_move_to = -1
-                spotted = False
+            if(calibrate):
+                # find closest tag
+                if dist:
+                    tag_to_move_to = np.argmin(dist)
+                    spotted = True
+                else:
+                    tag_to_move_to = -1
+                    spotted = False
 
-            if(tag_to_move_to != -1):
-                x_new = x_calc[tag_to_move_to]
-                y_new = y_calc[tag_to_move_to]
+                if(tag_to_move_to != -1):
+                    x_new = x_calc[tag_to_move_to]
+                    y_new = y_calc[tag_to_move_to]
 
-            # Calculate the time difference
-            time_difference = time.time() - last_spotted_time
+                # Calculate the time difference
+                time_difference = time.time() - last_spotted_time
 
-            if(spotted):
-                # Update the timestamp
-                last_spotted_time = time.time()
-                x = x_new
-                y = y_new
-                Velocity = 0.7
-                first_time = False
+                if(spotted):
+                    # Update the timestamp
+                    last_spotted_time = time.time()
+                    x = x_new
+                    y = y_new
+                    Velocity = 0.7
+                    first_time = False
 
-            elif(time_difference <= time_delay_not_seeing_tag and not first_time):
-                # Use the previous values of x and z if spotted is False and it's been less than 0.5 seconds
-                x = x_prev
-                y = y_prev
-                Velocity = 0.7
-            else:
-                # Reset x and z if it's been 0.5 seconds or more since the last True spotted value
-                x = 0
-                y = 0
-                Velocity = 0
+                elif(time_difference <= time_delay_not_seeing_tag and not first_time):
+                    # Use the previous values of x and z if spotted is False and it's been less than 0.5 seconds
+                    x = x_prev
+                    y = y_prev
+                    Velocity = 0.7
+                else:
+                    # Reset x and z if it's been 0.5 seconds or more since the last True spotted value
+                    x = 0
+                    y = 0
+                    Velocity = 0
 
-            # Calculate the angle to the target (in radians)
-            angle = math.atan2(y, x-Center_spot) # find the angle
-            # 1.18 to 1.96
+                # Calculate the angle to the target (in radians)
+                angle = math.atan2(y, x-Center_spot) # find the angle
+                # 1.18 to 1.96
 
-            # max and min of angles
-            if(angle > 1.96):
-                angle = 1.96
-            elif(angle < 1.18):
-                angle = 1.18
+                # max and min of angles
+                if(angle > 1.96):
+                    angle = 1.96
+                elif(angle < 1.18):
+                    angle = 1.18
 
-            unit = scale_range(angle, 1.18, 1.96, -1, 1)
+                unit = scale_range(angle, 1.18, 1.96, -1, 1)
 
-            Direction = unit
+                Direction = unit
 
-            print("x: ", round(x-Center_spot,2), "z: ", round(y,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
+                print("x: ", round(x-Center_spot,2), "y: ", round(y,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
 
-            # send out data to the arduino
-            rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
-            #print(str(rc1.Motor_PWM(Direction, Velocity)) + " Auto Mode")
-            prev_spotted = spotted
-            x_prev = x
-            y_prev = y
+                # send out data to the arduino
+                rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
+                #print(str(rc1.Motor_PWM(Direction, Velocity)) + " Auto Mode")
+                prev_spotted = spotted
+                x_prev = x
+                y_prev = y
 
         # get the states for the button
         prev_Select = Select

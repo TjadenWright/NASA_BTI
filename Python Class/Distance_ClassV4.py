@@ -5,7 +5,6 @@ import time
 import os
 import threading
 import queue
-import multiprocessing
 
 class aruco_detect:
     def __init__(self, calib_data_path = None, MARKER_SIZE = 8, verbose = True, Input_Res=(1280, 720), Output_Res = (640, 480), fps_vid = 10, calib_file = "MultiMatrix.npz", num_threads=4):

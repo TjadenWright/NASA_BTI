@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import math
 from scipy.spatial.transform import Rotation
+from pygame.locals import *
 
 class localization:
     def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samplesCal = 100, samplesLoc = 10):
@@ -25,7 +26,7 @@ class localization:
         self.sample_actual_tag = np.array([]).reshape(-1, 2)
         self.sample_tag_loc = np.array([]).reshape(-1, 6, self.samples)
         # sample camera and current tag
-        self.sample_tag_camera = np.array([]).reshape(2, 6, self.samplesLoc)
+        # self.sample_tag_camera = np.array([]).reshape(2, 6, self.samplesLoc)
 
         self.zoom_factor = max(0.1, min(5.0, zoom_factor))
 
@@ -48,9 +49,10 @@ class localization:
 
         self.camera_roll = 0
 
-    def init_pygame(self):
         # Initialize Pygame
         pygame.init()
+
+    def init_pygame(self):
         self.screen = pygame.display.set_mode(self.Output_Res)
         self.font = pygame.font.Font(None, 24)
 
@@ -124,6 +126,9 @@ class localization:
                 print("for maker id: ", self.actual_tag[0], " its location is now: ", self.actual_tag_loc[:][0])
 
                 self.calibration_bool = False # we are done with calibration
+        
+            return True
+        return False
     
     def compute_tag_camera_location(self, tags_ids, dist, x, y, z, rx, ry, rz):
         if len(self.actual_tag) and len(tags_ids):
@@ -357,3 +362,11 @@ class localization:
     def rotationMatrixToRotationVector(self, dR):
         r = Rotation.from_dcm(dR)
         return r.as_rotvec()
+    
+    def controller_handler(self, cal, up, down):
+        if(cal):
+            self.calibration_bool = True
+        if(up):
+            self.zoom_factor += self.zoom_step
+        elif(down):
+            self.zoom_factor -= self.zoom_step
