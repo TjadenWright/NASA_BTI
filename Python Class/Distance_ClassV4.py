@@ -375,6 +375,14 @@ class aruco_detect:
                 if success:
                     x, y, z = tVec[0][0], tVec[2][0], tVec[1][0] # y and z flipped for mapping
 
+                    # save the rVec into ints
+                    rx = rVec[0][0]
+                    ry = rVec[2][0]
+                    rz = rVec[1][0]
+
+                    # reverse any bad rvecs
+                    rx, ry, rz = self.filter_flip(rx, ry, rz)
+
                     # Calculate the distance from the camera to the Aruco tag
                     distance = np.sqrt(x**2 + y**2 + z**2)
 
@@ -384,9 +392,9 @@ class aruco_detect:
                     z_values.append(tVec[1][0])
                     ids_list.append(ids[0])
                     dist_list.append(distance)
-                    rVecx.append(rVec[0][0])
-                    rVecy.append(rVec[2][0])
-                    rVecz.append(rVec[1][0])
+                    rVecx.append(rx)
+                    rVecy.append(ry)
+                    rVecz.append(rz)
 
                     # data to send back
                     data = {
@@ -429,7 +437,7 @@ class aruco_detect:
                     # Draw the x, y, z at the bottom right
                     cv2.putText(
                         frame_with_markers,
-                        f"x: {round(tVec[0][0], 1)} y: {round(tVec[2][0], 1)} z: {round(tVec[1][0], 1)} rvec: {round(rVecx[0],1), round(rVecy[0],1), round(rVecz[0],1)}", # y and z flipped
+                        f"x: {round(tVec[0][0], 1)} y: {round(tVec[2][0], 1)} z: {round(tVec[1][0], 1)} rvec: {round(rx,1), round(ry,1), round(rz,1)}", # y and z flipped
                         (bottom_right[0], bottom_right[1]),
                         cv2.FONT_HERSHEY_PLAIN,
                         1.0,
@@ -503,3 +511,12 @@ class aruco_detect:
             print(f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)")
 
         return x_values, y_values, z_values, dist_list, ids_list, rVecx, rVecy, rVecz
+    
+    def filter_flip(self, rx, ry, rz):
+        if(rx < 0): # if roll is negative (meaning there was a glitch)
+            # flip
+            rx = -rx
+            ry = -ry
+            rz = -rz
+        
+        return rx, ry, rz
