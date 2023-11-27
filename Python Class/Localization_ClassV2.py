@@ -140,16 +140,16 @@ class localization:
 
             if(actual_location_index[0] >= 0 and calc_location_index[0] >= 0): # if we found something
                 # use that location to get the location of the camera
-                [self.camera_x, self.camera_y, self.camera_z], camera_pose = self.calculatePos(
+                [self.camera_x, self.camera_y, self.camera_z], self.camera_pose = self.calculatePos(
                     np.array([x[calc_location_index[0]], y[calc_location_index[0]], z[calc_location_index[0]]]),
                     np.array([rx[calc_location_index[0]], ry[calc_location_index[0]], rz[calc_location_index[0]]]),
                     np.array([self.actual_tag_loc[actual_location_index[0], 0][0], self.actual_tag_loc[actual_location_index[0], 1][0], self.actual_tag_loc[actual_location_index[0], 2][0]]),
                     np.array([self.actual_tag_loc[actual_location_index[0], 3][0], self.actual_tag_loc[actual_location_index[0], 4][0], self.actual_tag_loc[actual_location_index[0], 5][0]])
                 )
 
-                camera_pose = camera_pose[:, 0]
+                self.camera_pose = self.camera_pose[:, 0]
                 # print(pose[:, 0])
-                angles = self.rotationVectorToEulerAngles(camera_pose)
+                angles = self.rotationVectorToEulerAngles(self.camera_pose)
                 # print(angles)
                 self.camera_roll = -angles[2]
             # take samples of the tags that haven't got a actual location:
@@ -169,7 +169,7 @@ class localization:
                         # <------------- sanples of translational and rotational
                             # Assuming you have the rotation vector as [drx, dry, drz]
                             tag_position_world, rvec_tag_world = self.tag_camera_to_world(np.array([self.camera_x, self.camera_y, self.camera_z]),
-                                                                                        camera_pose, 
+                                                                                        self.camera_pose, 
                                                                                         np.array([x[calc_location_index[i]], y[calc_location_index[i]], z[calc_location_index[i]]]),
                                                                                         np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]])
                             )
@@ -192,7 +192,7 @@ class localization:
                     # <------------- sanples of translational and rotational
                         # Assuming you have the rotation vector as [drx, dry, drz]
                         tag_position_world, rvec_tag_world = self.tag_camera_to_world(np.array([self.camera_x, self.camera_y, self.camera_z]),
-                                                                                      camera_pose, 
+                                                                                      self.camera_pose, 
                                                                                       np.array([x[calc_location_index[i]], y[calc_location_index[i]], z[calc_location_index[i]]]),
                                                                                       np.array([rx[calc_location_index[i]], ry[calc_location_index[i]], rz[calc_location_index[i]]])
                         )
@@ -244,6 +244,16 @@ class localization:
             coord_text = self.coord_font.render(f"({self.actual_tag_loc[i, 0]:.2f}, {self.actual_tag_loc[i, 1]:.2f})", True, (255, 255, 255))
             coord_text_rect = coord_text.get_rect(center=(pygame_x, pygame_y + 20))
             self.screen.blit(coord_text, coord_text_rect)
+
+            angles = self.rotationVectorToEulerAngles(np.array([self.actual_tag_loc[i, 3], self.actual_tag_loc[i, 4], self.actual_tag_loc[i, 5]]))
+
+            # Calculate the arrow coordinates
+            arrow_length = 20  # Length of the arrow
+            arrow_x = pygame_x + arrow_length * np.cos(-angles[2]+math.pi/2)
+            arrow_y = pygame_y + arrow_length * np.sin(-angles[2]+math.pi/2)
+
+            # Draw the arrow
+            pygame.draw.line(self.screen, (255, 0, 0), (pygame_x, pygame_y), (arrow_x, arrow_y), 3)
 
     def show_camera(self):
         # Convert camera coordinates to Pygame coordinates
@@ -329,13 +339,12 @@ class localization:
         tag_position_world = R_camera.dot(tvec_tag_camera) + tvec_camera
 
         # Transform tag pose from camera to world
-        R_tag_world = R_camera.T.dot(R_tag_camera)
+        R_tag_world = R_camera.dot(R_tag_camera)
 
         # Convert rotation matrix to rotation vector
         rvec_tag_world, _ = cv2.Rodrigues(R_tag_world)
 
         return tag_position_world, rvec_tag_world
-
 
 
     # Get position in marker's coordinate system

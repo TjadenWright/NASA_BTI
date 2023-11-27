@@ -13,15 +13,15 @@ sys.path.append(class_folder_path)                                      # set th
 from Distance_ClassV4 import aruco_detect
 from Localization_ClassV2 import localization
 
-url_OR_cam_numb = 0                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = "http://192.168.4.20:8080/video"                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                                     # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
-Input_Res = (1920, 1080)                              # <--- change camera resolution (if change reclaibrate)
+Input_Res = (3840, 2160)                              # <--- change camera resolution (if change reclaibrate)
 Output_Res = (640, 480)                               # <--- output resolution
 FPS_video = 30                                        # <--- change fps (no need to recalibrate)
-MARKER_SIZE = 5                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
+MARKER_SIZE = 18.6                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8                     # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-images_folder = "images1080PC"                          # <--- folder to store images in calibration
-calib_file = "MultiMatrix1080PC.npz"                    # <--- file that stores the matricies. Must end it .npz
+images_folder = "images4k"                          # <--- folder to store images in calibration
+calib_file = "MultiMatrix4k.npz"                    # <--- file that stores the matricies. Must end it .npz
 DICT_MXM_L = "DICT_7X7_100"                           # <--- dictionary used
 num_threads = 8                                       # <--- number of threads used
 scaling_factor = 1                                    # <--- You can change this to adjust the scaling
