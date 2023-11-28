@@ -22,6 +22,9 @@ class Rover_Controls:
     def setup_USB_Controller(self, controller_numb = 0):
         self.joystick = pygame.joystick.Joystick(controller_numb)  # get joystick from pygame.
         self.joystick.init()                                       # initialize the joystick.
+        # Print the name of the connected controller
+        controller_name = self.joystick.get_name()
+        print(f"Connected controller: {controller_name}")
 
     def USB_Controller_PC(self):
         pygame.event.get()  # Get pygame events
@@ -30,21 +33,20 @@ class Rover_Controls:
         left_x = self.joystick.get_axis(0)
         left_y = self.joystick.get_axis(1)
         right_x = self.joystick.get_axis(2)
-        right_y = self.joystick.get_axis(5)
-
-        # Get D-pad buttons
-        hat = self.joystick.get_hat(0)
-        dpad_up = max(0, hat[1])
-        dpad_down = max(0, -hat[1])
-        dpad_left = max(0, -hat[0])
-        dpad_right = max(0, hat[0])
+        right_y = self.joystick.get_axis(3) #self.joystick.get_axis(5)
 
         # Get trigger analog
-        L2_trigger = self.joystick.get_axis(3)
-        R2_trigger = self.joystick.get_axis(4)
+        L2_trigger = self.joystick.get_axis(4) #self.joystick.get_axis(3)
+        R2_trigger = self.joystick.get_axis(5) #self.joystick.get_axis(4)
 
         # Get joystick buttons using list comprehension
         buttons = [self.joystick.get_button(i) for i in range(self.joystick.get_numbuttons())]
+
+        # dpad
+        dpad_up = buttons[11]
+        dpad_down = buttons[12]
+        dpad_left = buttons[13]
+        dpad_right = buttons[14]
 
         # if you want to debug your values set verbose to True
         if self.verbose:
@@ -55,20 +57,78 @@ class Rover_Controls:
             print(f"Triggers: {L2_trigger, R2_trigger}")
             time.sleep(1)
 
-        # switch 2 and 3 to match pi
-        temp = buttons[2]
-        buttons[2] = buttons[3]
-        buttons[3] = temp
-
-        # switch 8 and 10, then 10 and 9 to match pi
-        temp = buttons[8]
-        buttons[8] = buttons[10]
-        buttons[10] = buttons[9]
-        buttons[9] = temp
+        # controls[0] = Left_Joystick_X
+        # controls[1] = Left_Joystick_Y
+        # controls[2] = Right_Joystick_X
+        # controls[3] = Right_Joystick_Y
+        # controls[4] = Dpad_Up
+        # controls[5] = Dpad_Down
+        # controls[6] = Dpad_Left
+        # controls[7] = Dpad_Right
+        # controls[8] = L2_Trigger
+        # controls[9] = R2_Trigger
+        # controls[10] = X_Button
+        # controls[11] = O_Button
+        # controls[12] = Triangle_Button // flip tri and square
+        # controls[13] = Square_Button
+        # controls[14] = L1_Button
+        # controls[15] = R1_Button
+        # controls[16] = Select
+        # controls[17] = Start
+        # controls[18] = PS_Logo
+        # controls[19] = Left_Stick_In
+        # controls[20] = Right_Stick_In // ps logo back 2
 
         # return controller inputs for that pass-through
-        return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger, buttons[2],
-                buttons[1], buttons[0], buttons[3], buttons[10], buttons[11], buttons[4], buttons[7], buttons[12], buttons[5], buttons[6]]
+        return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger, buttons[0],
+                buttons[1], buttons[3], buttons[2], buttons[9], buttons[10], buttons[4], buttons[6], buttons[5], buttons[8], buttons[7]]
+
+    # def USB_Controller_PC(self):
+    #     pygame.event.get()  # Get pygame events
+
+    #     # Get joystick axes
+    #     left_x = self.joystick.get_axis(0)
+    #     left_y = self.joystick.get_axis(1)
+    #     right_x = self.joystick.get_axis(2)
+    #     right_y = self.joystick.get_axis(5)
+
+    #     # Get D-pad buttons
+    #     hat = self.joystick.get_hat(0)
+    #     dpad_up = max(0, hat[1])
+    #     dpad_down = max(0, -hat[1])
+    #     dpad_left = max(0, -hat[0])
+    #     dpad_right = max(0, hat[0])
+
+    #     # Get trigger analog
+    #     L2_trigger = self.joystick.get_axis(3)
+    #     R2_trigger = self.joystick.get_axis(4)
+
+    #     # Get joystick buttons using list comprehension
+    #     buttons = [self.joystick.get_button(i) for i in range(self.joystick.get_numbuttons())]
+
+    #     # if you want to debug your values set verbose to True
+    #     if self.verbose:
+    #         print(f"Left Stick (X, Y): ({left_x}, {left_y})")
+    #         print(f"Right Stick (X, Y): ({right_x}, {right_y})")
+    #         print(f"Buttons: {buttons}")
+    #         print(f"DPAD: {dpad_up, dpad_down, dpad_left, dpad_right}")
+    #         print(f"Triggers: {L2_trigger, R2_trigger}")
+    #         time.sleep(1)
+
+    #     # switch 2 and 3 to match pi
+    #     temp = buttons[2]
+    #     buttons[2] = buttons[3]
+    #     buttons[3] = temp
+
+    #     # switch 8 and 10, then 10 and 9 to match pi
+    #     temp = buttons[8]
+    #     buttons[8] = buttons[10]
+    #     buttons[10] = buttons[9]
+    #     buttons[9] = temp
+
+    #     # return controller inputs for that pass-through
+    #     return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger, buttons[2],
+    #             buttons[1], buttons[0], buttons[3], buttons[10], buttons[11], buttons[4], buttons[7], buttons[12], buttons[5], buttons[6]]
 
     def USB_Controller_PI(self):
         pygame.event.get()  # Get pygame events
