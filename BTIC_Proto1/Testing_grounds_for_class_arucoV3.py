@@ -24,24 +24,25 @@ Select = 0
 prev_Select = 0
 
 #### values to change ###
-url_OR_cam_numb = 0    # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = "rtsp://admin:nasabs123@192.168.166.148:554/cam/realmonitor?channel=1&subtype=0"    # <--- camera # if on usb, camera ip if over ethernet/wireless
 controller_numb = 0                        # <--- controller # used.
 Input_Res = (1920, 1080)                    # <--- change camera resolution (if change reclaibrate)
 Output_Res = (640, 480)                    # <--- output resolution
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
-MARKER_SIZE = 6.5                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
+MARKER_SIZE = 18.6                            # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 1.8          # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-calib_file = "MultiMatrix1080.npz"          # <--- file that stores the matricies. Must end it .npz
+calib_file = "MultiMatrix1080Amcrest.npz"          # <--- file that stores the matricies. Must end it .npz
 VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
-Center_spot = 30                           # <--- how many cm from the aruco tag right or left side do you want the rover to drive to?
+Center_spot = 50                           # <--- how many cm from the aruco tag right or left side do you want the rover to drive to?
 time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to account for not seeing a tag (makes it less jerky)
 DICT_MXM_L = "DICT_7X7_100"                # <--- dictionary used
 num_threads = 8                            # <--- number of threads used
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
 zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
+Vmax = 0.5
 
 # setup camera parameters
 a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, Input_Res=Input_Res, Output_Res=Output_Res, fps_vid=FPS_video, calib_file=calib_file, num_threads=num_threads) # <--- sets up the class
@@ -181,14 +182,14 @@ if get_cam:
                     last_spotted_time = time.time()
                     x = x_new
                     y = y_new
-                    Velocity = 0.7
+                    Velocity = Vmax
                     first_time = False
 
                 elif(time_difference <= time_delay_not_seeing_tag and not first_time):
                     # Use the previous values of x and z if spotted is False and it's been less than 0.5 seconds
                     x = x_prev
                     y = y_prev
-                    Velocity = 0.7
+                    Velocity = Vmax
                 else:
                     # Reset x and z if it's been 0.5 seconds or more since the last True spotted value
                     x = 0
