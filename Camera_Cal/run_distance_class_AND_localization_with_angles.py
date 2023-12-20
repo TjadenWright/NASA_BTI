@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-import cv2
+import time
 
 # Navigate up one directory level to access the class folder
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
@@ -10,19 +10,19 @@ class_folder_path = os.path.join(current_file_path, '../Python Class')  # get th
 calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get the caibrated data path
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up
 
-from Distance_ClassV4 import aruco_detect
+from Distance_ClassV5 import aruco_detect
 from Localization_ClassV2 import localization
 
-url_OR_cam_numb = "http://192.168.4.20:8080/video"                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
+url_OR_cam_numb = "rtsp://172.168.100.39:8080/h264.sdp"                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                                     # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
 Input_Res = (3840, 2160)                              # <--- change camera resolution (if change reclaibrate)
 Output_Res = (640, 480)                               # <--- output resolution
-FPS_video = 30                                        # <--- change fps (no need to recalibrate)
-MARKER_SIZE = 18.6                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
-Calibrate_sheet_square_SIZE = 1.8                     # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-images_folder = "images4k"                          # <--- folder to store images in calibration
-calib_file = "MultiMatrix4k.npz"                    # <--- file that stores the matricies. Must end it .npz
-DICT_MXM_L = "DICT_7X7_100"                           # <--- dictionary used
+FPS_video = 15                                        # <--- change fps (no need to recalibrate)
+MARKER_SIZE = 10                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
+Calibrate_sheet_square_SIZE = 2.4                     # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
+images_folder = "images4k"                        # <--- folder to store images in calibration
+calib_file = "MultiMatrix4k.npz"                  # <--- file that stores the matricies. Must end it .npz
+DICT_MXM_L = "DICT_7X7_1000"                          # <--- dictionary used
 num_threads = 8                                       # <--- number of threads used
 scaling_factor = 1                                    # <--- You can change this to adjust the scaling
 zoom_factor = 1.0
@@ -52,10 +52,11 @@ if get_cam:
     a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
     while True:
+        start = time.time()
         # handels different key presses
         l1.handler()
         # get location from opencv
-        x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags_threaded(pic_out=True, FPS_read = False) # <--- if you want a picture to be dispayed.
+        x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=True) # <--- if you want a picture to be dispayed.
 
         # get origin tag (tag at 0,0,0)
         l1.get_origin_tag(a1, tags_ids, dist, x, y, z)
@@ -72,6 +73,9 @@ if get_cam:
 
         # quit the program
         if a1.wait_key("q") or l1.update_pygames_screen():
-                break
+            break
+
+        end = time.time()
+        print(end-start)
 
     a1.release()

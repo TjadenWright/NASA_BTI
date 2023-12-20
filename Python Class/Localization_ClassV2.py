@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation
 from pygame.locals import *
 
 class localization:
-    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samplesCal = 100, samplesLoc = 10):
+    def __init__(self, scaling_factor = 1, camera_x = 0, camera_y = 0, camera_z = 0, zoom_factor = 1.0, zoom_step = 0.1, Output_Res=(1280, 720), samplesCal = 30, samplesLoc = 30):
         self.scaling_factor = scaling_factor # scaling factor
         self.camera_x = camera_x             # camera x 
         self.camera_y = camera_y             # camera y
@@ -71,7 +71,7 @@ class localization:
         # Collect 30 samples of x, y, and z for the specified marker
         sample_count = 0
         while sample_count < self.samples:
-            x, y, z, _, tags_ids, rVx, rVy, rVz = aruco_class.aruco_tags_threaded(pic_out=False, FPS_read=False)
+            x, y, z, _, tags_ids, rVx, rVy, rVz = aruco_class.aruco_tags(pic_out=False, FPS_read=False)
             closest_marker_index = tags_ids.index(marker_id) if marker_id in tags_ids else -1
 
             if closest_marker_index != -1:

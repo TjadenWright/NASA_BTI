@@ -5,6 +5,7 @@ import time
 import os
 import threading
 import queue
+import math
 
 class aruco_detect:
     def __init__(self, calib_data_path = None, MARKER_SIZE = 8, verbose = True, Input_Res=(1280, 720), Output_Res = (640, 480), fps_vid = 10, calib_file = "MultiMatrix.npz", num_threads=4):
@@ -24,8 +25,11 @@ class aruco_detect:
         self.x_values = []
         self.y_values = []
         self.z_values = []
-        self.move_flags = []
+        self.distance_list = []
         self.ids_list = []
+        self.rVecx = []
+        self.rVecy = []
+        self.rVecz = []
 
         # Number of threads for marker detection
         self.num_threads = num_threads
@@ -34,6 +38,8 @@ class aruco_detect:
         self.data_queue = queue.Queue()
 
         self.max_retries = 3  # Maximum number of retries
+
+        self.lock = threading.Lock()
 
     # setup camera with its calibrated data
     def calibrated_cam_data(self):
@@ -69,10 +75,11 @@ class aruco_detect:
 
         # once connection is made set the format
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.Input_Res[0])
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.Input_Res[1])
-        self.cap.set(cv2.CAP_PROP_FPS, self.fps_vid)
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.Input_Res[0])
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.Input_Res[1])
+        # self.cap.set(cv2.CAP_PROP_FPS, self.fps_vid)
         self.actual_frame_rate = self.cap.get(cv2.CAP_PROP_FPS)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 10000)
 
         return True
 
@@ -109,85 +116,94 @@ class aruco_detect:
     def detect_markers(self):
         # Convert the image to grayscale
         gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-
+        
         # Get the corners of the Aruco tags
         marker_corners, marker_IDs, reject = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.param_markers)
 
-        closest_distance = float('inf')
-        self.x_values = []
-        self.y_values = []
-        self.z_values = []
-        self.move_flags = []
-        self.ids_list = []
+        self.x_values, self.y_values, self.z_values = [], [], []
+        self.distance_list, self.ids_list, self.rVecx, self.rVecy, self.rVecz = [], [], [], [], []
+
+        # Exit if no tags found
+        if not marker_corners:
+            return
 
         # If there are markers
         if marker_corners:
             # Get the pose of the markers (rotational and translational)
-            rVec, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corners, 9, self.cam_mat, self.dist_coef)
+            rVec, tVec, object_points = aruco.estimatePoseSingleMarkers(marker_corners, self.MARKER_SIZE, self.cam_mat, self.dist_coef)
 
             # Iterate through the markers
             for i, (ids, corners) in enumerate(zip(marker_IDs, marker_corners)):
-                # Calculate the distance from the camera to the Aruco tag
-                distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
-                
-                # Append the marker information to respective lists
-                self.x_values.append(round(tVec[i][0][0], 1))
-                self.y_values.append(round(tVec[i][0][1], 1))
-                self.z_values.append(round(tVec[i][0][2], 1))
-                self.ids_list.append(ids[0])
-                
-                # Check if this tag is closer than the previous closest one
-                if distance < closest_distance:
-                    closest_distance = distance
-                    self.move_flags = [False] * len(marker_IDs)  # Reset all move_flags to False
-                    self.move_flags[i] = True  # Set the closest marker's move_flag to True
+                rx, ry, rz = rVec[i][0][0], rVec[i][0][2], rVec[i][0][1]
 
-                
-                # Make lines around the Aruco tag
-                cv2.polylines(self.frame, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
+                # Reverse any bad rvecs
+                rx, ry, rz, flips, bad_rot = self.filter_flip(rx, ry, rz)
 
-                # Get the corners individually
-                corners = corners.reshape(4, 2)
-                corners = corners.astype(int)
-                top_right = corners[0].ravel()
-                # top_left = corners[1].ravel()
-                bottom_right = corners[2].ravel()
-                # bottom_left = corners[3].ravel()
+                # If the rotation vector is not bad
+                if not bad_rot:
+                    # Calculate the distance from the camera to the Aruco tag
+                    distance = np.sqrt(tVec[i][0][2] ** 2 + tVec[i][0][0] ** 2 + tVec[i][0][1] ** 2)
 
-                # Draw the pose of the marker with the x, y, z lines
-                cv2.drawFrameAxes(self.frame, self.cam_mat, self.dist_coef, rVec[i], tVec[i], 9)
+                    # Append the marker information to respective lists
+                    self.x_values.append(tVec[i][0][0])
+                    self.y_values.append(tVec[i][0][2])
+                    self.z_values.append(tVec[i][0][1])
+                    self.ids_list.append(ids[0])
+                    self.distance_list.append(distance)
+                    self.rVecx.append(rx)
+                    self.rVecy.append(ry)
+                    self.rVecz.append(rz)
+                        
+                    # Make lines around the Aruco tag
+                    cv2.polylines(self.frame, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
 
-                # Draw the distance vector at the top right
-                cv2.putText(
-                    self.frame,
-                    f"id: {ids[0]} Dist: {round(distance, 2)}",
-                    (top_right[0], top_right[1]),
-                    cv2.FONT_HERSHEY_PLAIN,
-                    1.3,
-                    (0, 0, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
+                    # Get the corners individually
+                    corners = corners.reshape(4, 2)
+                    corners = corners.astype(int)
+                    top_right = corners[0].ravel()
+                    top_left = corners[1].ravel()
+                    bottom_right = corners[2].ravel()
+                    bottom_left = corners[3].ravel()
 
-                # Draw the x, y, z at the bottom right
-                cv2.putText(
-                    self.frame,
-                    f"x: {round(tVec[i][0][0], 1)} y: {round(tVec[i][0][1], 1)} z: {round(tVec[i][0][2], 1)}",
-                    (bottom_right[0], bottom_right[1]),
-                    cv2.FONT_HERSHEY_PLAIN,
-                    1.0,
-                    (0, 0, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
+                    # Draw the pose of the marker with the x, y, z lines
+                    cv2.drawFrameAxes(self.frame, self.cam_mat, self.dist_coef, rVec[i], tVec[i], 9)
+
+                    # Draw the distance vector at the top right
+                    cv2.putText(
+                        self.frame,
+                        f"id: {ids[0]} Dist: {round(distance, 2)}",
+                        (top_right[0], top_right[1]),
+                        cv2.FONT_HERSHEY_PLAIN,
+                        1.3,
+                        (0, 0, 255),
+                        2,
+                        cv2.LINE_AA,
+                    )
+
+                    # Draw the x, y, z at the bottom right
+                    cv2.putText(
+                        self.frame,
+                        f"x: {round(tVec[i][0][0], 1)} y: {round(tVec[i][0][1], 1)} z: {round(tVec[i][0][2], 1)}",
+                        (bottom_right[0], bottom_right[1]),
+                        cv2.FONT_HERSHEY_PLAIN,
+                        2.0,
+                        (0, 0, 255),
+                        2,
+                        cv2.LINE_AA,
+                    )
 
     # get the tag data
-    def aruco_tags(self, pic_out=True):
-        # Read a frame
-        __, self.frame = self.cap.read()
+    def aruco_tags(self, pic_out=True, FPS_read=False):
+        start = time.time()
+        ret, self.frame = self.cap.read()
+        end = time.time()
+        print("Grab Frame", end - start)
 
+        start = time.time()
         self.detect_markers()
-
+        end = time.time()
+        print("Process Frame", end - start)
+        
         # Frame rate calculation
         current_time = time.time()
         self.frame_count += 1
@@ -203,11 +219,12 @@ class aruco_detect:
             display_frame = cv2.resize(self.frame, self.Output_Res)
             cv2.putText(display_frame, f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow('Video', display_frame)
-        else:
+        elif(FPS_read):
             print(f"Frame Rate: {self.smoothed_frame_rate:.2f} FPS (Actual: {self.actual_frame_rate:.2f} FPS)")
+ 
 
-        return self.x_values, self.y_values, self.z_values, self.move_flags, self.ids_list
-
+        # x_values, y_values, z_values, dist_list, ids_list, rVecx, rVecy, rVecz
+        return self.x_values, self.y_values, self.z_values, self.distance_list, self.ids_list, self.rVecx, self.rVecy, self.rVecz
     def release(self):
         self.cap.release()
         cv2.destroyAllWindows()
@@ -233,23 +250,31 @@ class aruco_detect:
         else:
             print(f'"{img_path}" Directory already exists.')
 
+
         # image out loop (might consider threading just to increase performance)
         while True:
-            _, frame = self.cap.read()
-            frame_cp = frame.copy()
-          
-            cv2.putText(
-                frame,
-                f"saved_img : {n}",
-                (30, 40),
-                cv2.FONT_HERSHEY_PLAIN,
-                1.4,
-                (0, 255, 0),
-                2,
-                cv2.LINE_AA,
-            )
-            resized_frame = cv2.resize(frame, self.Output_Res)
-            cv2.imshow("frame", resized_frame)
+            with self.lock:
+                # Check if self.frame is not None before copying
+                if self.frame is not None:
+                    frame = self.frame.copy()
+                else:
+                    frame = None  # or any other suitable default value
+
+            if frame is not None:
+                frame_cp = frame.copy()
+            
+                cv2.putText(
+                    frame,
+                    f"saved_img : {n}",
+                    (30, 40),
+                    cv2.FONT_HERSHEY_PLAIN,
+                    1.4,
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_AA,
+                )
+                resized_frame = cv2.resize(frame, self.Output_Res)
+                cv2.imshow("frame", resized_frame)
 
             key = cv2.waitKey(1)
             if key == ord("q"):
@@ -260,6 +285,7 @@ class aruco_detect:
 
                 print(f"saved image number {n}")
                 n += 1  # the image counter: incrementing
+
         cv2.destroyAllWindows()
 
         print("Total saved Images:", n)
@@ -381,73 +407,75 @@ class aruco_detect:
                     rz = rVec[1][0]
 
                     # reverse any bad rvecs
-                    rx, ry, rz = self.filter_flip(rx, ry, rz)
+                    rx, ry, rz, flip, bad_rot = self.filter_flip(rx, ry, rz)
+                    # print("rx: ", round(rx, 3), "ry: ", round(ry, 3), "rz: ", round(rz, 3))
+                    if(not bad_rot): # if rotation is good
 
-                    # Calculate the distance from the camera to the Aruco tag
-                    distance = np.sqrt(x**2 + y**2 + z**2)
+                        # Calculate the distance from the camera to the Aruco tag
+                        distance = np.sqrt(x**2 + y**2 + z**2)
 
-                    # Append the marker information to respective lists
-                    x_values.append(tVec[0][0])
-                    y_values.append(tVec[2][0])  # flipped y and z for readability
-                    z_values.append(tVec[1][0])
-                    ids_list.append(ids[0])
-                    dist_list.append(distance)
-                    rVecx.append(rx)
-                    rVecy.append(ry)
-                    rVecz.append(rz)
+                        # Append the marker information to respective lists
+                        x_values.append(tVec[0][0])
+                        y_values.append(tVec[2][0])  # flipped y and z for readability
+                        z_values.append(tVec[1][0])
+                        ids_list.append(ids[0])
+                        dist_list.append(distance)
+                        rVecx.append(rx)
+                        rVecy.append(ry)
+                        rVecz.append(rz)
 
-                    # data to send back
-                    data = {
-                        'x': x_values,
-                        'y': y_values,
-                        'z': z_values,
-                        'dist': dist_list,
-                        'ids': ids_list,
-                        'rVecx': rVecx,
-                        'rVecy': rVecy,
-                        'rVecz': rVecz
-                    }
+                        # data to send back
+                        data = {
+                            'x': x_values,
+                            'y': y_values,
+                            'z': z_values,
+                            'dist': dist_list,
+                            'ids': ids_list,
+                            'rVecx': rVecx,
+                            'rVecy': rVecy,
+                            'rVecz': rVecz
+                        }
 
-                    # Make lines around the Aruco tag
-                    cv2.polylines(frame_with_markers, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
+                        # Make lines around the Aruco tag
+                        cv2.polylines(frame_with_markers, [corners.astype(np.int32)], True, (0, 255, 255), 4, cv2.LINE_AA)
 
-                    # Get the corners individually
-                    corners = corners.reshape(4, 2)
-                    corners = corners.astype(int)
-                    top_right = corners[0].ravel()
-                    # top_left = corners[1].ravel()
-                    bottom_right = corners[2].ravel()
-                    # bottom_left = corners[3].ravel()
+                        # Get the corners individually
+                        corners = corners.reshape(4, 2)
+                        corners = corners.astype(int)
+                        top_right = corners[0].ravel()
+                        top_left = corners[1].ravel()
+                        bottom_right = corners[2].ravel()
+                        bottom_left = corners[3].ravel()
 
-                    # Draw the pose of the marker with the x, y, z lines
-                    cv2.drawFrameAxes(frame_with_markers, self.cam_mat, self.dist_coef, rVec, tVec, 9)
+                        # Draw the pose of the marker with the x, y, z lines
+                        cv2.drawFrameAxes(frame_with_markers, self.cam_mat, self.dist_coef, rVec, tVec, 9)
 
-                    # Draw the distance vector at the top right
-                    cv2.putText(
-                        frame_with_markers,
-                        f"id: {ids[0]} Dist: {round(distance, 2)}",
-                        (top_right[0], top_right[1]),
-                        cv2.FONT_HERSHEY_PLAIN,
-                        1.3,
-                        (0, 0, 255),
-                        2,
-                        cv2.LINE_AA,
-                    )
+                        # Draw the distance vector at the top right
+                        cv2.putText(
+                            frame_with_markers,
+                            f"id: {ids[0]} Dist: {round(distance, 2)}",
+                            (top_right[0], top_right[1]),
+                            cv2.FONT_HERSHEY_PLAIN,
+                            1.3,
+                            (0, 0, 255),
+                            2,
+                            cv2.LINE_AA,
+                        )
 
-                    # Draw the x, y, z at the bottom right
-                    cv2.putText(
-                        frame_with_markers,
-                        f"x: {round(tVec[0][0], 1)} y: {round(tVec[2][0], 1)} z: {round(tVec[1][0], 1)} rvec: {round(rx,1), round(ry,1), round(rz,1)}", # y and z flipped
-                        (bottom_right[0], bottom_right[1]),
-                        cv2.FONT_HERSHEY_PLAIN,
-                        1.0,
-                        (0, 0, 255),
-                        2,
-                        cv2.LINE_AA,
-                    )
+                        # Draw the x, y, z at the bottom right
+                        cv2.putText(
+                            frame_with_markers,
+                            f"x: {round(tVec[0][0], 1)} y: {round(tVec[2][0], 1)} z: {round(tVec[1][0], 1)} rvec: {round(rx,1), round(ry,1), round(rz,1)}", # y and z flipped
+                            (bottom_right[0], bottom_right[1]),
+                            cv2.FONT_HERSHEY_PLAIN,
+                            1.0,
+                            (0, 0, 255),
+                            2,
+                            cv2.LINE_AA,
+                        )
 
-            self.frame_queue.put(frame_with_markers)
-            self.data_queue.put(data)
+                        self.frame_queue.put(frame_with_markers)
+                        self.data_queue.put(data)
 
     def aruco_tags_threaded(self, pic_out=True, FPS_read=True):
         # Read a frame
@@ -493,6 +521,8 @@ class aruco_detect:
             rVecx = data['rVecx']
             rVecy = data['rVecy']
             rVecz = data['rVecz']
+
+            # print("rx: ", round(rVecx[0], 3), "ry: ", round(rVecy[0], 3), "rz: ", round(rVecz[0], 3))
         else:
             x_values = []
             y_values = []
@@ -513,10 +543,16 @@ class aruco_detect:
         return x_values, y_values, z_values, dist_list, ids_list, rVecx, rVecy, rVecz
     
     def filter_flip(self, rx, ry, rz):
+        flip = False
+        bad = False
         if(rx < 0): # if roll is negative (meaning there was a glitch)
             # flip
             rx = -rx
             ry = -ry
             rz = -rz
+            flip = True
+
+        if(rx > math.pi):
+            bad = True
         
-        return rx, ry, rz
+        return rx, ry, rz, flip, bad
