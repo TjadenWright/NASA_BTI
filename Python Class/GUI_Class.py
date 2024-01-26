@@ -3,6 +3,9 @@ from tkinter import *
 from PIL import Image, ImageTk
 import time
 import threading
+import os
+import pygame
+import numpy as np
 
 class GUI:
     def __init__(self):
@@ -23,6 +26,13 @@ class GUI:
         self.cap4 = None
         self.cap5 = None
         self.cap6 = None
+
+        self.img1 = None
+        self.img2 = None
+        self.img3 = None
+        self.img4 = None
+        self.img5 = None
+        self.img6 = None
 
         self.first_camera = 0
 
@@ -66,7 +76,13 @@ class GUI:
         self.delta_cell_voltage = 0
         self.average_cell_voltage = 0
 
-        self.lock = threading.Lock()
+        self.lock_bat = threading.Lock()
+        self.lock_cam1 = threading.Lock()
+        self.lock_cam2 = threading.Lock()
+        self.lock_cam3 = threading.Lock()
+        self.lock_cam4 = threading.Lock()
+        self.lock_cam5 = threading.Lock()
+        self.lock_cam6 = threading.Lock()
 
     def Get_Camera_IPs(self):
         root = Tk()
@@ -131,7 +147,7 @@ class GUI:
 
         root.destroy()
 
-    def Main_UI(self, battery):
+    def Main_UI(self, battery, localization, distance):
         # intitalizing the GUI
         root = Tk()
         root.geometry("1350x720")
@@ -267,6 +283,30 @@ class GUI:
         cameraB = Button(frame1, text=button_text, bg="#FFD100", fg="black", command=toggle)
         cameraB.pack(side=LEFT, padx=230)
 
+        self.calibrateM = 0
+
+        def calibrate_map_p():
+            self.calibrateM = 1
+
+        def calibrate_map_r():
+            self.calibrateM = 0
+
+        self.up_key = 0
+
+        def up_p():
+            self.up_key = 1
+        
+        def up_r():
+            self.up_key = 0
+
+        self.down_key = 0
+
+        def down_p():
+            self.down_key = 1
+        
+        def down_r():
+            self.down_key = 0
+            
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
         frame2 = LabelFrame(frame_container1, text="Positioning", padx=padx, pady=pady)
@@ -275,18 +315,23 @@ class GUI:
         label2 = Label(frame2, bg="black")
         label2.pack()
 
-        label2['image'] = black_image_tk
-
         # + and - for positioning
         button4 = Button(frame2, text="+", bg="#FFD100", fg="black")
         button4.pack(side=LEFT)
+        button4.bind("<ButtonPress>", lambda event: up_p())
+        button4.bind("<ButtonRelease>", lambda event: up_r())
+
 
         button3 = Button(frame2, text="-", bg="#FFD100", fg="black")
         button3.pack(side=LEFT)
+        button3.bind("<ButtonPress>", lambda event: down_p())
+        button3.bind("<ButtonRelease>", lambda event: down_r())
 
         # calibrate localization
         cameraC = Button(frame2, text="Calibrate Localization", bg="#FFD100", fg="black")
         cameraC.pack(side=LEFT, padx=230)
+        cameraC.bind("<ButtonPress>", lambda event: calibrate_map_p())
+        cameraC.bind("<ButtonRelease>", lambda event: calibrate_map_r())
 
         # diagnostic data
         # Create a frame for the third LabelFrame and use pack
@@ -407,6 +452,7 @@ class GUI:
         button5 = Button(frame3, text=">", bg="#FFD100", fg="black")
         button5.grid(row=3, column=8, padx=padx, pady=pady, sticky="nsew")
 
+        ## setup battery stuff
         def update_battery_diagnostics():
             label_frames = [
                 ("Total Voltage: ", print_out(self.total_voltage, "V")),
@@ -453,7 +499,7 @@ class GUI:
             while True:
                 battery.read_esp32()
                 total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data()
-                with self.lock:
+                with self.lock_bat:
                     self.total_voltage = total_voltage
                     self.current = current
                     self.power = power
@@ -494,34 +540,193 @@ class GUI:
                     self.delta_cell_voltage = delta_cell_voltage
                     self.average_cell_voltage = average_cell_voltage
                     
+        def start_bat_thread():
+            self.battery_thread = threading.Thread(target=get_bat_data)
+            self.battery_thread.daemon = True
+            self.battery_thread.start()
 
-        self.battery_thread = threading.Thread(target=get_bat_data)
-        self.battery_thread.daemon = True
-        self.battery_thread.start()
+        start_bat_thread()
+
+        # camera stuff
+        def camera_update1():
+            # get the camera feed
+            while True:
+                if self.cap1 is not None:
+                    ret, img1 = self.cap1.read()
+                    with self.lock_cam1:
+                        self.img1 = img1
+                else:
+                    time.sleep(1)
+                    with self.lock_cam1:
+                        self.img1 = None
+                      
+        def camera_update2():
+            # get the camera feed
+            while True:
+                if self.cap2 is not None:
+                    ret, img2 = self.cap2.read()
+                    with self.lock_cam2:
+                        self.img2 = img2
+                else:
+                    time.sleep(1)
+                    with self.lock_cam2:
+                        self.img2 = None                   
+
+        def camera_update3():
+            # get the camera feed
+            while True:
+                if self.cap3 is not None:
+                    ret, img3 = self.cap3.read()
+                    with self.lock_cam3:
+                        self.img3 = img3
+                else:
+                    time.sleep(1)
+                    with self.lock_cam3:
+                        self.img3 = None
+
+        def camera_update4():
+            # get the camera feed
+            while True:
+                if self.cap4 is not None:
+                    ret, img4 = self.cap4.read()
+                    with self.lock_cam4:
+                        self.img4 = img4
+                else:
+                    time.sleep(1)
+                    with self.lock_cam4:
+                        self.img4 = None
+
+        def camera_update5():
+            # get the camera feed
+            while True:
+                if self.cap5 is not None:
+                    ret, img5 = self.cap5.read()
+                    with self.lock_cam5:
+                        self.img5 = img5
+                else:
+                    time.sleep(1)
+                    with self.lock_cam5:
+                        self.img5 = None
+
+        def camera_update6():
+            # get the camera feed
+            while True:
+                if self.cap6 is not None:
+                    ret, img6 = self.cap6.read()
+                    with self.lock_cam6:
+                        self.img6 = img6
+                else:
+                    time.sleep(1)
+                    with self.lock_cam6:
+                        self.img6 = None
+            
+        def start_cam_thread():
+            self.cam_thread1 = threading.Thread(target=camera_update1)
+            self.cam_thread1.daemon = True
+            self.cam_thread1.start()
+
+            self.cam_thread2 = threading.Thread(target=camera_update2)
+            self.cam_thread2.daemon = True
+            self.cam_thread2.start()
+
+            self.cam_thread3 = threading.Thread(target=camera_update3)
+            self.cam_thread3.daemon = True
+            self.cam_thread3.start()
+
+            self.cam_thread4 = threading.Thread(target=camera_update4)
+            self.cam_thread4.daemon = True
+            self.cam_thread4.start()
+
+            self.cam_thread5 = threading.Thread(target=camera_update5)
+            self.cam_thread5.daemon = True
+            self.cam_thread5.start()
+
+            self.cam_thread6 = threading.Thread(target=camera_update6)
+            self.cam_thread6.daemon = True
+            self.cam_thread6.start()
+
+        start_cam_thread()
+
+        def camera_image():
+            if(self.first_camera == 0):
+                img = self.img1
+            elif(self.first_camera == 1):
+                img = self.img2
+            elif(self.first_camera == 2):
+                img = self.img3
+            elif(self.first_camera == 3):
+                img = self.img4
+            elif(self.first_camera == 4):
+                img = self.img5
+            else:
+                img = self.img6
+
+            return img
+            
 
         # Initialize a variable to track the last time update_battery_diagnostics() was called
         last_update_time = time.time()
 
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    root.quit()
+
             # get the camera feed
             if self.cap is not None:
-                img = self.cap.read()[1]
-                img1 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                img2 = cv2.resize(img1, (width_image, height_image))
-                img = ImageTk.PhotoImage(Image.fromarray(img2))
-                label1['image'] = img
+                cv_img = camera_image()
+                if(cv_img is not None):
+                    img1 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                    img2 = cv2.resize(img1, (width_image, height_image))
+                    img = ImageTk.PhotoImage(Image.fromarray(img2))
+                    label1['image'] = img
+                else:
+                    label1['image'] = black_image_tk
             else:
                 label1['image'] = black_image_tk
 
-            # get_bat_data()
+            # opencv image (1)
+            if(self.cap1 is not None):
+                if(self.img1 is not None):
+                    opencv_img = self.img1
+                else:
+                    opencv_img = None
+            else:
+                opencv_img = None
 
             # Check if one second has passed since the last call to update_battery_diagnostics()
             if time.time() - last_update_time >= 1:
                 # update the battery diagnostic data
                 update_battery_diagnostics()
                 last_update_time = time.time()  # Update the last update time
-            
+            x, y, z, dist, tags_ids, rVx, rVy, rVz = distance.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
+            # get origin tag (tag at 0,0,0)
+            localization.get_origin_tag(tags_ids, dist, x, y, z, rVx, rVy, rVz)
+
+            # compute other tags (reference to other tags)
+            localization.compute_tag_camera_location(tags_ids, dist, x, y, z, rVx, rVy, rVz)
+
+            localization.handler()
+
+            # display the tags on the map
+            localization.show_tags()
+            # display the camera on the map
+            localization.show_camera()
+
+            # handler and legend
+            localization.legend()
+
+            end, img_2 = localization.update_pygames_screen()
+            label2['image'] = img_2
+
+            # quit the program
+            if distance.wait_key("q") or end:
+                break
+
+            localization.controller_handler(self.calibrateM, self.up_key, self.down_key)
+
             root.update()
 
-        cap.release()
+        self.cap.release()
         root.destroy()

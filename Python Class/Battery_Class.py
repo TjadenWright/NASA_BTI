@@ -130,7 +130,7 @@ class Battery_class:
 
         dataPacket=self.arduinoData.readline()                         # read the data from the arduino
         self.dataPacket = dataPacket.decode('utf-8').rstrip()                    # convert the bytes to a str
-        # print(self.dataPacket)
+        #print(self.dataPacket)
 
     def disable_read(self):
         self.arduinoData.close()
