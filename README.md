@@ -9,9 +9,9 @@ pip install numpy\
 pip install opencv-python==4.6.0.66\
 pip install opencv-contrib-python==4.6.0.66\
 pip install pyserial\
-pip install pygame\
+pip install pygame \
 
 python -m pip install --upgrade pip\
 sudo apt-get update\
 sudo apt-get upgrade -y\
-sudo apt-get install libgl1-mesa-glx -y\
+sudo apt-get install libgl1-mesa-glx -y \
