@@ -8,9 +8,8 @@ pip install numpy\
 pip install opencv-python==4.6.0.66\
 pip install opencv-contrib-python==4.6.0.66\
 pip install pyserial\
-pip install pygame
-
-python -m pip install --upgrade pip\
+pip install pygame\
+python -m pip install --upgrade pip
 
 THIS IS FOR THE PI:\
 sudo apt-get update\
