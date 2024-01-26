@@ -2,6 +2,7 @@ import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import time
+import threading
 
 class GUI:
     def __init__(self):
@@ -64,6 +65,8 @@ class GUI:
         self.min_voltage_cell = 0
         self.delta_cell_voltage = 0
         self.average_cell_voltage = 0
+
+        self.lock = threading.Lock()
 
     def Get_Camera_IPs(self):
         root = Tk()
@@ -447,8 +450,54 @@ class GUI:
                 self.entrys[i].insert(0, text_var.get())
 
         def get_bat_data():
-            battery.read_esp32()
-            self.total_voltage, self.current, self.power, self.charging_power, self.discharging_power, self.capacity_remaining, self.nominal_capacity, self.charging_cycles, self.balancer_status_bitmask, self.errors_bitmask, self.software_version, self.state_of_charge, self.operation_status_bitmask, self.battery_strings, self.temperature_1, self.temperature_2, self.temperature_3, self.cell_voltage_1, self.cell_voltage_2, self.cell_voltage_3, self.cell_voltage_4, self.cell_voltage_5, self.cell_voltage_6, self.cell_voltage_7, self.cell_voltage_8, self.cell_voltage_9, self.cell_voltage_10, self.cell_voltage_11, self.cell_voltage_12, self.cell_voltage_13, self.cell_voltage_14, self.cell_voltage_15, self.cell_voltage_16, self.min_cell_voltage, self.max_cell_voltage, self.max_voltage_cell, self.min_voltage_cell, self.delta_cell_voltage, self.average_cell_voltage = battery.parse_data()
+            while True:
+                battery.read_esp32()
+                total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data()
+                with self.lock:
+                    self.total_voltage = total_voltage
+                    self.current = current
+                    self.power = power
+                    self.charging_power = charging_power
+                    self.discharging_power = discharging_power
+                    self.capacity_remaining = capacity_remaining
+                    self.nominal_capacity = nominal_capacity
+                    self.charging_cycles = charging_cycles
+                    self.balancer_status_bitmask = balancer_status_bitmask
+                    self.errors_bitmask = errors_bitmask
+                    self.software_version = software_version
+                    self.state_of_charge = state_of_charge
+                    self.operation_status_bitmask = operation_status_bitmask
+                    self.battery_strings = battery_strings
+                    self.temperature_1 = temperature_1
+                    self.temperature_2 = temperature_2
+                    self.temperature_3 = temperature_3
+                    self.cell_voltage_1 = cell_voltage_1
+                    self.cell_voltage_2 = cell_voltage_2
+                    self.cell_voltage_3 = cell_voltage_3
+                    self.cell_voltage_4 = cell_voltage_4
+                    self.cell_voltage_5 = cell_voltage_5
+                    self.cell_voltage_6 = cell_voltage_6
+                    self.cell_voltage_7 = cell_voltage_7
+                    self.cell_voltage_8 = cell_voltage_8
+                    self.cell_voltage_9 = cell_voltage_9
+                    self.cell_voltage_10 = cell_voltage_10
+                    self.cell_voltage_11 = cell_voltage_11
+                    self.cell_voltage_12 = cell_voltage_12
+                    self.cell_voltage_13 = cell_voltage_13
+                    self.cell_voltage_14 = cell_voltage_14
+                    self.cell_voltage_15 = cell_voltage_15
+                    self.cell_voltage_16 = cell_voltage_16
+                    self.min_cell_voltage = min_cell_voltage
+                    self.max_cell_voltage = max_cell_voltage
+                    self.max_voltage_cell = max_voltage_cell
+                    self.min_voltage_cell = min_voltage_cell
+                    self.delta_cell_voltage = delta_cell_voltage
+                    self.average_cell_voltage = average_cell_voltage
+                    
+
+        self.battery_thread = threading.Thread(target=get_bat_data)
+        self.battery_thread.daemon = True
+        self.battery_thread.start()
 
         # Initialize a variable to track the last time update_battery_diagnostics() was called
         last_update_time = time.time()
@@ -464,7 +513,7 @@ class GUI:
             else:
                 label1['image'] = black_image_tk
 
-            get_bat_data()
+            # get_bat_data()
 
             # Check if one second has passed since the last call to update_battery_diagnostics()
             if time.time() - last_update_time >= 1:
