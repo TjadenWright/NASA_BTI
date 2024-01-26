@@ -11,6 +11,10 @@ from Battery_Class import Battery_class
 
 b1 = Battery_class()
 
+b1.get_esp32()
+
+b1.enable_read()
+
 g1 = GUI()
 
 g1.Get_Camera_IPs()

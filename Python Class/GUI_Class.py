@@ -102,12 +102,15 @@ class GUI:
 
         # Create a black image
         black_image = Image.new("RGB", (width_image, height_image), "black")
+        white_image = Image.new("RGB", (width_image, height_image), "white")
 
         # Convert the Image to PhotoImage
         black_image_tk = ImageTk.PhotoImage(black_image)
+        white_image_tk = ImageTk.PhotoImage(white_image)
 
         # get battery data
-        total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data_test()
+        battery.read_esp32()
+        total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data()
 
         def toggle():   
             if(self.toggleCamera == 0): # turn on camera
@@ -230,7 +233,7 @@ class GUI:
         label2.pack()
 
         label1['image'] = black_image_tk
-        label2['image'] = black_image_tk
+        label2['image'] = white_image_tk
 
         # Create a frame for the third LabelFrame and use pack
         frame_container2 = Frame(root, bg="#0033A0")
@@ -333,6 +336,8 @@ class GUI:
             ("Average Cell Voltage: ", print_out(average_cell_voltage, "V")),
         ]
 
+        entrys = []
+
         for i, (label_text, text_var) in enumerate(label_frames):
             row_num = i // num_columns
             col_num = i % num_columns
@@ -342,6 +347,8 @@ class GUI:
 
             entry = Entry(label_frame, textvariable=text_var)
             entry.pack()
+
+            entrys.append(entry)
 
         # Configure row and column weights to make the grid layout expandable
         for i in range(num_rows):
@@ -366,7 +373,49 @@ class GUI:
             else:
                 label1['image'] = black_image_tk
 
-            total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data_test()
+            battery.read_esp32()
+            total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage = battery.parse_data()
+            
+            label_frames = [
+                ("Total Voltage: ", print_out(total_voltage, "V")),
+                ("Current: ", print_out(current, "I")),
+                ("Power: ", print_out(power, "W")),
+                ("Charging Power: ", print_out(charging_power, "W")),
+                ("Discharging Power: ", print_out(discharging_power, "W")),
+                ("Capacity Remaining: ", print_out(capacity_remaining, "C")),
+                ("Nominal Capacity: ", print_out(nominal_capacity, "C")),
+                ("Charging Cycles: ", print_out(charging_cycles)),
+                ("State of Charge: ", print_out(state_of_charge, "P")),
+                ("Temperature 1: ", print_out(temperature_1, "T")),
+                ("Temperature 2: ", print_out(temperature_2, "T")),
+                ("Temperature 3: ", print_out(temperature_3, "T")),
+                ("Cell Voltage 1: ", print_out(cell_voltage_1, "V")),
+                ("Cell Voltage 2: ", print_out(cell_voltage_2, "V")),
+                ("Cell Voltage 3: ", print_out(cell_voltage_3, "V")),
+                ("Cell Voltage 4: ", print_out(cell_voltage_4, "V")),
+                ("Cell Voltage 5: ", print_out(cell_voltage_5, "V")),
+                ("Cell Voltage 6: ", print_out(cell_voltage_6, "V")),
+                ("Cell Voltage 7: ", print_out(cell_voltage_7, "V")),
+                ("Cell Voltage 8: ", print_out(cell_voltage_8, "V")),
+                ("Cell Voltage 9: ", print_out(cell_voltage_9, "V")),
+                ("Cell Voltage 10: ", print_out(cell_voltage_10, "V")),
+                ("Cell Voltage 11: ", print_out(cell_voltage_11, "V")),
+                ("Cell Voltage 12: ", print_out(cell_voltage_12, "V")),
+                ("Cell Voltage 13: ", print_out(cell_voltage_13, "V")),
+                ("Cell Voltage 14: ", print_out(cell_voltage_14, "V")),
+                ("Cell Voltage 15: ", print_out(cell_voltage_15, "V")),
+                ("Cell Voltage 16: ", print_out(cell_voltage_16, "V")),
+                ("Min Cell Voltage: ", print_out(min_cell_voltage, "V")),
+                ("Max Cell Voltage: ", print_out(max_cell_voltage, "V")),
+                ("Max Voltage Cell: ", print_out(max_voltage_cell, "V")),
+                ("Min Voltage Cell: ", print_out(min_voltage_cell, "V")),
+                ("Delta Cell Voltage: ", print_out(delta_cell_voltage, "V")),
+                ("Average Cell Voltage: ", print_out(average_cell_voltage, "V")),
+            ]
+
+            for i, (label_text, text_var) in enumerate(label_frames):
+                entrys[i].delete(0, END)
+                entrys[i].insert(0, text_var.get())
 
             root.update()
 
