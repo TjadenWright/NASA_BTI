@@ -6,7 +6,7 @@
 **BTIC_Proto3**: Added localization to the autonomy code and added an rtmp camera connected to the lattepanda for autonomy.
 
 # Installation Process
-**Python Packages Installation**
+**Python Packages Installation**\
 pip install numpy\
 pip install opencv-python==4.6.0.66\
 pip install opencv-contrib-python==4.6.0.66\
@@ -18,8 +18,3 @@ python -m pip install --upgrade pip
 pip install esphome\
 cd Arduino\esphome-jbd-bms-main\
 connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml\
-
-THIS IS FOR THE PI:\
-sudo apt-get update\
-sudo apt-get upgrade -y\
-sudo apt-get install libgl1-mesa-glx -y
