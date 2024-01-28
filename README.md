@@ -17,5 +17,5 @@ python -m pip install --upgrade pip
 **ESPHOME SETUP**\
 pip install esphome\
 cd Arduino\esphome-jbd-bms-main\
-open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the bluetooth addresses match the batteries.\
-connect esp32 device and run: <u>python3 -m esphome run esp32-ble-example-multiple-devices.yaml</u>
+Open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the bluetooth addresses match the batteries.\
+Connect esp32 device and run: <u>python3 -m esphome run esp32-ble-example-multiple-devices.yaml</u>
