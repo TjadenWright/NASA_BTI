@@ -8,7 +8,7 @@ calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get th
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up
 
 from GUI_Class import GUI
-from Battery_Class import Battery_class
+from Battery_ClassV2 import Battery_class
 from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization
 
@@ -19,8 +19,8 @@ Output_Res = (640, 380)                               # <--- output resolution
 FPS_video = 15                                        # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 10                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 2.4                     # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
-images_folder = "images4k"                        # <--- folder to store images in calibration
-calib_file = "MultiMatrix4k.npz"                  # <--- file that stores the matricies. Must end it .npz
+images_folder = "images1080PC"                        # <--- folder to store images in calibration
+calib_file = "MultiMatrix1080PC.npz"                  # <--- file that stores the matricies. Must end it .npz
 DICT_MXM_L = "DICT_7X7_1000"                          # <--- dictionary used
 num_threads = 8                                       # <--- number of threads used
 scaling_factor = 1                                    # <--- You can change this to adjust the scaling

@@ -36,45 +36,47 @@ class GUI:
 
         self.first_camera = 0
 
-        self.total_voltage = 0
-        self.current = 0
-        self.power = 0
-        self.charging_power = 0
-        self.discharging_power = 0
-        self.capacity_remaining = 0
-        self.nominal_capacity = 0
-        self.charging_cycles = 0
-        self.balancer_status_bitmask = 0
-        self.errors_bitmask = 0
-        self.software_version = 0
-        self.state_of_charge = 0
-        self.operation_status_bitmask = 0
-        self.battery_strings = 0
-        self.temperature_1 = 0
-        self.temperature_2 = 0
-        self.temperature_3 = 0
-        self.cell_voltage_1 = 0
-        self.cell_voltage_2 = 0
-        self.cell_voltage_3 = 0
-        self.cell_voltage_4 = 0
-        self.cell_voltage_5 = 0
-        self.cell_voltage_6 = 0
-        self.cell_voltage_7 = 0
-        self.cell_voltage_8 = 0
-        self.cell_voltage_9 = 0
-        self.cell_voltage_10 = 0
-        self.cell_voltage_11 = 0
-        self.cell_voltage_12 = 0
-        self.cell_voltage_13 = 0
-        self.cell_voltage_14 = 0
-        self.cell_voltage_15 = 0
-        self.cell_voltage_16 = 0
-        self.min_cell_voltage = 0
-        self.max_cell_voltage = 0
-        self.max_voltage_cell = 0
-        self.min_voltage_cell = 0
-        self.delta_cell_voltage = 0
-        self.average_cell_voltage = 0
+        self.total_voltage = np.array([0.0, 0.0])
+        self.current = np.array([0.0, 0.0])
+        self.power = np.array([0.0, 0.0])
+        self.charging_power = np.array([0.0, 0.0])
+        self.discharging_power = np.array([0.0, 0.0])
+        self.capacity_remaining = np.array([0.0, 0.0])
+        self.nominal_capacity = np.array([0.0, 0.0])
+        self.charging_cycles = np.array([0.0, 0.0])
+        self.balancer_status_bitmask = np.array([0.0, 0.0])
+        self.errors_bitmask = np.array([0.0, 0.0])
+        self.software_version = np.array([0.0, 0.0])
+        self.state_of_charge = np.array([0.0, 0.0])
+        self.operation_status_bitmask = np.array([0.0, 0.0])
+        self.battery_strings = np.array([0.0, 0.0])
+        self.temperature_1 = np.array([0.0, 0.0])
+        self.temperature_2 = np.array([0.0, 0.0])
+        self.temperature_3 = np.array([0.0, 0.0])
+        self.cell_voltage_1 = np.array([0.0, 0.0])
+        self.cell_voltage_2 = np.array([0.0, 0.0])
+        self.cell_voltage_3 = np.array([0.0, 0.0])
+        self.cell_voltage_4 = np.array([0.0, 0.0])
+        self.cell_voltage_5 = np.array([0.0, 0.0])
+        self.cell_voltage_6 = np.array([0.0, 0.0])
+        self.cell_voltage_7 = np.array([0.0, 0.0])
+        self.cell_voltage_8 = np.array([0.0, 0.0])
+        self.cell_voltage_9 = np.array([0.0, 0.0])
+        self.cell_voltage_10 = np.array([0.0, 0.0])
+        self.cell_voltage_11 = np.array([0.0, 0.0])
+        self.cell_voltage_12 = np.array([0.0, 0.0])
+        self.cell_voltage_13 = np.array([0.0, 0.0])
+        self.cell_voltage_14 = np.array([0.0, 0.0])
+        self.cell_voltage_15 = np.array([0.0, 0.0])
+        self.cell_voltage_16 = np.array([0.0, 0.0])
+        self.min_cell_voltage = np.array([0.0, 0.0])
+        self.max_cell_voltage = np.array([0.0, 0.0])
+        self.max_voltage_cell = np.array([0.0, 0.0])
+        self.min_voltage_cell = np.array([0.0, 0.0])
+        self.delta_cell_voltage = np.array([0.0, 0.0])
+        self.average_cell_voltage = np.array([0.0, 0.0])
+
+        self.bms_numb = 0
 
         self.lock_bat = threading.Lock()
         self.lock_cam1 = threading.Lock()
@@ -83,6 +85,7 @@ class GUI:
         self.lock_cam4 = threading.Lock()
         self.lock_cam5 = threading.Lock()
         self.lock_cam6 = threading.Lock()
+
 
     def Get_Camera_IPs(self):
         root = Tk()
@@ -339,7 +342,7 @@ class GUI:
         frame_container2.pack(side=TOP, fill=BOTH, padx=padx, pady=pady)
 
         # Create the third LabelFrame below the first two using pack
-        frame3 = LabelFrame(frame_container2, text="Battery Diagnostics", padx=padx, pady=pady, bg="#0033A0", fg="white")
+        frame3 = LabelFrame(frame_container2, text="Battery Diagnostics BMS " + str(self.bms_numb), padx=padx, pady=pady, bg="#0033A0", fg="white")
         frame3.pack(side=LEFT, padx=padx, pady=pady)
 
         # Define the number of rows and columns
@@ -388,40 +391,40 @@ class GUI:
 
         # Create LabelFrames and Entries in a grid layout
         label_frames = [
-            ("Total Voltage: ", print_out(self.total_voltage, "V")),
-            ("Current: ", print_out(self.current, "I")),
-            ("Power: ", print_out(self.power, "W")),
-            ("Charging Power: ", print_out(self.charging_power, "W")),
-            ("Discharging Power: ", print_out(self.discharging_power, "W")),
-            ("Capacity Remaining: ", print_out(self.capacity_remaining, "C")),
-            ("Nominal Capacity: ", print_out(self.nominal_capacity, "C")),
-            ("Charging Cycles: ", print_out(self.charging_cycles)),
-            ("State of Charge: ", print_out(self.state_of_charge, "P")),
-            ("Temperature 1: ", print_out(self.temperature_1, "T")),
-            ("Temperature 2: ", print_out(self.temperature_2, "T")),
-            ("Temperature 3: ", print_out(self.temperature_3, "T")),
-            ("Cell Voltage 1: ", print_out(self.cell_voltage_1, "V")),
-            ("Cell Voltage 2: ", print_out(self.cell_voltage_2, "V")),
-            ("Cell Voltage 3: ", print_out(self.cell_voltage_3, "V")),
-            ("Cell Voltage 4: ", print_out(self.cell_voltage_4, "V")),
-            ("Cell Voltage 5: ", print_out(self.cell_voltage_5, "V")),
-            ("Cell Voltage 6: ", print_out(self.cell_voltage_6, "V")),
-            ("Cell Voltage 7: ", print_out(self.cell_voltage_7, "V")),
-            ("Cell Voltage 8: ", print_out(self.cell_voltage_8, "V")),
-            ("Cell Voltage 9: ", print_out(self.cell_voltage_9, "V")),
-            ("Cell Voltage 10: ", print_out(self.cell_voltage_10, "V")),
-            ("Cell Voltage 11: ", print_out(self.cell_voltage_11, "V")),
-            ("Cell Voltage 12: ", print_out(self.cell_voltage_12, "V")),
-            ("Cell Voltage 13: ", print_out(self.cell_voltage_13, "V")),
-            ("Cell Voltage 14: ", print_out(self.cell_voltage_14, "V")),
-            ("Cell Voltage 15: ", print_out(self.cell_voltage_15, "V")),
-            ("Cell Voltage 16: ", print_out(self.cell_voltage_16, "V")),
-            ("Min Cell Voltage: ", print_out(self.min_cell_voltage, "V")),
-            ("Max Cell Voltage: ", print_out(self.max_cell_voltage, "V")),
-            ("Max Voltage Cell: ", print_out(self.max_voltage_cell, "V")),
-            ("Min Voltage Cell: ", print_out(self.min_voltage_cell, "V")),
-            ("Delta Cell Voltage: ", print_out(self.delta_cell_voltage, "V")),
-            ("Average Cell Voltage: ", print_out(self.average_cell_voltage, "V")),
+            ("Total Voltage: ", print_out(self.total_voltage[self.bms_numb], "V")),
+            ("Current: ", print_out(self.current[self.bms_numb], "I")),
+            ("Power: ", print_out(self.power[self.bms_numb], "W")),
+            ("Charging Power: ", print_out(self.charging_power[self.bms_numb], "W")),
+            ("Discharging Power: ", print_out(self.discharging_power[self.bms_numb], "W")),
+            ("Capacity Remaining: ", print_out(self.capacity_remaining[self.bms_numb], "C")),
+            ("Nominal Capacity: ", print_out(self.nominal_capacity[self.bms_numb], "C")),
+            ("Charging Cycles: ", print_out(self.charging_cycles[self.bms_numb])),
+            ("State of Charge: ", print_out(self.state_of_charge[self.bms_numb], "P")),
+            ("Temperature 1: ", print_out(self.temperature_1[self.bms_numb], "T")),
+            ("Temperature 2: ", print_out(self.temperature_2[self.bms_numb], "T")),
+            ("Temperature 3: ", print_out(self.temperature_3[self.bms_numb], "T")),
+            ("Cell Voltage 1: ", print_out(self.cell_voltage_1[self.bms_numb], "V")),
+            ("Cell Voltage 2: ", print_out(self.cell_voltage_2[self.bms_numb], "V")),
+            ("Cell Voltage 3: ", print_out(self.cell_voltage_3[self.bms_numb], "V")),
+            ("Cell Voltage 4: ", print_out(self.cell_voltage_4[self.bms_numb], "V")),
+            ("Cell Voltage 5: ", print_out(self.cell_voltage_5[self.bms_numb], "V")),
+            ("Cell Voltage 6: ", print_out(self.cell_voltage_6[self.bms_numb], "V")),
+            ("Cell Voltage 7: ", print_out(self.cell_voltage_7[self.bms_numb], "V")),
+            ("Cell Voltage 8: ", print_out(self.cell_voltage_8[self.bms_numb], "V")),
+            ("Cell Voltage 9: ", print_out(self.cell_voltage_9[self.bms_numb], "V")),
+            ("Cell Voltage 10: ", print_out(self.cell_voltage_10[self.bms_numb], "V")),
+            ("Cell Voltage 11: ", print_out(self.cell_voltage_11[self.bms_numb], "V")),
+            ("Cell Voltage 12: ", print_out(self.cell_voltage_12[self.bms_numb], "V")),
+            ("Cell Voltage 13: ", print_out(self.cell_voltage_13[self.bms_numb], "V")),
+            ("Cell Voltage 14: ", print_out(self.cell_voltage_14[self.bms_numb], "V")),
+            ("Cell Voltage 15: ", print_out(self.cell_voltage_15[self.bms_numb], "V")),
+            ("Cell Voltage 16: ", print_out(self.cell_voltage_16[self.bms_numb], "V")),
+            ("Min Cell Voltage: ", print_out(self.min_cell_voltage[self.bms_numb], "V")),
+            ("Max Cell Voltage: ", print_out(self.max_cell_voltage[self.bms_numb], "V")),
+            ("Max Voltage Cell: ", print_out(self.max_voltage_cell[self.bms_numb], "V")),
+            ("Min Voltage Cell: ", print_out(self.min_voltage_cell[self.bms_numb], "V")),
+            ("Delta Cell Voltage: ", print_out(self.delta_cell_voltage[self.bms_numb], "V")),
+            ("Average Cell Voltage: ", print_out(self.average_cell_voltage[self.bms_numb], "V")),
         ]
 
         self.entrys = []
@@ -445,51 +448,58 @@ class GUI:
         for i in range(num_columns):
             frame3.grid_columnconfigure(i, weight=1)
 
+        def change_batt():
+            if(self.bms_numb == 0):
+                self.bms_numb = 1
+            else:
+                self.bms_numb = 0
+            frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+
         # change between different diagnostic data
-        button6 = Button(frame3, text="<", bg="#FFD100", fg="black")
+        button6 = Button(frame3, text="<", bg="#FFD100", fg="black", command=change_batt)
         button6.grid(row=3, column=7, padx=padx, pady=pady, sticky="nsew")
 
-        button5 = Button(frame3, text=">", bg="#FFD100", fg="black")
+        button5 = Button(frame3, text=">", bg="#FFD100", fg="black", command=change_batt)
         button5.grid(row=3, column=8, padx=padx, pady=pady, sticky="nsew")
 
         ## setup battery stuff
         def update_battery_diagnostics():
             label_frames = [
-                ("Total Voltage: ", print_out(self.total_voltage, "V")),
-                ("Current: ", print_out(self.current, "I")),
-                ("Power: ", print_out(self.power, "W")),
-                ("Charging Power: ", print_out(self.charging_power, "W")),
-                ("Discharging Power: ", print_out(self.discharging_power, "W")),
-                ("Capacity Remaining: ", print_out(self.capacity_remaining, "C")),
-                ("Nominal Capacity: ", print_out(self.nominal_capacity, "C")),
-                ("Charging Cycles: ", print_out(self.charging_cycles)),
-                ("State of Charge: ", print_out(self.state_of_charge, "P")),
-                ("Temperature 1: ", print_out(self.temperature_1, "T")),
-                ("Temperature 2: ", print_out(self.temperature_2, "T")),
-                ("Temperature 3: ", print_out(self.temperature_3, "T")),
-                ("Cell Voltage 1: ", print_out(self.cell_voltage_1, "V")),
-                ("Cell Voltage 2: ", print_out(self.cell_voltage_2, "V")),
-                ("Cell Voltage 3: ", print_out(self.cell_voltage_3, "V")),
-                ("Cell Voltage 4: ", print_out(self.cell_voltage_4, "V")),
-                ("Cell Voltage 5: ", print_out(self.cell_voltage_5, "V")),
-                ("Cell Voltage 6: ", print_out(self.cell_voltage_6, "V")),
-                ("Cell Voltage 7: ", print_out(self.cell_voltage_7, "V")),
-                ("Cell Voltage 8: ", print_out(self.cell_voltage_8, "V")),
-                ("Cell Voltage 9: ", print_out(self.cell_voltage_9, "V")),
-                ("Cell Voltage 10: ", print_out(self.cell_voltage_10, "V")),
-                ("Cell Voltage 11: ", print_out(self.cell_voltage_11, "V")),
-                ("Cell Voltage 12: ", print_out(self.cell_voltage_12, "V")),
-                ("Cell Voltage 13: ", print_out(self.cell_voltage_13, "V")),
-                ("Cell Voltage 14: ", print_out(self.cell_voltage_14, "V")),
-                ("Cell Voltage 15: ", print_out(self.cell_voltage_15, "V")),
-                ("Cell Voltage 16: ", print_out(self.cell_voltage_16, "V")),
-                ("Min Cell Voltage: ", print_out(self.min_cell_voltage, "V")),
-                ("Max Cell Voltage: ", print_out(self.max_cell_voltage, "V")),
-                ("Max Voltage Cell: ", print_out(self.max_voltage_cell, "V")),
-                ("Min Voltage Cell: ", print_out(self.min_voltage_cell, "V")),
-                ("Delta Cell Voltage: ", print_out(self.delta_cell_voltage, "V")),
-                ("Average Cell Voltage: ", print_out(self.average_cell_voltage, "V")),
-            ]
+            ("Total Voltage: ", print_out(self.total_voltage[self.bms_numb], "V")),
+            ("Current: ", print_out(self.current[self.bms_numb], "I")),
+            ("Power: ", print_out(self.power[self.bms_numb], "W")),
+            ("Charging Power: ", print_out(self.charging_power[self.bms_numb], "W")),
+            ("Discharging Power: ", print_out(self.discharging_power[self.bms_numb], "W")),
+            ("Capacity Remaining: ", print_out(self.capacity_remaining[self.bms_numb], "C")),
+            ("Nominal Capacity: ", print_out(self.nominal_capacity[self.bms_numb], "C")),
+            ("Charging Cycles: ", print_out(self.charging_cycles[self.bms_numb])),
+            ("State of Charge: ", print_out(self.state_of_charge[self.bms_numb], "P")),
+            ("Temperature 1: ", print_out(self.temperature_1[self.bms_numb], "T")),
+            ("Temperature 2: ", print_out(self.temperature_2[self.bms_numb], "T")),
+            ("Temperature 3: ", print_out(self.temperature_3[self.bms_numb], "T")),
+            ("Cell Voltage 1: ", print_out(self.cell_voltage_1[self.bms_numb], "V")),
+            ("Cell Voltage 2: ", print_out(self.cell_voltage_2[self.bms_numb], "V")),
+            ("Cell Voltage 3: ", print_out(self.cell_voltage_3[self.bms_numb], "V")),
+            ("Cell Voltage 4: ", print_out(self.cell_voltage_4[self.bms_numb], "V")),
+            ("Cell Voltage 5: ", print_out(self.cell_voltage_5[self.bms_numb], "V")),
+            ("Cell Voltage 6: ", print_out(self.cell_voltage_6[self.bms_numb], "V")),
+            ("Cell Voltage 7: ", print_out(self.cell_voltage_7[self.bms_numb], "V")),
+            ("Cell Voltage 8: ", print_out(self.cell_voltage_8[self.bms_numb], "V")),
+            ("Cell Voltage 9: ", print_out(self.cell_voltage_9[self.bms_numb], "V")),
+            ("Cell Voltage 10: ", print_out(self.cell_voltage_10[self.bms_numb], "V")),
+            ("Cell Voltage 11: ", print_out(self.cell_voltage_11[self.bms_numb], "V")),
+            ("Cell Voltage 12: ", print_out(self.cell_voltage_12[self.bms_numb], "V")),
+            ("Cell Voltage 13: ", print_out(self.cell_voltage_13[self.bms_numb], "V")),
+            ("Cell Voltage 14: ", print_out(self.cell_voltage_14[self.bms_numb], "V")),
+            ("Cell Voltage 15: ", print_out(self.cell_voltage_15[self.bms_numb], "V")),
+            ("Cell Voltage 16: ", print_out(self.cell_voltage_16[self.bms_numb], "V")),
+            ("Min Cell Voltage: ", print_out(self.min_cell_voltage[self.bms_numb], "V")),
+            ("Max Cell Voltage: ", print_out(self.max_cell_voltage[self.bms_numb], "V")),
+            ("Max Voltage Cell: ", print_out(self.max_voltage_cell[self.bms_numb], "V")),
+            ("Min Voltage Cell: ", print_out(self.min_voltage_cell[self.bms_numb], "V")),
+            ("Delta Cell Voltage: ", print_out(self.delta_cell_voltage[self.bms_numb], "V")),
+            ("Average Cell Voltage: ", print_out(self.average_cell_voltage[self.bms_numb], "V")),
+        ]
 
             for i, (_, text_var) in enumerate(label_frames):
                 self.entrys[i].delete(0, END)
@@ -663,6 +673,8 @@ class GUI:
 
             return img
             
+        # intitalize the previous bms
+        prev_bms = self.bms_numb
 
         # Initialize a variable to track the last time update_battery_diagnostics() was called
         last_update_time = time.time()
@@ -696,10 +708,12 @@ class GUI:
                 opencv_img = None
 
             # Check if one second has passed since the last call to update_battery_diagnostics()
-            if time.time() - last_update_time >= 1:
+            if time.time() - last_update_time >= 1 or prev_bms is not self.bms_numb:
                 # update the battery diagnostic data
                 update_battery_diagnostics()
                 last_update_time = time.time()  # Update the last update time
+                prev_bms = self.bms_numb
+
             x, y, z, dist, tags_ids, rVx, rVy, rVz = distance.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
             # get origin tag (tag at 0,0,0)
             localization.get_origin_tag(tags_ids, dist, x, y, z, rVx, rVy, rVz)
