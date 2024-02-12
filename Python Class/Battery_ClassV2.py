@@ -131,7 +131,8 @@ class Battery_class:
 
         dataPacket=self.arduinoData.readline()                         # read the data from the arduino
         self.dataPacket = dataPacket.decode('utf-8').rstrip()                    # convert the bytes to a str
-        # print(self.dataPacket)
+        if(self.verbose):
+            print(self.dataPacket)
 
     def disable_read(self):
         self.arduinoData.close()
@@ -140,6 +141,8 @@ class Battery_class:
     def parse_data(self):
         # Regular expression to extract data
         pattern = re.compile(r"'jbd-bms-ble bms(\d+) (.*?)': Sending state (\d+\.\d+)")
+
+        connection = np.array([0, 0])
 
         for line in self.dataPacket.split('\n'):
             match = pattern.search(line)
@@ -150,7 +153,7 @@ class Battery_class:
                 key = key.replace(' ', '_')  # Replace spaces with underscores
                 value = float(match.group(3))
                 globals()[key][index] = value
-
+                connection[index] = 1
         # # Iterate through each line in the data
         # for line in self.dataPacket.split('\n'):
         #     match = pattern.search(line)
@@ -161,7 +164,7 @@ class Battery_class:
         #         globals()[key] = value
         
         
-        return total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage
+        return total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage, connection
 
     def parse_data_test(self):
         self.test_input()
