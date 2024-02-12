@@ -8,7 +8,7 @@ import time
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 500, 200
+WIDTH, HEIGHT = 1350 - 60, 100
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Battery Status")
 
@@ -24,7 +24,7 @@ BLUE = (0, 0, 255)
 BATTERY_WIDTH = 100
 BATTERY_HEIGHT = 50
 BATTERY_X = 50
-BATTERY_Y = 50
+BATTERY_Y = 40
 
 # Speedometer dimensions
 SPEEDOMETER_RADIUS = 50
@@ -32,6 +32,12 @@ SPEEDOMETER_CENTER = (BATTERY_X + BATTERY_WIDTH + 100, BATTERY_Y + BATTERY_HEIGH
 SPEEDOMETER_START_ANGLE = 2 * math.pi  # Start angle for semicircle
 SPEEDOMETER_END_ANGLE = math.pi  # End angle for semicircle
 SPEEDOMETER_MAX_VALUE= 70
+
+# Thermometer dimensions
+THERMOMETER_X = 500
+THERMOMETER_Y = 10
+THERMOMETER_WIDTH = 20
+THERMOMETER_HEIGHT = 70
 
 # Font
 font = pygame.font.Font(None, 36)
@@ -73,7 +79,7 @@ def draw_battery(screen, percent, charging):
 
     if(color == RED):
         txt = font_big.render("!", True, WHITE)
-        tet_rect = txt.get_rect(center=(BATTERY_X + BATTERY_WIDTH // 2, BATTERY_Y + 28))
+        tet_rect = txt.get_rect(center=(BATTERY_X + BATTERY_WIDTH // 2, BATTERY_Y + BATTERY_HEIGHT // 2))
         screen.blit(txt, tet_rect)
     
 def speedometer(speed, value="V", max_val = 70, x = BATTERY_X + BATTERY_WIDTH + 100, y = BATTERY_Y + BATTERY_HEIGHT // 2, fuse=0, r = 50):
@@ -153,6 +159,29 @@ def speedometer(speed, value="V", max_val = 70, x = BATTERY_X + BATTERY_WIDTH + 
         tet_rect = txt.get_rect(center=(x, y - 20))
         screen.blit(txt, tet_rect)
 
+def draw_thermometer(screen, value, x = THERMOMETER_X, y = THERMOMETER_Y):
+    # Thermometer outline
+    pygame.draw.rect(screen, WHITE, (x, y, THERMOMETER_WIDTH, THERMOMETER_HEIGHT), 2)
+
+    # Calculate fill height based on value
+    fill_height = THERMOMETER_HEIGHT * (value / 100)
+
+    if(value <= 0.5*100):
+        color = GREEN
+    elif(value <= 0.7*100 and value > 0.5*100):
+        color = YELLOW
+    else:
+        color = RED
+
+    # Draw speed number
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(str(value) + "°C", True, WHITE)
+    text_rect = text_surface.get_rect(center=(x + 90 , y + 35))
+    screen.blit(text_surface, text_rect)
+
+    # Fill thermometer
+    fill_rect = pygame.Rect(x + 1, y + THERMOMETER_HEIGHT - fill_height, THERMOMETER_WIDTH - 1, fill_height)
+    pygame.draw.rect(screen, color, fill_rect)
 
 # Function to draw charging symbol with triangles
 def draw_charging_symbol(screen, x, y, color):
@@ -168,7 +197,8 @@ def main():
     voltage = 48.7  # Example speed, replace this with your variable
     current = 80.4
     fuse_current = 80
-    
+    temp = 80
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -180,10 +210,13 @@ def main():
         current = round(random.uniform(0, 100), 2)
         fuse_current = round(random.uniform(75, 85), 2)
         charging = random.choice([True, False])
+        temp = round(random.uniform(0, 100), 2)
 
         draw_battery(screen, battery_percent, charging)
         speedometer(voltage)
         speedometer(current, "A", max_val=100, x=BATTERY_X + BATTERY_WIDTH + 220, y=BATTERY_Y + BATTERY_HEIGHT // 2, fuse=fuse_current)
+        draw_thermometer(screen, temp)  # Example using current value, replace this with your variable
+    
         pygame.display.flip()
 
         time.sleep(2)
