@@ -23,7 +23,7 @@ Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-
 **Arduino Setup**\
 Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries\
 
-**Upload to VScode**
+**Upload from VScode**
 1. Use the global repository section: https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git#setting-your-git-username-for-every-repository-on-your-computer
 2. Go to the bottom left button and click open remote repository and select the one you want.
 3. Select the same bottom left button again and select save a local clone.
