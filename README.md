@@ -7,7 +7,7 @@
 
 # Installation Process
 **Python Packages Installation**\
-pip install numpy\
+* pip install numpy\
 pip install opencv-python==4.6.0.66\
 pip install opencv-contrib-python==4.6.0.66\
 pip install pyserial\
