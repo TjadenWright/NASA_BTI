@@ -21,4 +21,6 @@ Open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the blue
 Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml
 
 **Arduino Setup**\
-Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries
+Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries\
+
+test vscode
