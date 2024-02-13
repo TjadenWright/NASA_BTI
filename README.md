@@ -14,11 +14,11 @@ pip install pyserial\
 pip install pygame\
 python -m pip install --upgrade pip
 
-**Esphome Installation/Setup**\
-pip install esphome\
-cd Arduino\esphome-jbd-bms-main\
-Open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the bluetooth addresses match the batteries.\
-Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml
+**Esphome Installation/Setup**
+1. pip install esphome
+2. cd Arduino\esphome-jbd-bms-main
+3. Open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the bluetooth addresses match the batteries.
+4. Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml
 
 **Arduino Setup**\
 Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries\
