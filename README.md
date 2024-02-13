@@ -23,4 +23,3 @@ Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-
 **Arduino Setup**\
 Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries\
 
-test vscode
