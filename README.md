@@ -29,4 +29,4 @@
 3. Select the same bottom left button again and select save a local clone.
 4. Then in the terminal (cntrl + '), type in git init to initialize the git repository.
 5. Upload to Github as normal through VS code.
-a. If you need to reset a commit: git reset --soft HEAD~.
+6. If you need to delete a commit: git reset --soft HEAD~.
