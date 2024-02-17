@@ -14,11 +14,11 @@ int i = 255;
 void loop(){
   vnh.H_bridge_change(i, 1);
   Serial.print("Forward ");
-  Serial.println(i*5.0/255);
+  Serial.println(i*16.0/255);
   delay(5000);
   vnh.H_bridge_change(i, -1);
   Serial.print("Backward ");
-  Serial.println(i*5.0/255);
+  Serial.println(i*16.0/255);
   delay(5000);
 
   if(i >= 0){
