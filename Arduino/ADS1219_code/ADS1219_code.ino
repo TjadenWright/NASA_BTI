@@ -20,6 +20,11 @@ void setup() {
 
 void loop() {
   Serial.println("Single ended result:");
+  unsigned long startTime = micros();
   Serial.println(ads.readSingleEnded(2)*4.96/pow(2,23),5);
+  unsigned long executionTime = micros() - startTime;
+  Serial.print("Execution time: ");
+  Serial.print(executionTime);
+  Serial.println(" microseconds");
   delay(500);
 }

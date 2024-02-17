@@ -1,0 +1,5 @@
+{
+    "port": "COM5",
+    "board": "arduino:avr:uno",
+    "sketch": "Arduino\\ADS1219_code\\ADS1219_code.ino"
+}
