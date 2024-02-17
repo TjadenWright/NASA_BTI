@@ -15,8 +15,10 @@ void setup(){
   // Set the pinModes
   pcf8574.pinMode(P0, OUTPUT);
   pcf8574.pinMode(P1, OUTPUT);
+  pcf8574.pinMode(P3, OUTPUT);
   pcf8574.pinMode(P2, INPUT);
   pcf8574.begin();
+  pcf8574.digitalWrite(P3, HIGH);
 }
 
 void loop(){
