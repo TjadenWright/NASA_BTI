@@ -21,7 +21,7 @@ void loop(){
   Serial.println(i*16.0/255);
   delay(5000);
 
-  if(i >= 0){
+  if(i >= 50){
     i = i - 50;
   }
   else
