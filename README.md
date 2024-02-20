@@ -24,7 +24,7 @@
 4. Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml
 
 **Arduino Setup**
-* Any custom functions make sure to put in the arduino library folder: \Documents\Arduino\libraries\
+* Make sure to put any custom functions in the arduino library folder: \Documents\Arduino\libraries\
 
 **Upload from VScode**
 1. Use the global repository section: https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git#setting-your-git-username-for-every-repository-on-your-computer
