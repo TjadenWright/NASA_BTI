@@ -13,6 +13,9 @@
 * pip install pyserial
 * pip install pygame
 * python -m pip install --upgrade pip
+* pip install tkinter
+* pip install Pillow
+* pip install scipy
 
 **Esphome Installation/Setup**
 1. pip install esphome
