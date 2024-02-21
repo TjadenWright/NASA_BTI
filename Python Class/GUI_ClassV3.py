@@ -678,8 +678,9 @@ class GUI:
         while True:
             if self.cap1 is not None and self.cap != self.cap1:
                 ret, img = self.cap1.read()
-            elif self.cap == self.cap1 and self.cap1 is not None:
+            elif self.cap == self.cap1 and self.img is not None:
                 img = self.img.copy()
+                print("should be here")
             elif self.cap1 is None:
                 time.sleep(1)
                 img = None
