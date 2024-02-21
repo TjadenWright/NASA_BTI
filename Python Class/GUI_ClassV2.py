@@ -19,7 +19,7 @@ BLUE = (0, 0, 255)
 BATTERY_WIDTH = 100
 BATTERY_HEIGHT = 50
 BATTERY_X = 50
-BATTERY_Y = 40
+BATTERY_Y = 40 # 40
 
 # Speedometer dimensions
 SPEEDOMETER_RADIUS = 50
@@ -30,7 +30,7 @@ SPEEDOMETER_MAX_VALUE= 70
 
 # Thermometer dimensions
 THERMOMETER_X = 500
-THERMOMETER_Y = 10
+THERMOMETER_Y = BATTERY_Y - 30 #10
 THERMOMETER_WIDTH = 20
 THERMOMETER_HEIGHT = 70
 
@@ -677,24 +677,39 @@ class GUI:
             self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
             self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
 
+    def set_screen(self, width = None, height = None):
+        root = Tk()
+        if(width == None and height == None):
+            self.screen_width = root.winfo_screenwidth()
+            self.screen_height = root.winfo_screenheight()
+        else:
+            self.screen_width = width
+            self.screen_height = height
+
+        # intitalizing the GUI
+        self.video_w = int(self.screen_width/1.5) # 800
+        self.video_h = int(self.screen_height/1.5) # 480
+        self.local_w = self.screen_width - 200 - self.video_w
+        self.local_h = self.video_h
+        self.diag_w = self.screen_width - 40
+        self.diag_h = self.screen_height - self.video_h - 160
+
+        print(self.screen_width)
+        print(self.screen_height)
+
+        root.destroy()
+
+        return self.video_w, self.video_h, self.local_w + 132, self.local_h
+
     def Main_UI(self, battery, localization, distance, rover_controls):
         self.battery = battery
-        # intitalizing the GUI
-        self.video_w = 800
-        self.video_h = 480
-        self.local_w = 1350 - 200 - self.video_w
-        self.local_h = self.video_h
-        self.diag_w = 1350 - 40
-        self.diag_h = 100
 
         root = Tk()
-        root.geometry("1350x740")
+        root.attributes('-fullscreen', True)
+        root.geometry("{}x{}".format(self.screen_width, self.screen_height))
         root.title("Main GUI")
         root.config(bg="#2c3e50")
-
-        # window size
-        width_image = 800
-        height_image = 480
+        # padding
         padx = 5
         pady = 5
 
@@ -823,7 +838,7 @@ class GUI:
                 cv_img = self.img
                 if(cv_img is not None):
                     img1 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-                    img2 = cv2.resize(img1, (width_image, height_image))
+                    img2 = cv2.resize(img1, (self.video_w, self.video_h))
                     img = ImageTk.PhotoImage(Image.fromarray(img2))
                     label1['image'] = img
                 else:
@@ -843,13 +858,16 @@ class GUI:
             # Check if one second has passed since the last call to update_battery_diagnostics()
             if time.time() - last_update_time >= 1 or prev_bms is not self.bms_numb or first:
                 # update the battery diagnostic data
-                self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00)
-                self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 60, BATTERY_X + BATTERY_WIDTH + 130)
-                self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 100, BATTERY_X + BATTERY_WIDTH + 300)
-                self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 100, BATTERY_X + BATTERY_WIDTH + 460)
-                self.speedometer(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 100, BATTERY_X + BATTERY_WIDTH + 640)
-                self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 830)
-                self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 1050, BATTERY_Y)
+                steps = int(self.diag_w/7.5)
+                down_step = int(self.diag_h/2.5)
+                print(steps, down_step)
+                self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00, BATTERY_X + steps/5, down_step)
+                self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 60, BATTERY_X + BATTERY_WIDTH + steps, down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 100, BATTERY_X + BATTERY_WIDTH + 2*steps, down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 100, BATTERY_X + BATTERY_WIDTH + 3*steps, down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 100, BATTERY_X + BATTERY_WIDTH + 4*steps, down_step + BATTERY_HEIGHT // 2)
+                self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 5*steps, down_step - 30)
+                self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 6*steps, down_step)
 
                 last_update_time = time.time()  # Update the last update time
                 prev_bms = self.bms_numb
@@ -857,7 +875,7 @@ class GUI:
                 first = 0
 
             # print(self.connection)
-            self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 1050, BATTERY_Y)
+            self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*steps, down_step)
 
             x, y, z, dist, tags_ids, rVx, rVy, rVz = distance.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
             # get origin tag (tag at 0,0,0)

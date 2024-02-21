@@ -16,7 +16,6 @@ from Controls_ClassV2 import Rover_Controls
 url_OR_cam_numb = 0 # "rtsp://172.168.100.39:8080/h264.sdp"                                   # <--- camera # if on usb, camera ip if over ethernet/wireless
 recal_cam = False                                     # <--- if you need to recalibrate the camera set this to true (only need to do this if you change resolution/camera)
 Input_Res = (1920, 1080)                              # <--- change camera resolution (if change reclaibrate)
-Output_Res = (800, 480)                               # <--- output resolution
 FPS_video = 15                                        # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 10                                       # <--- height of the whole tag in cm (or same units as in calibrate sheet)
 Calibrate_sheet_square_SIZE = 2.4                     # <--- size of the calibration sheet squares (height of one of the squares in cm (or same units as marker size))
@@ -44,12 +43,14 @@ b1.get_esp32()
 b1.enable_read()
 g1 = GUI()
 
+vid_w, vid_h, local_w, local_h = g1.set_screen() #1350, 780
+
 # intialize localization
-l1 = localization(scaling_factor=scaling_factor, zoom_factor=zoom_factor, zoom_step=zoom_step, Output_Res=((1350 - 70 - 800), 480))
+l1 = localization(scaling_factor=scaling_factor, zoom_factor=zoom_factor, zoom_step=zoom_step, Output_Res=(local_w, local_h))
 l1.init_pygame()
 
 # initialize the aruco detect class
-a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, Input_Res=Input_Res, Output_Res=Output_Res, fps_vid=FPS_video, calib_file=calib_file, num_threads=num_threads) # <--- sets up the class
+a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, Input_Res=Input_Res, Output_Res=(vid_w, vid_h), fps_vid=FPS_video, calib_file=calib_file, num_threads=num_threads) # <--- sets up the class
 # get_cam = a1.camera_init(url_OR_cam_numb=url_OR_cam_numb) # initialize the camera to the port used at resolution and fps
 a1.calibrated_cam_data()
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
