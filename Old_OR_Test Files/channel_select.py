@@ -1,14 +1,21 @@
 from tkinter import *
+import threading
 
 class ChannelSelector:
     def __init__(self, master):
         self.master = master
+        # self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.master.title("Channel Selector")
         self.master.configure(bg="#0033A0")
 
         self.channel_options = ["Motor", "BIG Motor", "Actuator", "IMU"]
 
         self.done = False
+
+    def on_closing(self):
+        self.master.destroy()
+        self.done = True
+        print("by by")
 
     def create_widgets(self):
         for i in range(1, 17):
@@ -42,15 +49,19 @@ class ChannelSelector:
             print("Channel {}: Selected Option - {}".format(i, selected_option))
 
     def run(self):
+        self.done = False
         self.create_widgets()
         while not self.done:
             self.master.update()
         self.master.destroy()
 
 def main():
-    root = Tk()
+    root2 = Tk()
+
+    root = Toplevel()
     c1 = ChannelSelector(root)
     c1.run()
+
 
 if __name__ == "__main__":
     main()

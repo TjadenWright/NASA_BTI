@@ -31,7 +31,7 @@ controller_numb = 0                        # <--- controller # used.
 VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
-
+Fake_traffic = True
 
 # setup the rover controls class.
 rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
@@ -39,8 +39,10 @@ rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 
 # intialize the battery
 b1 = Battery_class(verbose=VERBOSE)
-b1.get_esp32()
-b1.enable_read()
+
+if(not Fake_traffic):
+    b1.get_esp32()
+    b1.enable_read()
 g1 = GUI()
 
 vid_w, vid_h, local_w, local_h = g1.set_screen() #1350, 780
@@ -56,10 +58,10 @@ a1.calibrated_cam_data()
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # camera IP gui
-g1.Get_Camera_IPs(skip = True)
+# g1.Get_Camera_IPs(skip = False)
 
 # main gui
-g1.set_up_Main_UI(b1)
+g1.set_up_Main_UI(b1, Fake_traffic)
 
 img_2 = None # start of image at nothing
 
