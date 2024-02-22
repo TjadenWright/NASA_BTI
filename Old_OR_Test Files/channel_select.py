@@ -4,7 +4,7 @@ import threading
 class ChannelSelector:
     def __init__(self, master):
         self.master = master
-        # self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.master.title("Channel Selector")
         self.master.configure(bg="#0033A0")
 
@@ -51,16 +51,32 @@ class ChannelSelector:
     def run(self):
         self.done = False
         self.create_widgets()
-        while not self.done:
+
+    def run_loop(self):
+        if(not self.done):
             self.master.update()
+        
+    def done_help(self):
+        return self.done
+    
+    def delete(self):
         self.master.destroy()
 
 def main():
     root2 = Tk()
+    c2 = ChannelSelector(root2)
+    c2.run()
+    # the idea is that you can run both of them in the same loop
 
     root = Toplevel()
     c1 = ChannelSelector(root)
     c1.run()
+
+    while (not c1.done_help() or not c2.done_help()):
+        c1.run_loop()
+        c2.run_loop()
+    c1.delete()
+    c2.delete()
 
 
 if __name__ == "__main__":
