@@ -57,9 +57,6 @@ a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verb
 a1.calibrated_cam_data()
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
-# camera IP gui
-# g1.Get_Camera_IPs(skip = False)
-
 # main gui
 g1.set_up_Main_UI(b1, Fake_traffic)
 

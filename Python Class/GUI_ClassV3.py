@@ -7,6 +7,16 @@ import math
 import pygame
 import numpy as np
 import random
+import os
+
+current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
+config_data_path = os.path.join(current_file_path, '../Config_Files')
+
+file_name_IP = "IP_Camera_Config.txt"
+file_path_IP = os.path.join(config_data_path, file_name_IP)
+
+file_name_Channel = "Channel_Config.txt"
+file_path_Channel = os.path.join(config_data_path, file_name_Channel)
 
 # Colors
 BLACK = (0, 0, 0)
@@ -38,13 +48,14 @@ THERMOMETER_HEIGHT = 70
 
 class GUI:
     def __init__(self):
+        # for camera stuff
         self.cam1 = None
         self.cam2 = None
         self.cam3 = None
         self.cam4 = None
         self.cam5 = None
         self.cam6 = None
-        self.First = True
+        self.FirstCamIP = 0
 
         self.cap = None
         self.toggleCamera = np.array([0, 0, 0, 0, 0, 0])
@@ -61,6 +72,9 @@ class GUI:
 
         self.first_camera = 0
 
+        self.debugger = 0
+
+        # for bms stuff
         self.total_voltage = np.array([0.0, 0.0])
         self.current = np.array([0.0, 0.0])
         self.power = np.array([0.0, 0.0])
@@ -104,17 +118,23 @@ class GUI:
 
         self.bms_numb = 0
 
+        self.FirstChannelSelect = 0
+
+        # channel selector
+        self.channel = {} # 16 channels
+        self.channel_options = ["Motor", "BIG Motor", "Actuator", "IMU"]
+
+        # threading
         self.lock_bat = threading.Lock()
         self.lock_cam = threading.Lock()
         self.lock_camCV = threading.Lock()
         self.lock_cam_connect = threading.Lock()
 
+        # buttons for localization
         self.calibrateM = 0
         self.up_key = 0
         self.down_key = 0
         self.position_IMU = 0
-
-        self.debugger = 0
 
         # Font
         self.font = pygame.font.Font(None, 36)
@@ -122,87 +142,144 @@ class GUI:
 
     def on_closing_IPs(self):
         self.masterIP.destroy()
-        self.First = False
+        self.FirstCamIP = 0
 
-    def Get_Camera_IPs(self, skip = False):
-        self.First = True
+    def connect(self):
+        self.cam1 = self.camera_entry1.get()
+        self.cam2 = self.camera_entry2.get()
+        self.cam3 = self.camera_entry3.get()
+        self.cam4 = self.camera_entry4.get()
+        self.cam5 = self.camera_entry5.get()
+        self.cam6 = self.camera_entry6.get()
+        self.FirstCamIP = 1
+        print("Camera 1: ", self.cam1, "Camera 2: ", self.cam2, "Camera 3: ", self.cam3, "Camera 4: ", self.cam4, "Camera 5: ", self.cam5, "Camera 6: ", self.cam6)
 
-        if(not skip):
-            print("not skipping")
-            self.masterIP = Toplevel()
-            self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
-            self.masterIP.geometry("800x370")
-            self.masterIP.title("IP of Webcams")
-            self.masterIP.config(bg="#0033A0")
+    def write_connect(self):
+        # write to file
+        with open(file_path_IP, 'w') as file:
+            cam1 = self.camera_entry1.get()
+            cam2 = self.camera_entry2.get()
+            cam3 = self.camera_entry3.get()
+            cam4 = self.camera_entry4.get()
+            cam5 = self.camera_entry5.get()
+            cam6 = self.camera_entry6.get()
 
-            ipadx = 327.2
-            pady = 5
+            file.write("Camera 1: ")
+            file.write(cam1)
+            file.write("\nCamera 2: ")
+            file.write(cam2)
+            file.write("\nCamera 3: ")
+            file.write(cam3)
+            file.write("\nCamera 4: ")
+            file.write(cam4)
+            file.write("\nCamera 5: ")
+            file.write(cam5)
+            file.write("\nCamera 6: ")
+            file.write(cam6)
 
-            # Create an entry for the camera index
-            camera_entry_label1 = Label(self.masterIP, text="Camera 1 IP", bg="white", fg="black")
-            camera_entry_label1.pack(ipadx=ipadx, pady=pady)
-            camera_entry1 = Entry(self.masterIP)
-            camera_entry1.pack(ipadx=300)
+    def read_connect(self):
+        # read from file
+        camera_values = {}
+        with open(file_path_IP, 'r') as file:
+            for line in file:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    camera_name = parts[0].strip()
+                    value = parts[1].strip()
+                    camera_values[camera_name] = value
 
-            # Create an entry for the camera index
-            camera_entry_label2 = Label(self.masterIP, text="Camera 2 IP", bg="white", fg="black")
-            camera_entry_label2.pack(ipadx=ipadx, pady=pady)
-            camera_entry2 = Entry(self.masterIP)
-            camera_entry2.pack(ipadx=300)
+        # Assign values to variables
+        cam1 = camera_values.get("Camera 1")
+        cam2 = camera_values.get("Camera 2")
+        cam3 = camera_values.get("Camera 3")
+        cam4 = camera_values.get("Camera 4")
+        cam5 = camera_values.get("Camera 5")
+        cam6 = camera_values.get("Camera 6")
 
-            # Create an entry for the camera index
-            camera_entry_label3 = Label(self.masterIP, text="Camera 3 IP", bg="white", fg="black")
-            camera_entry_label3.pack(ipadx=ipadx, pady=pady)
-            camera_entry3 = Entry(self.masterIP)
-            camera_entry3.pack(ipadx=300)
+        self.camera_entry1.delete(0, 'end')  # Clear previous content
+        self.camera_entry1.insert(0, cam1)
+        self.camera_entry2.delete(0, 'end')  # Clear previous content
+        self.camera_entry2.insert(0, cam2)
+        self.camera_entry3.delete(0, 'end')  # Clear previous content
+        self.camera_entry3.insert(0, cam3)
+        self.camera_entry4.delete(0, 'end')  # Clear previous content
+        self.camera_entry4.insert(0, cam4)
+        self.camera_entry5.delete(0, 'end')  # Clear previous content
+        self.camera_entry5.insert(0, cam5)
+        self.camera_entry6.delete(0, 'end')  # Clear previous content
+        self.camera_entry6.insert(0, cam6)
 
-            # Create an entry for the camera index
-            camera_entry_label4 = Label(self.masterIP, text="Camera 4 IP", bg="white", fg="black")
-            camera_entry_label4.pack(ipadx=ipadx, pady=pady)
-            camera_entry4 = Entry(self.masterIP)
-            camera_entry4.pack(ipadx=300)
+        # Print values
+        print("Cam1:", cam1)
+        print("Cam2:", cam2)
+        print("Cam3:", cam3)
+        print("Cam4:", cam4)
+        print("Cam5:", cam5)
+        print("Cam6:", cam6)
 
-            # Create an entry for the camera index
-            camera_entry_label5 = Label(self.masterIP, text="Camera 5 IP", bg="white", fg="black")
-            camera_entry_label5.pack(ipadx=ipadx, pady=pady)
-            camera_entry5 = Entry(self.masterIP)
-            camera_entry5.pack(ipadx=300)
+    def Get_Camera_IPs(self):
+        self.FirstCamIP = 2
 
-            # Create an entry for the camera index
-            camera_entry_label6 = Label(self.masterIP, text="Camera 6 IP", bg="white", fg="black")
-            camera_entry_label6.pack(ipadx=ipadx, pady=pady)
-            camera_entry6 = Entry(self.masterIP)
-            camera_entry6.pack(ipadx=300)
+        self.masterIP = Toplevel()
+        self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
+        self.masterIP.geometry("800x370")
+        self.masterIP.title("IP of Webcams")
+        self.masterIP.config(bg="#0033A0")
 
-            def connect():
-                self.cam1 = camera_entry1.get()
-                self.cam2 = camera_entry2.get()
-                self.cam3 = camera_entry3.get()
-                self.cam4 = camera_entry4.get()
-                self.cam5 = camera_entry5.get()
-                self.cam6 = camera_entry6.get()
-                self.First = False
+        ipadx = 327.2
+        pady = 5
 
-            button = Button(self.masterIP, text="Save Camera IPs", bg="#FFD100", fg="black", command=connect)
-            button.pack(side=LEFT, pady=20, padx=50)
+        # Create an entry for the camera index
+        camera_entry_label1 = Label(self.masterIP, text="Camera 1 IP", bg="white", fg="black")
+        camera_entry_label1.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry1 = Entry(self.masterIP)
+        self.camera_entry1.pack(ipadx=300)
 
-            button = Button(self.masterIP, text="Load Camera IPs", bg="#FFD100", fg="black", command=connect)
-            button.pack(pady=20, side=LEFT, padx=110)
+        # Create an entry for the camera index
+        camera_entry_label2 = Label(self.masterIP, text="Camera 2 IP", bg="white", fg="black")
+        camera_entry_label2.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry2 = Entry(self.masterIP)
+        self.camera_entry2.pack(ipadx=300)
 
-            button = Button(self.masterIP, text="Load Camera IPs From Save", bg="#FFD100", fg="black", command=connect)
-            button.pack(side=RIGHT, pady=20, padx=50)
-            
-            while self.First:
-                self.masterIP.update()
+        # Create an entry for the camera index
+        camera_entry_label3 = Label(self.masterIP, text="Camera 3 IP", bg="white", fg="black")
+        camera_entry_label3.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry3 = Entry(self.masterIP)
+        self.camera_entry3.pack(ipadx=300)
 
-            if(self.masterIP):
-                self.masterIP.destroy()
-            
-        elif(skip):
-            self.cam1 = 0
-            print("skipping")
+        # Create an entry for the camera index
+        camera_entry_label4 = Label(self.masterIP, text="Camera 4 IP", bg="white", fg="black")
+        camera_entry_label4.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry4 = Entry(self.masterIP)
+        self.camera_entry4.pack(ipadx=300)
 
-        print(self.cam1, self.cam2, self.cam3, self.cam4, self.cam5, self.cam6)
+        # Create an entry for the camera index
+        camera_entry_label5 = Label(self.masterIP, text="Camera 5 IP", bg="white", fg="black")
+        camera_entry_label5.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry5 = Entry(self.masterIP)
+        self.camera_entry5.pack(ipadx=300)
+
+        # Create an entry for the camera index
+        camera_entry_label6 = Label(self.masterIP, text="Camera 6 IP", bg="white", fg="black")
+        camera_entry_label6.pack(ipadx=ipadx, pady=pady)
+        self.camera_entry6 = Entry(self.masterIP)
+        self.camera_entry6.pack(ipadx=300)
+
+        button = Button(self.masterIP, text="Save Camera IPs", bg="#FFD100", fg="black", command=self.write_connect)
+        button.pack(side=LEFT, pady=20, padx=50)
+
+        button = Button(self.masterIP, text="Load Camera IPs", bg="#FFD100", fg="black", command=self.connect)
+        button.pack(pady=20, side=LEFT, padx=110)
+
+        button = Button(self.masterIP, text="Load Camera IPs From Save", bg="#FFD100", fg="black", command=self.read_connect)
+        button.pack(side=RIGHT, pady=20, padx=50)
+
+    def Get_Camera_IPs_Loop(self):
+        if(self.FirstCamIP == 2):
+            self.masterIP.update()
+        if(self.FirstCamIP == 1):
+            self.masterIP.destroy()
+            self.FirstCamIP = 0
 
     def connect_camera(self):
         cap1 = None
@@ -258,8 +335,6 @@ class GUI:
             if(self.first_camera == 5 and self.toggleCamera[self.first_camera] == 0):
                 cap6 = None
                 cap = cap5
-        
-            # print(self.first_camera, self.toggleCamera)
 
             time.sleep(0.1)
 
@@ -334,7 +409,7 @@ class GUI:
 
         self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
 
-        print(self.first_camera, self.toggleCamera)
+        print("Camera Selected: ", self.first_camera, "Camera Array: ", self.toggleCamera)
 
     def change_cam_sub(self):
         if(self.first_camera > 0):
@@ -363,7 +438,7 @@ class GUI:
 
         self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
 
-        print(self.first_camera, self.toggleCamera)
+        print("Camera Selected: ", self.first_camera, "Camera Array: ", self.toggleCamera)
 
     def debug(self):
         if(self.debugger == 0):
@@ -542,41 +617,81 @@ class GUI:
 
     def on_closing(self):
         self.master.destroy()
-        self.done = True
-        print("by by")
+        self.FirstChannelSelect = 0
 
     def select_channels(self):
-        self.done = True
+        self.FirstChannelSelect = 1
         for i in range(1, 17):
             selected_option = self.master.grid_slaves(row=(i-1)//4, column=(i-1)%4)[0].winfo_children()[1].cget("text")
-            print("Channel {}: Selected Option - {}".format(i, selected_option))
+            self.channel[i] = selected_option
+        print(self.channel)
+        
+    def write_select_channels(self):
+        # write to file
+        with open(file_path_Channel, 'w') as file:
+            for i in range(1, 17):
+                selected_option = self.master.grid_slaves(row=(i-1)//4, column=(i-1)%4)[0].winfo_children()[1].cget("text")
+                file.write("Channel ")
+                file.write(str(i))
+                file.write(": ")
+                file.write(selected_option)
+                file.write("\n")
+
+    def read_select_channels(self):
+        # read from file
+        channel_values = {}
+        i = 0
+        with open(file_path_Channel, 'r') as file:
+            for line in file:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    channel_name = parts[0].strip()
+                    value = parts[1].strip()
+                    channel_values[i] = value
+                    i = i + 1
+
+        # Assign values to variables
+        print(channel_values)
+
+        for i in range(1, 17):
+            self.selected_options[i-1].set(channel_values[i-1])
+            # option_menu.children['menu'].entryconfig(0, label="IMU")
+
+        # self.camera_entry1.delete(0, 'end')  # Clear previous content
+        # self.camera_entry1.insert(0, cam1)
+        # self.camera_entry2.delete(0, 'end')  # Clear previous content
+        # self.camera_entry2.insert(0, cam2)
+        # self.camera_entry3.delete(0, 'end')  # Clear previous content
+        # self.camera_entry3.insert(0, cam3)
+        # self.camera_entry4.delete(0, 'end')  # Clear previous content
+        # self.camera_entry4.insert(0, cam4)
+        # self.camera_entry5.delete(0, 'end')  # Clear previous content
+        # self.camera_entry5.insert(0, cam5)
+        # self.camera_entry6.delete(0, 'end')  # Clear previous content
+        # self.camera_entry6.insert(0, cam6)
 
     def channel_select(self):
-        # rootCS = Tk()
-        # c1 = ChannelSelector(rootCS)
-        # c1.run()
+        self.FirstChannelSelect = 2
+
         self.master = Toplevel()
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.master.title("Channel Selector")
         self.master.configure(bg="#0033A0")
 
-        self.channel_options = ["Motor", "BIG Motor", "Actuator", "IMU"]
-
-        self.done = False
+        self.selected_options = [StringVar(self.master) for _ in range(16)]
 
         for i in range(1, 17):
             frame = Frame(self.master, borderwidth=2, relief="groove", width=300, height=300)
             frame.grid(row=(i-1)//4, column=(i-1)%4, padx=10, pady=10)
 
-
             label = Label(frame, text="Channel {}".format(i), width=10, height=4)
             label.grid(row=0, column=0)
 
-            option_menu = OptionMenu(frame, StringVar(), *self.channel_options)
+            option_menu = OptionMenu(frame, self.selected_options[i-1], *self.channel_options)
             option_menu.grid(row=0, column=1)
             option_menu.config(width=10, height=3, bg="#FFD100")
 
-        self.Save = Button(self.master, text="Save Config")
+        self.Save = Button(self.master, text="Save Config", command=self.write_select_channels)
         self.Save.grid(row=4, columnspan=1, pady=10)
         self.Save.config(width=15, height=2, bg="#FFD100")
 
@@ -584,15 +699,16 @@ class GUI:
         self.LOAD.grid(row=4, columnspan=4, pady=10)
         self.LOAD.config(width=15, height=2, bg="#FFD100")
 
-        self.LOAD_Save = Button(self.master, text="Load Config From Save", command=self.select_channels)
+        self.LOAD_Save = Button(self.master, text="Load Config From Save", command=self.read_select_channels)
         self.LOAD_Save.grid(row=4, column=3, pady=10)
         self.LOAD_Save.config(width=20, height=2, bg="#FFD100")
 
-        self.done = False
-        while not self.done:
+    def channel_select_loop(self):
+        if(self.FirstChannelSelect == 2):
             self.master.update()
-        if(self.master):
+        if(self.FirstChannelSelect == 1):
             self.master.destroy()
+            self.FirstChannelSelect == 0
 
     def change_batt(self):
         if(self.bms_numb == 0):
@@ -905,7 +1021,6 @@ class GUI:
 
             self.first = 0
 
-        # print(self.connection)
         self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
 
     # camera thread
@@ -1011,8 +1126,8 @@ class GUI:
         self.diag_w = self.screen_width - 40
         self.diag_h = self.screen_height - self.video_h - 160
 
-        print(self.screen_width)
-        print(self.screen_height)
+        print("Screen Width: ", self.screen_width)
+        print("Screen Height: ", self.screen_height)
 
         root.destroy()
 
@@ -1170,7 +1285,7 @@ class GUI:
 
         self.steps = int(self.diag_w/7.5)
         self.down_step = int(self.diag_h/2.5)
-        print(self.steps, self.down_step)
+        print("Distance Between Each Icon: ", self.steps, "Distance From Top: ", self.down_step)
 
     # loop function for main gui
     def loop_Main_UI(self, local_img):
@@ -1209,6 +1324,12 @@ class GUI:
 
         # update UI
         self.root.update()
+
+        # update IP loop
+        self.Get_Camera_IPs_Loop()
+
+        # update channel select
+        self.channel_select_loop()
 
         return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key
 
