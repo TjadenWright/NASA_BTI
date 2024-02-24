@@ -85,5 +85,6 @@ class ADS1219  {
 	boolean singleShot;
 	int data_ready;
 	PCF8574 pcf8574;
+	PCF8574 PCF8574_2;
 };
 #endif

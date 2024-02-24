@@ -8,6 +8,8 @@
 #include "ADS1219.h"
 #include "PCF8574.h"
 
+#define time_delay 5
+
 static uint8_t i2cRead(void) {
   #if ARDUINO >= 100
   return Wire.read();
@@ -24,7 +26,7 @@ static void i2cWrite(uint8_t x) {
   #endif
 }
 
-ADS1219::ADS1219(int drdy, uint8_t addr_expander, uint8_t addr) : pcf8574(addr_expander) {
+ADS1219::ADS1219(int drdy, uint8_t addr_expander, uint8_t addr) : pcf8574(addr_expander){
   data_ready = drdy;
   pcf8574.pinMode(drdy, INPUT);
   address = addr;
@@ -101,7 +103,9 @@ long ADS1219::readSingleEnded(int channel){
   }
   writeRegister(config);
 	  start();
-	  while(pcf8574.digitalRead(data_ready)==1);
+	  while(pcf8574.digitalRead(data_ready)==1){
+      delay(time_delay);
+    }
 	  return readConversionResult();
 }
 
@@ -110,7 +114,9 @@ long ADS1219::readDifferential_0_1(){
   config |= MUX_DIFF_0_1;
   writeRegister(config);
   start();
-  while(pcf8574.digitalRead(data_ready)==1);
+  while(pcf8574.digitalRead(data_ready)==1){
+    delay(time_delay);
+  }
   return readConversionResult();
 }
 
@@ -119,7 +125,9 @@ long ADS1219::readDifferential_2_3(){
   config |= MUX_DIFF_2_3;
   writeRegister(config);
   start();
-  while(pcf8574.digitalRead(data_ready)==1);
+  while(pcf8574.digitalRead(data_ready)==1){
+    delay(time_delay);
+  }
   return readConversionResult();
 }
 
@@ -128,7 +136,9 @@ long ADS1219::readDifferential_1_2(){
   config |= MUX_DIFF_1_2;
   writeRegister(config);
   start();
-  while(pcf8574.digitalRead(data_ready)==1);
+  while(pcf8574.digitalRead(data_ready)==1){
+    delay(time_delay);
+  }
   return readConversionResult();
 }
 
@@ -136,7 +146,9 @@ long ADS1219::readShorted(){
   config &= MUX_MASK;
   config |= MUX_SHORTED;
   writeRegister(config);
-  while(pcf8574.digitalRead(data_ready)==1);
+  while(pcf8574.digitalRead(data_ready)==1){
+    delay(time_delay);
+  }
   return readConversionResult();
 }
 

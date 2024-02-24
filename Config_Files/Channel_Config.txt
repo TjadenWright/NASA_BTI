@@ -1,5 +1,5 @@
-Channel 1: 
-Channel 2: 
+Channel 1: BIG Motor
+Channel 2: BIG Motor
 Channel 3: 
 Channel 4: 
 Channel 5: 

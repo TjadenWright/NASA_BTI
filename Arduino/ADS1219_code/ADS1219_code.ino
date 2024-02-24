@@ -26,5 +26,14 @@ void loop() {
   Serial.print("Execution time: ");
   Serial.print(executionTime);
   Serial.println(" microseconds");
+  delay(50);
+  ads.resetConfig();
+  Serial.println("Single ended result2:");
+  startTime = micros();
+  Serial.println(ads.readSingleEnded(1)*4.96/pow(2,23),5);
+  executionTime = micros() - startTime;
+  Serial.print("Execution time: ");
+  Serial.print(executionTime);
+  Serial.println(" microseconds");
   delay(500);
 }
