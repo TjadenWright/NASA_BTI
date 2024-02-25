@@ -4,6 +4,7 @@
 #include <TMP1075.h> // reading I2C temeperature sensor
 #include "VNH7070.h" // controlling H-Bridge
 #include <ADS1219.h>
+#include "TCA9548A.h"
 
 #define TestArduinoScript false
 
@@ -56,6 +57,11 @@ VNH7070 vnh(6);
 // I2C ADC //
 /////////////
 ADS1219 ads(P3);
+
+/////////////
+// I2C MUX //
+/////////////
+TCA9548A I2CMux;                  // Address can be passed into the constructor
 
 
 void setup() {
@@ -115,6 +121,12 @@ void setup() {
     ads.setVoltageReference(REF_EXTERNAL);
     ads.setConversionMode(MODE_CONTINUOUS);
     // A1 feedback, A2 SPEED, A3 Current
+
+    /////////////
+    // I2C MUX //
+    /////////////
+    I2CMux.begin(Wire);             // Wire instance is passed to the library
+    I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
 }
 
 void command_finder(int index, String command_from_python){
@@ -216,7 +228,8 @@ void control_motor(String command_from_python){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -296,7 +309,8 @@ void control_actuator(String command_from_python){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -352,7 +366,8 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -390,10 +405,12 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }
+
 
   if(TestArduinoScript)
     Serial.println(Speed_bool);
@@ -442,7 +459,8 @@ void actuator_diagnostic_start(String  command_from_python, bool feeback_T_F){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -479,7 +497,8 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    
+    I2CMux.openChannel(Channel-1);
     // store this channel now
     Channel_Selected = Channel;
   }

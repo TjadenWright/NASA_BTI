@@ -14,8 +14,8 @@ arduino = serial.Serial(port='COM5', baudrate=2000000)
 time.sleep(2)
 
 # Main thread continues to run the Arduino communication
-def majik_merigoround():
-    motor_control_command = "cMotor 3 1 1 234 1 0"
+def majik_merigoround(i):
+    motor_control_command = "cMotor " + str(i) + " 1 1 234 1 0"
     print(motor_control_command)
     print(write_read(motor_control_command))
 
@@ -23,7 +23,7 @@ def majik_merigoround():
     # print(act_control_command)
     # print(write_read(act_control_command))
 
-    motor_current_start = "sMotorCurrent 3"
+    motor_current_start = "sMotorCurrent " + str(i)
     print(motor_current_start)
     print(write_read(motor_current_start))
 
@@ -34,20 +34,20 @@ start_command = "startup"
 print(start_command)
 print(write_read(start_command))
 
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
-majik_merigoround()
+majik_merigoround(1)
+majik_merigoround(2)
+majik_merigoround(3)
+majik_merigoround(4)
+majik_merigoround(5)
+majik_merigoround(6)
+majik_merigoround(7)
+majik_merigoround(8)
 
 print("total time: ", time.time() - start)
 
 time.sleep(0.05)
 
-motor_current_get = "dMotor 3"
+motor_current_get = "dMotor 8"
 print(motor_current_get)
 print(write_read(motor_current_get))
 
