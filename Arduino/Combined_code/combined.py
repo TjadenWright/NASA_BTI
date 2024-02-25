@@ -34,6 +34,7 @@ start_command = "startup"
 print(start_command)
 print(write_read(start_command))
 
+majik_merigoround(8)
 majik_merigoround(1)
 majik_merigoround(2)
 majik_merigoround(3)
@@ -41,7 +42,6 @@ majik_merigoround(4)
 majik_merigoround(5)
 majik_merigoround(6)
 majik_merigoround(7)
-majik_merigoround(8)
 
 print("total time: ", time.time() - start)
 

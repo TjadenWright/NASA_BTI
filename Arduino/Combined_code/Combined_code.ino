@@ -374,10 +374,10 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool){
   
   if(Speed_bool == false){
     // start current
-    ads.readSingleEnded(2);
+    ads.readSingleEnded(2, 1);
   }
   else{
-    ads.readSingleEnded(1);
+    ads.readSingleEnded(1, 1);
   }
 
   Serial.println("done!");
@@ -426,7 +426,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
     Serial.print(" ");
 
     // current
-    Serial.print(ads.readSingleEnded(2)*MAX_CURRENT/pow(2,23),5);
+    Serial.print(ads.readSingleEnded(2, 0)*MAX_CURRENT/pow(2,23),5);
     Serial.print(" ");
 
     // OC fault
@@ -434,7 +434,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
   }
   else{
     // speed
-    Serial.println(ads.readSingleEnded(1)*MAX_SPEED/pow(2,23),5);
+    Serial.println(ads.readSingleEnded(1, 0)*MAX_SPEED/pow(2,23),5);
   }
 
 }
@@ -467,10 +467,10 @@ void actuator_diagnostic_start(String  command_from_python, bool feeback_T_F){
   
   if(feeback_T_F == false){
     // start current
-    ads.readSingleEnded(2);
+    ads.readSingleEnded(2, 1);
   }
   else{
-    ads.readSingleEnded(0);
+    ads.readSingleEnded(0, 1);
   }
 
   Serial.println("done!");
@@ -513,7 +513,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
     Serial.print(" ");
 
     // current
-    Serial.print(ads.readSingleEnded(2)*MAX_CURRENT/pow(2,23),5);
+    Serial.print(ads.readSingleEnded(2, 0)*MAX_CURRENT/pow(2,23),5);
     Serial.print(" ");
 
     // OC fault
@@ -521,7 +521,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
   }
   else{
     // feedback
-    Serial.println(ads.readSingleEnded(0)*MAX_SPEED/pow(2,23),5);
+    Serial.println(ads.readSingleEnded(0, 0)*MAX_SPEED/pow(2,23),5);
   }
 
 }
