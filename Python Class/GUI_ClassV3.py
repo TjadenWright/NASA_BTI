@@ -140,6 +140,15 @@ class GUI:
         self.font = pygame.font.Font(None, 36)
         self.font_small = pygame.font.Font(None, 26)
 
+        # spacing
+        self.camera_connect_space = 6.7
+        self.camera_disconnect_space = 7
+        self.reg_keys = 20
+        self.debugging_off = 28
+        self.calib_local = 5
+        self.calib_imu = 2
+        self.diag_keys = 18
+
     def on_closing_IPs(self):
         self.masterIP.destroy()
         self.FirstCamIP = 0
@@ -222,7 +231,7 @@ class GUI:
 
         self.masterIP = Toplevel()
         self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
-        self.masterIP.geometry("800x370")
+        self.masterIP.geometry("800x500")
         self.masterIP.title("IP of Webcams")
         self.masterIP.config(bg="#0033A0")
 
@@ -233,46 +242,46 @@ class GUI:
         camera_entry_label1 = Label(self.masterIP, text="Camera 1 IP", bg="white", fg="black")
         camera_entry_label1.pack(ipadx=ipadx, pady=pady)
         self.camera_entry1 = Entry(self.masterIP)
-        self.camera_entry1.pack(ipadx=300)
+        self.camera_entry1.pack(ipadx=300, ipady=10)
 
         # Create an entry for the camera index
         camera_entry_label2 = Label(self.masterIP, text="Camera 2 IP", bg="white", fg="black")
         camera_entry_label2.pack(ipadx=ipadx, pady=pady)
         self.camera_entry2 = Entry(self.masterIP)
-        self.camera_entry2.pack(ipadx=300)
+        self.camera_entry2.pack(ipadx=300, ipady=10)
 
         # Create an entry for the camera index
         camera_entry_label3 = Label(self.masterIP, text="Camera 3 IP", bg="white", fg="black")
         camera_entry_label3.pack(ipadx=ipadx, pady=pady)
         self.camera_entry3 = Entry(self.masterIP)
-        self.camera_entry3.pack(ipadx=300)
+        self.camera_entry3.pack(ipadx=300, ipady=10)
 
         # Create an entry for the camera index
         camera_entry_label4 = Label(self.masterIP, text="Camera 4 IP", bg="white", fg="black")
         camera_entry_label4.pack(ipadx=ipadx, pady=pady)
         self.camera_entry4 = Entry(self.masterIP)
-        self.camera_entry4.pack(ipadx=300)
+        self.camera_entry4.pack(ipadx=300, ipady=10)
 
         # Create an entry for the camera index
         camera_entry_label5 = Label(self.masterIP, text="Camera 5 IP", bg="white", fg="black")
         camera_entry_label5.pack(ipadx=ipadx, pady=pady)
         self.camera_entry5 = Entry(self.masterIP)
-        self.camera_entry5.pack(ipadx=300)
+        self.camera_entry5.pack(ipadx=300, ipady=10)
 
         # Create an entry for the camera index
         camera_entry_label6 = Label(self.masterIP, text="Camera 6 IP", bg="white", fg="black")
         camera_entry_label6.pack(ipadx=ipadx, pady=pady)
         self.camera_entry6 = Entry(self.masterIP)
-        self.camera_entry6.pack(ipadx=300)
+        self.camera_entry6.pack(ipadx=300, ipady=10)
 
         button = Button(self.masterIP, text="Save Camera IPs", bg="#FFD100", fg="black", command=self.write_connect)
-        button.pack(side=LEFT, pady=20, padx=50)
+        button.pack(side=LEFT, pady=20, ipadx=50, padx=50, ipady=2)
 
         button = Button(self.masterIP, text="Load Camera IPs", bg="#FFD100", fg="black", command=self.connect)
-        button.pack(pady=20, side=LEFT, padx=110)
+        button.pack(pady=20, side=LEFT, ipadx=50, ipady=2)
 
         button = Button(self.masterIP, text="Load Camera IPs From Save", bg="#FFD100", fg="black", command=self.read_connect)
-        button.pack(side=RIGHT, pady=20, padx=50)
+        button.pack(side=RIGHT, pady=20, ipadx=50, padx=50, ipady=2)
 
     def Get_Camera_IPs_Loop(self):
         if(self.FirstCamIP == 2):
@@ -376,12 +385,15 @@ class GUI:
             # toggle stuff
             self.toggleCamera[self.first_camera] = 1
             button_text = "Disconnect Camera"
+            ipadx = self.video_w/self.camera_disconnect_space
         else:
             # self.cap.release()
             self.toggleCamera[self.first_camera] = 0
             button_text = "Connect Camera"
+            ipadx = self.video_w/self.camera_connect_space
 
         self.cameraB.config(text=button_text)
+        self.cameraB.pack(ipadx=ipadx)
 
     def change_cam_add(self):
         if(self.first_camera < 5):
@@ -404,8 +416,10 @@ class GUI:
 
         if(self.toggleCamera[self.first_camera] == 0):
             self.cameraB.config(text="Connect Camera")
+            self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
         else:
             self.cameraB.config(text="Disconnect Camera")
+            self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
         self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
 
@@ -432,8 +446,10 @@ class GUI:
 
         if(self.toggleCamera[self.first_camera] == 0):
             self.cameraB.config(text="Connect Camera")
+            self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
         else:
             self.cameraB.config(text="Disconnect Camera")
+            self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
 
         self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
@@ -448,8 +464,10 @@ class GUI:
 
         if(self.debugger == 1):
             self.button2a.config(text="Stop Debugging")
+            self.button2a.pack(ipadx=self.video_w/self.debugging_off)
         else:
             self.button2a.config(text="Debugging")
+            self.button2a.pack(ipadx=self.video_w/self.reg_keys)
 
     # helper functions for map
     def calibrate_map_p(self):
@@ -684,20 +702,25 @@ class GUI:
             frame = Frame(self.master, borderwidth=2, relief="groove", width=300, height=300)
             frame.grid(row=(i-1)//4, column=(i-1)%4, padx=10, pady=10)
 
-            label = Label(frame, text="Channel {}".format(i), width=10, height=4)
+            label = Label(frame, text="Channel {}".format(i), width=15, height=6)
             label.grid(row=0, column=0)
 
             option_menu = OptionMenu(frame, self.selected_options[i-1], *self.channel_options)
             option_menu.grid(row=0, column=1)
-            option_menu.config(width=10, height=3, bg="#FFD100")
+            option_menu.config(width=15, height=5, bg="#FFD100")
+
+            # Configure the font size of the dropdown menu
+            popup_menu = self.master.nametowidget(option_menu.menuname)
+            popup_menu.config(font=("Helvetica", 20))  # Adjust the font size as needed
+
 
         self.Save = Button(self.master, text="Save Config", command=self.write_select_channels)
         self.Save.grid(row=4, columnspan=1, pady=10)
-        self.Save.config(width=15, height=2, bg="#FFD100")
+        self.Save.config(width=20, height=2, bg="#FFD100")
 
         self.LOAD = Button(self.master, text="Load Config", command=self.select_channels)
         self.LOAD.grid(row=4, columnspan=4, pady=10)
-        self.LOAD.config(width=15, height=2, bg="#FFD100")
+        self.LOAD.config(width=20, height=2, bg="#FFD100")
 
         self.LOAD_Save = Button(self.master, text="Load Config From Save", command=self.read_select_channels)
         self.LOAD_Save.grid(row=4, column=3, pady=10)
@@ -1086,26 +1109,26 @@ class GUI:
 
             # calibrate IMU
             self.cameraC = Button(self.frame2, text="Calibrate IMU", bg="#FFD100", fg="black")
-            self.cameraC.pack(side=LEFT, padx=self.local_w/2)
+            self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_imu)
         else:
             self.position_IMU = 0
             self.cameraC.destroy()
             self.frame2.config(text="Positioning")
             # + and - for positioning
             self.button4 = Button(self.frame2, text="+", bg="#FFD100", fg="black")
-            self.button4.pack(side=LEFT)
+            self.button4.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
             self.button4.bind("<ButtonPress>", lambda event: self.up_p())
             self.button4.bind("<ButtonRelease>", lambda event: self.up_r())
 
 
             self.button3 = Button(self.frame2, text="-", bg="#FFD100", fg="black")
-            self.button3.pack(side=LEFT)
+            self.button3.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
             self.button3.bind("<ButtonPress>", lambda event: self.down_p())
             self.button3.bind("<ButtonRelease>", lambda event: self.down_r())
 
             # calibrate localization
             self.cameraC = Button(self.frame2, text="Calibrate Localization", bg="#FFD100", fg="black")
-            self.cameraC.pack(side=LEFT, padx=self.local_w/2.7)
+            self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_local)
             self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
             self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
 
@@ -1172,21 +1195,21 @@ class GUI:
 
         # move camera left and right
         button2 = Button(self.frame1, text="<", bg="#FFD100", fg="black", command=self.change_cam_sub)
-        button2.pack(side=LEFT)
+        button2.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
 
         button1 = Button(self.frame1, text=">", bg="#FFD100", fg="black", command=self.change_cam_add)
-        button1.pack(side=LEFT)
+        button1.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
 
         # connect camera button
         button_text = "Connect Camera"
         self.cameraB = Button(self.frame1, text=button_text, bg="#FFD100", fg="black", command=self.toggle)
-        self.cameraB.pack(side=LEFT, padx=self.video_w/3.5)
+        self.cameraB.pack(side=LEFT, ipadx=self.video_w/self.camera_connect_space)
 
         self.button1a = Button(self.frame1, text="Configure Camera", bg="#FFD100", fg="black", command=self.Get_Camera_IPs)
-        self.button1a.pack(side=RIGHT)
+        self.button1a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
 
         self.button2a = Button(self.frame1, text="Debugging", bg="#FFD100", fg="black", command=self.debug)
-        self.button2a.pack(side=RIGHT, padx=padx)
+        self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
 
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
@@ -1198,28 +1221,28 @@ class GUI:
 
         # + and - for positioning
         self.button4 = Button(self.frame2, text="+", bg="#FFD100", fg="black")
-        self.button4.pack(side=LEFT)
+        self.button4.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
         self.button4.bind("<ButtonPress>", lambda event: self.up_p())
         self.button4.bind("<ButtonRelease>", lambda event: self.up_r())
 
 
         self.button3 = Button(self.frame2, text="-", bg="#FFD100", fg="black")
-        self.button3.pack(side=LEFT)
+        self.button3.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
         self.button3.bind("<ButtonPress>", lambda event: self.down_p())
         self.button3.bind("<ButtonRelease>", lambda event: self.down_r())
 
         # calibrate localization
         self.cameraC = Button(self.frame2, text="Calibrate Localization", bg="#FFD100", fg="black")
-        self.cameraC.pack(side=LEFT, padx=self.local_w/2.7)
+        self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_local)
         self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
         self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
 
         # change right side view
         button5 = Button(self.frame2, text=">", bg="#FFD100", fg="black", command=self.change_right_side)
-        button5.pack(side=RIGHT)
+        button5.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
 
         button6 = Button(self.frame2, text="<", bg="#FFD100", fg="black", command=self.change_right_side)
-        button6.pack(side=RIGHT)
+        button6.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
 
         # diagnostic data
         # Create a frame for the third LabelFrame and use pack
@@ -1237,25 +1260,25 @@ class GUI:
         
         # change battery diagnostics
         button8 = Button(self.frame3, text="<", bg="#FFD100", fg="black", command=self.change_batt)
-        button8.pack(side=LEFT)
+        button8.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button7 = Button(self.frame3, text=">", bg="#FFD100", fg="black", command=self.change_batt)
-        button7.pack(side=LEFT)
+        button7.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button7a = Button(self.frame3, text="Battery", bg="#FFD100", fg="black")
-        button7a.pack(side=LEFT, padx=padx)
+        button7a.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button7b = Button(self.frame3, text="Motor", bg="#FFD100", fg="black")
-        button7b.pack(side=LEFT, padx=padx)
+        button7b.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button7c = Button(self.frame3, text="Actuator", bg="#FFD100", fg="black")
-        button7c.pack(side=LEFT, padx=padx)
+        button7c.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button7d = Button(self.frame3, text="Motherboard", bg="#FFD100", fg="black")
-        button7d.pack(side=LEFT, padx=padx)
+        button7d.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button9 = Button(self.frame3, text="Channel Selector", bg="#FFD100", fg="black", command=self.channel_select)
-        button9.pack(side=RIGHT)
+        button9.pack(side=RIGHT, ipadx=self.diag_w/self.diag_keys)
 
         if(not false_traffic):
             # start battery thread

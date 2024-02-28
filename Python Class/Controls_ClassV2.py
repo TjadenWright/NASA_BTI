@@ -5,6 +5,7 @@ import pygame.joystick
 import serial.tools.list_ports
 import time
 from pygame.locals import *
+import sys
 
 class Rover_Controls:
     def __init__(self, verbose = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
@@ -16,15 +17,45 @@ class Rover_Controls:
         self.countR = 0
         self.countL = 0
         self.PC_or_PI = PC_or_PI
+        self.controller = False
+        self.joystick = None
         pygame.init()
-        pygame.joystick.init()
     
     def setup_USB_Controller(self, controller_numb = 0):
-        self.joystick = pygame.joystick.Joystick(controller_numb)  # get joystick from pygame.
-        self.joystick.init()                                       # initialize the joystick.
-        # Print the name of the connected controller
-        controller_name = self.joystick.get_name()
-        print(f"Connected controller: {controller_name}")
+        if(self.controller == False):
+            pygame.joystick.init()
+            if pygame.joystick.get_count() > 0:
+                self.joystick = pygame.joystick.Joystick(controller_numb)
+                self.joystick.init()
+                print("Controller connected:", self.joystick.get_name())
+                self.controller = True
+            else:
+                print("No controller found.")
+                self.controller = False
+
+    def disconnect_controller(self):
+        if(self.controller):
+            if self.joystick:
+                self.joystick.quit()
+                self.joystick = None
+                print("Controller disconnected.")
+                self.controller = False
+            
+    def handle_events(self):
+        connected_joysticks = pygame.joystick.get_count()
+        if connected_joysticks == 1:
+            self.setup_USB_Controller()
+        elif connected_joysticks < 1:
+            self.disconnect_controller()
+            
+        # Process other events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                # Handle quit event
+                pygame.quit()
+                sys.exit()
+
+        return self.controller
 
     def USB_Controller_PC(self):
         pygame.event.get()  # Get pygame events
@@ -115,6 +146,15 @@ class Rover_Controls:
             print(f"Triggers: {L2_trigger, R2_trigger}")
             time.sleep(1)
 
+        if(self.countR == 0 and R2_trigger == 0.0): # haven't moved controller
+            R2_trigger = -1.0
+        elif(R2_trigger != 0.0):
+            self.countR+=1
+        if(self.countL == 0 and L2_trigger == 0.0):
+            L2_trigger = -1.0
+        elif(L2_trigger != 0.0):
+            self.countL+=1
+
         # controls[0] = Left_Joystick_X
         # controls[1] = Left_Joystick_Y
         # controls[2] = Right_Joystick_X
@@ -183,32 +223,35 @@ class Rover_Controls:
         return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger] + [button for idx, button in enumerate(buttons) if idx not in [6, 7, 13, 14, 15, 16]]
     
     def Motor_PWM_controller(self):
-        if(self.PC_or_PI == "PC"):
-            self.controls = self.USB_Controller_PC() # get controller input
-        elif(self.PC_or_PI == "Lenovo"):
-            self.controls = self.USB_Controller_Lenovo()
-        else:
-            self.controls = self.USB_Controller_PI() # get controller input
+        self.handle_events()
+        if(self.controller): # if the controller is connected
+            if(self.PC_or_PI == "PC"):
+                self.controls = self.USB_Controller_PC() # get controller input
+            elif(self.PC_or_PI == "Lenovo"):
+                self.controls = self.USB_Controller_Lenovo()
+            else:
+                self.controls = self.USB_Controller_PI() # get controller input
 
-        # right x and right trigger
-        # 2      ,     9
-        # -1 -> 1, -1 -> 1
+            # right x and right trigger
+            # 2      ,     9
+            # -1 -> 1, -1 -> 1
 
-        right_x = self.controls[2]
-        right_t = (self.controls[9] + 1)/2
-        left_t = (self.controls[8] + 1)/2
+            right_x = self.controls[2]
+            right_t = (self.controls[9] + 1)/2
+            left_t = (self.controls[8] + 1)/2
 
-        if(right_t > left_t):
-            direction = 1 # go forward
-        else:
-            direction = 0 # go back
+            if(right_t > left_t):
+                direction = 1 # go forward
+            else:
+                direction = 0 # go back
 
-        trigger = max(right_t, left_t)
+            trigger = max(right_t, left_t)
 
-        right_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
-        left_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            right_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            left_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
 
-        return [int(left_side_motors), int(right_side_motors), direction]
+            return [int(left_side_motors), int(right_side_motors), direction]
+        return [0, 0, 0] # stop the rover!!!!
     
     def Motor_PWM(self, Direction, Velocity):
         # velocity -1 to 1
@@ -227,40 +270,43 @@ class Rover_Controls:
         return [int(left_side_motors), int(right_side_motors), direction]
 
     def Controller_To_PWM_and_DIR(self):
-        if(self.PC_or_PI == "PC"):
-            self.controls = self.USB_Controller_PC() # get controller input
-        elif(self.PC_or_PI == "Lenovo"):
-            self.controls = self.USB_Controller_Lenovo()
-        else:
-            self.controls = self.USB_Controller_PI() # get controller input
+        self.handle_events()
+        if(self.controller): # if the controller is connected
+            if(self.PC_or_PI == "PC"):
+                self.controls = self.USB_Controller_PC() # get controller input
+            elif(self.PC_or_PI == "Lenovo"):
+                self.controls = self.USB_Controller_Lenovo()
+            else:
+                self.controls = self.USB_Controller_PI() # get controller input
 
-        right_y = -float(self.controls[3])
-        left_y = -float(self.controls[1])
+            right_y = -float(self.controls[3])
+            left_y = -float(self.controls[1])
 
-        right_side_motors = int(255*(abs(right_y)))
-        left_side_motors = int(255*(abs(left_y)))
+            right_side_motors = int(255*(abs(right_y)))
+            left_side_motors = int(255*(abs(left_y)))
 
-        if(right_side_motors != 0):
-            right_dir = int(255*right_y/right_side_motors)
-            if(right_dir < 0):
+            if(right_side_motors != 0):
+                right_dir = int(255*right_y/right_side_motors)
+                if(right_dir < 0):
+                    right_dir = 0
+            else:
                 right_dir = 0
-        else:
-            right_dir = 0
 
-        if(left_side_motors != 0):
-            left_dir = int(255*left_y/left_side_motors)
-            if(left_dir < 0):
+            if(left_side_motors != 0):
+                left_dir = int(255*left_y/left_side_motors)
+                if(left_dir < 0):
+                    left_dir = 0
+            else:
                 left_dir = 0
-        else:
-            left_dir = 0
 
-        # dead zone
-        if(right_side_motors <= 255*self.dead_zone):
-            right_side_motors = 0
-        if(left_side_motors <= 255*self.dead_zone):
-            left_side_motors = 0
+            # dead zone
+            if(right_side_motors <= 255*self.dead_zone):
+                right_side_motors = 0
+            if(left_side_motors <= 255*self.dead_zone):
+                left_side_motors = 0
 
-        return [left_side_motors, right_side_motors, left_dir, right_dir]
+            return [left_side_motors, right_side_motors, left_dir, right_dir]
+        return [0, 0, 0]
 
     def Enable_Write_arduino(self, arduino_name = 'Arduino', baud_rate = 115200):
         # Find the Arduino port automatically (assuming there's only one Arduino connected)
@@ -295,16 +341,19 @@ class Rover_Controls:
         return formatted_string
     
     def Get_Button_From_Controller(self, stop_button = 'PS_Logo'):
-        #if self.controls is None:
-        if(self.PC_or_PI == "PC"):
-            self.controls = self.USB_Controller_PC()
-        elif(self.PC_or_PI == "Lenovo"):
-            self.controls = self.USB_Controller_Lenovo()
-        else:
-            self.controls = self.USB_Controller_PI()
+        self.handle_events()
+        if(self.controller):
+            #if self.controls is None:
+            if(self.PC_or_PI == "PC"):
+                self.controls = self.USB_Controller_PC()
+            elif(self.PC_or_PI == "Lenovo"):
+                self.controls = self.USB_Controller_Lenovo()
+            else:
+                self.controls = self.USB_Controller_PI()
 
-        Home_Button = self.controls[self.Controller_Button_Map(stop_button)]
-        return Home_Button
+            Home_Button = self.controls[self.Controller_Button_Map(stop_button)]
+            return Home_Button
+        return 0
     
     def Controller_Button_Map(self, button_name):
         # controls[0] = Left_Joystick_X

@@ -34,8 +34,9 @@ else:
     rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 
 # run the code for manual and automatic.
-while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while True: # not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # get the button to change mode
+    connection = rc1.handle_events()
     Select = rc1.Get_Button_From_Controller(stop_button="Select") # select button is pressed or not
 
     # toggle the mode
@@ -51,7 +52,10 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     if(mode == 0): # manual mode
 
         rc1.Write_message(data=rc1.Motor_PWM_controller()) # send PWM data to the arduino
-        print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
+        if(connection):
+            print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
+        else:
+            print(str(rc1.Motor_PWM_controller())  + " Controller Disconnected")
 
     if(mode == 1): # auto mode
         Direction = 0

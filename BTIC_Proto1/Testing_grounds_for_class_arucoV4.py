@@ -36,7 +36,7 @@ DICT_MXM_L = "DICT_7X7_100"                # <--- dictionary used
 #### Controller Values to Change ####
 controller_numb = 0                        # <--- controller # used.
 baud_rate = 9600                           # <--- make this the same as the arduino
-PC_or_PI = "PC"                            # <--- PC or pi?
+PC_or_PI = "Lenovo"                        # <--- PC or pi or LENOVO!!!!?
 
 #### Autonomoy Values to Change ####
 Center_spot = 50                           # <--- how many cm from the aruco tag right or left side do you want the rover to drive to?
@@ -120,8 +120,8 @@ rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 #### setup communication with the arduino ####
-if(PC_or_PI == "PC"):
-    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino Mega 2560')
+if(PC_or_PI == "Lenovo"):
+    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino')
 else:
     rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 
@@ -149,7 +149,7 @@ a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go
 g1.set_up_Main_UI(b1, Fake_traffic)
 
 # run the code for manual and automatic.
-while not rc1.Get_Button_From_Controller():            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
     opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(img_Localization)
 
@@ -191,8 +191,8 @@ while not rc1.Get_Button_From_Controller():            # keep getting data till 
 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
-        rc1.Write_message(data=rc1.Controller_To_PWM_and_DIR()) # send PWM data to the arduino
-        print(str(rc1.Controller_To_PWM_and_DIR())  + " Manual Mode")
+        rc1.Write_message(data=rc1.Motor_PWM_controller()) # send PWM data to the arduino
+        print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
         #print("manual")
 
     elif(mode == 1): # auto mode
