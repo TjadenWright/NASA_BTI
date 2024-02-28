@@ -137,12 +137,12 @@ class localization:
 
                         # convert that to the that tags position is 0,0,0
                         print("for maker id: ", self.actual_tag[0], " its location is now: ", self.actual_tag_loc[:][0])
-            return True # if calibrating
+                        return True # if calibrating
         
         else:
             self.index = None
             
-            return False # if not calibrating
+        return False # if not calibrating
     
     def compute_tag_camera_location(self, tags_ids, dist, x, y, z, rx, ry, rz):
         if(tags_ids is not None):

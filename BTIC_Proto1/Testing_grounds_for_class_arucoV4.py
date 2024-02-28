@@ -58,6 +58,7 @@ VERBOSE = False                            # <--- do you want diagnostic data?
 #### Values to not Change ####
 # Initialize your variables
 move = 0
+prev_calib = False
 
 # toggle variables for selecting mode (manual vs auto)
 mode = 0
@@ -169,7 +170,6 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     connected = rc1.handle_events()
 
     # check if we are calibrating
-    prev_calib = calib
     if(prev_calib == False and calib == True):
         calibrate = True
 
@@ -265,6 +265,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 
     # get the states for the button
     prev_Select = Select
+    prev_calib = calib
 
      # display the tags on the map
     l1.show_tags()
