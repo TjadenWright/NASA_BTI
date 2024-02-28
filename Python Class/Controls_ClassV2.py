@@ -223,7 +223,6 @@ class Rover_Controls:
         return [left_x, left_y, right_x, right_y, dpad_up, dpad_down, dpad_left, dpad_right, L2_trigger, R2_trigger] + [button for idx, button in enumerate(buttons) if idx not in [6, 7, 13, 14, 15, 16]]
     
     def Motor_PWM_controller(self):
-        self.handle_events()
         if(self.controller): # if the controller is connected
             if(self.PC_or_PI == "PC"):
                 self.controls = self.USB_Controller_PC() # get controller input
@@ -270,7 +269,6 @@ class Rover_Controls:
         return [int(left_side_motors), int(right_side_motors), direction]
 
     def Controller_To_PWM_and_DIR(self):
-        self.handle_events()
         if(self.controller): # if the controller is connected
             if(self.PC_or_PI == "PC"):
                 self.controls = self.USB_Controller_PC() # get controller input
@@ -341,7 +339,6 @@ class Rover_Controls:
         return formatted_string
     
     def Get_Button_From_Controller(self, stop_button = 'PS_Logo'):
-        self.handle_events()
         if(self.controller):
             #if self.controls is None:
             if(self.PC_or_PI == "PC"):

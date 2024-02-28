@@ -165,6 +165,9 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     # handels different key presses
     l1.handler()
 
+    # handler for controller disconnection
+    connected = rc1.handle_events()
+
     # check if we are calibrating
     prev_calib = calib
     if(prev_calib == False and calib == True):
@@ -192,7 +195,10 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
         rc1.Write_message(data=rc1.Motor_PWM_controller()) # send PWM data to the arduino
-        print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
+        if(connected):
+            print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
+        else:
+            print(str(rc1.Motor_PWM_controller())  + " Connection Lost")
         #print("manual")
 
     elif(mode == 1): # auto mode
