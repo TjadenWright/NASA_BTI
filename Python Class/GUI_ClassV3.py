@@ -47,7 +47,10 @@ THERMOMETER_HEIGHT = 70
 
 
 class GUI:
-    def __init__(self):
+    def __init__(self, Camera_usb=False):
+        # make the cameras usbs or not (default to not)
+        self.Camera_usb = Camera_usb
+
         # for camera stuff
         self.cam1 = None
         self.cam2 = None
@@ -191,11 +194,13 @@ class GUI:
         camera_values = {}
         with open(file_path_IP, 'r') as file:
             for line in file:
-                parts = line.split(":")
+                parts = line.split(": ")
                 if len(parts) == 2:
                     camera_name = parts[0].strip()
                     value = parts[1].strip()
                     camera_values[camera_name] = value
+
+        # print(camera_values)
 
         # Assign values to variables
         cam1 = camera_values.get("Camera 1")
@@ -204,6 +209,10 @@ class GUI:
         cam4 = camera_values.get("Camera 4")
         cam5 = camera_values.get("Camera 5")
         cam6 = camera_values.get("Camera 6")
+
+        # print(cam1)
+        # print(cam2)
+        # print(cam3)
 
         self.camera_entry1.delete(0, 'end')  # Clear previous content
         self.camera_entry1.insert(0, cam1)
@@ -301,9 +310,15 @@ class GUI:
 
         while True:
             if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 1 and cap1 is None):
-                cap1 = cv2.VideoCapture(int(self.cam1))
+                if(self.Camera_usb):
+                    cap1 = cv2.VideoCapture(int(self.cam1))
+                else:
+                    cap1 = cv2.VideoCapture(self.cam1)
             elif(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 1 and cap2 is None):
-                cap2 = cv2.VideoCapture(int(self.cam2))
+                if(self.Camera_usb):
+                    cap2 = cv2.VideoCapture(int(self.cam2))
+                else:
+                    cap2 = cv2.VideoCapture(self.cam2)
             elif(self.first_camera == 2 and self.toggleCamera[self.first_camera] == 1 and cap3 is None):
                 cap3 = cv2.VideoCapture(self.cam3)
             elif(self.first_camera == 3 and self.toggleCamera[self.first_camera] == 1 and cap4 is None):
@@ -1070,7 +1085,10 @@ class GUI:
             frame_count += 1
             if frame_count >= 10:
                 end_time = time.time()
-                fps = frame_count / (end_time - start_time)
+                if(end_time - start_time != 0):
+                    fps = frame_count / (end_time - start_time)
+                else:
+                    fps = 0
                 frame_count = 0
                 start_time = end_time     
 
