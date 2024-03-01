@@ -28,8 +28,9 @@
 
 **Upload from VScode**
 1. Use the global repository section: https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git#setting-your-git-username-for-every-repository-on-your-computer
-2. Go to the bottom left button and click open remote repository and select the one you want.
-3. Select the same bottom left button again and select save a local clone.
-4. Then in the terminal (cntrl + '), type in git init to initialize the git repository.
-5. Upload to Github as normal through VS code.
-6. If you need to delete a commit: git reset --soft HEAD~. test
+2. Do this for the user.email. This is the same code but change "user.name" to "user.email".
+3. Go to the bottom left button and click open remote repository and select the one you want.
+4. Select the same bottom left button again and select save a local clone.
+5. Then in the terminal (cntrl + '), type in git init to initialize the git repository.
+6. Upload to Github as normal through VS code.
+7. If you need to delete a commit: git reset --soft HEAD~.
