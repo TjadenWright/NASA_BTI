@@ -16,6 +16,7 @@
 * pip install tkinter
 * pip install Pillow
 * pip install scipy
+* pip install onvif-zeep
 
 **Esphome Installation/Setup**
 1. pip install esphome
