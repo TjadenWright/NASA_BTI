@@ -15,7 +15,7 @@ sys.path.append(class_folder_path)                                      # set th
 #### Include Custom Class Functions ####
 ########################################
 
-from GUI_ClassV3 import GUI
+from GUI_ClassV4 import GUI
 from Battery_ClassV2 import Battery_class
 from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization

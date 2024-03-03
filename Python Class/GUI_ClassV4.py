@@ -154,13 +154,13 @@ class GUI:
         self.font_small = pygame.font.Font(None, 26)
 
         # spacing
-        self.camera_connect_space = 8
-        self.camera_disconnect_space = 8.5
+        self.camera_connect_space = 6.2
+        self.camera_disconnect_space = 6.4
         self.reg_keys = 20
-        self.debugging_off = 28.444443
-        self.calib_local = 5
+        self.debugging_off = 26
+        self.calib_local = 4.5
         self.calib_imu = 2
-        self.diag_keys = 18
+        self.diag_keys = 17.9
 
     def on_closing_IPs(self):
         self.masterIP.destroy()
