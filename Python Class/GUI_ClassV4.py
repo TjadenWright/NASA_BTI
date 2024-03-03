@@ -8,6 +8,7 @@ import pygame
 import numpy as np
 import random
 import os
+from PTZ_Control import ptzControl
 
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
 config_data_path = os.path.join(current_file_path, '../Config_Files')
@@ -69,6 +70,15 @@ class GUI:
         self.cap4 = None
         self.cap5 = None
         self.cap6 = None
+
+        # ptz classes
+        self.ptz = None
+        self.ptz1 = None
+        self.ptz2 = None
+        self.ptz3 = None
+        self.ptz4 = None
+        self.ptz5 = None
+        self.ptz6 = None
 
         self.img = None
         self.imgCV = None
@@ -307,6 +317,15 @@ class GUI:
         cap5 = None
         cap6 = None
         cap = None
+        
+        ptz = None
+        ptz1 = None
+        ptz2 = None
+        ptz3 = None
+        ptz4 = None
+        ptz5 = None
+        ptz6 = None
+
 
         while True:
             if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 1 and cap1 is None):
@@ -314,6 +333,7 @@ class GUI:
                     cap1 = cv2.VideoCapture(int(self.cam1))
                 else:
                     cap1 = cv2.VideoCapture(self.cam1)
+                    ptz1 = ptzControl()
             elif(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 1 and cap2 is None):
                 if(self.Camera_usb):
                     cap2 = cv2.VideoCapture(int(self.cam2))
@@ -330,6 +350,7 @@ class GUI:
 
             if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 1):
                 cap = cap1
+                ptz = ptz1
             elif(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 1):
                 cap = cap2
             elif(self.first_camera == 2 and self.toggleCamera[self.first_camera] == 1):
@@ -344,6 +365,8 @@ class GUI:
             if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 0):
                 cap1 = None
                 cap = cap1
+                ptz1 = None
+                ptz = ptz1
             if(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 0):
                 cap2 = None
                 cap = cap2
@@ -370,6 +393,9 @@ class GUI:
                 self.cap4 = cap4
                 self.cap5 = cap5
                 self.cap6 = cap6
+
+                self.ptz = ptz
+                self.ptz1 = ptz1
 
     def start_camera_connect_thread(self):
         self.camera_connect_thread = threading.Thread(target=self.connect_camera)
@@ -1183,6 +1209,47 @@ class GUI:
 
         self.button2a = Button(self.frame1, text="Debugging", bg="#FFD100", fg="black", command=self.debug)
         self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
+
+        def left():
+            self.ptz.move_pan(-1)
+
+        def right():
+            self.ptz.move_pan(1)
+
+        def up():
+            self.ptz.move_tilt(1)
+
+        def down():
+            self.ptz.move_tilt(-1)
+
+        def stop():
+            self.ptz.stop()
+
+        Back_width = 150
+        Back_height = Back_width
+
+        button_width = 50
+        button_height = button_width
+
+        # move camera left and right
+        # frame_with_color = Frame(self.frame1, bg="white")
+        # frame_with_color.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height, width=Back_width, height=Back_height)  # Adjust size as needed
+        button1 = Button(self.frame1, text="<", bg="#FFD100", fg="black")
+        button1.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
+        button1.bind("<ButtonPress>", lambda event: left())
+        button1.bind("<ButtonRelease>", lambda event: stop())
+        button2 = Button(self.frame1, text=">", bg="#FFD100", fg="black")
+        button2.place(x=self.video_w-5*pady - Back_width + 2*button_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
+        button2.bind("<ButtonPress>", lambda event: right())
+        button2.bind("<ButtonRelease>", lambda event: stop())
+        button3 = Button(self.frame1, text="^", bg="#FFD100", fg="black")
+        button3.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height, width=button_width, height=button_height) 
+        button3.bind("<ButtonPress>", lambda event: up())
+        button3.bind("<ButtonRelease>", lambda event: stop())
+        button4 = Button(self.frame1, text="v", bg="#FFD100", fg="black")
+        button4.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height + 2*button_height, width=button_width, height=button_height) 
+        button4.bind("<ButtonPress>", lambda event: down())
+        button4.bind("<ButtonRelease>", lambda event: stop())
 
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
