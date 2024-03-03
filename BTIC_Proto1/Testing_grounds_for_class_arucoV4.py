@@ -152,7 +152,7 @@ g1.set_up_Main_UI(b1, Fake_traffic)
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
-    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(img_Localization)
+    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(rc1, img_Localization)
 
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.

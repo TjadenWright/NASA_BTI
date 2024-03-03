@@ -1142,7 +1142,7 @@ class GUI:
 
         # intitalizing the GUI
         self.video_w = int(self.screen_width/1.5) # 800
-        self.video_h = int(self.screen_height/1.5) # 480
+        self.video_h = int(self.screen_height/1.4) # 480
         self.local_w = self.screen_width - 200 - self.video_w
         self.local_h = self.video_h
         self.diag_w = self.screen_width - 40
@@ -1160,6 +1160,26 @@ class GUI:
         root.destroy()
 
         return self.video_w, self.video_h, self.local_w + 132, self.local_h
+
+    # ptz camera stuff
+    def update_ptz(self, pan_right, pan_left, tilt_up, tilt_down):
+        if(self.ptz is not None):
+            if(self.pan_right is not pan_right or self.pan_left is not pan_left or self.tilt_up is not tilt_up or self.tilt_down is not tilt_down):
+                if(pan_left):
+                    self.ptz.move_pan(-1)
+                elif(pan_right):
+                    self.ptz.move_pan(1)
+                elif(tilt_up):
+                    self.ptz.move_tilt(1)
+                elif(tilt_down):
+                    self.ptz.move_tilt(-1)
+                else:
+                    self.ptz.stop()
+
+        self.pan_right = pan_right
+        self.pan_left = pan_left
+        self.tilt_up = tilt_up
+        self.tilt_down = tilt_down
 
     # setup for main gui
     def set_up_Main_UI(self, battery, false_traffic=True):
@@ -1216,26 +1236,12 @@ class GUI:
         self.button2a = Button(self.frame1, text="Debugging", bg="#FFD100", fg="black", command=self.debug)
         self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
 
-        def left():
-            self.ptz.move_pan(-1)
 
-        def right():
-            self.ptz.move_pan(1)
+        # Back_width = 150
+        # Back_height = Back_width
 
-        def up():
-            self.ptz.move_tilt(1)
-
-        def down():
-            self.ptz.move_tilt(-1)
-
-        def stop():
-            self.ptz.stop()
-
-        Back_width = 150
-        Back_height = Back_width
-
-        button_width = 50
-        button_height = button_width
+        # button_width = 50
+        # button_height = button_width
 
         # move camera left and right
         # frame_with_color = Frame(self.frame1, bg="white")
@@ -1357,7 +1363,7 @@ class GUI:
         print("Distance Between Each Icon: ", self.steps, "Distance From Top: ", self.down_step)
 
     # loop function for main gui
-    def loop_Main_UI(self, local_img, imu_image = None):
+    def loop_Main_UI(self, controls, local_img, imu_image = None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1393,6 +1399,9 @@ class GUI:
                 self.label2['image'] = self.black_image_right_tk
             else:
                 self.label2['image'] = imu_image
+
+        # check controls
+        self.update_ptz(controls.Get_Button_From_Controller("Dpad_Right"), controls.Get_Button_From_Controller("Dpad_Left"), controls.Get_Button_From_Controller("Dpad_Up"), controls.Get_Button_From_Controller("Dpad_Down"))
 
         # update UI
         self.root.update()
