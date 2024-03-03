@@ -185,8 +185,9 @@ class Controls_Diagnostics:
     def select_diagnostic(self):
         if(self.diagnostics_channel == 1 and (self.controls_channel == 1 or self.controls_channel == 5)):
             self.start = time.time()
-            print("start")
+            print("------------ start ------------")
         if(self.diagnostics_channel == 8 and (self.controls_channel == 1 or self.controls_channel == 5)):
+            print("------------ end ------------")
             print("Time: ", time.time()-self.start)
 
         if(self.act_OR_motor[self.diagnostics_channel-1] == 0): # motor
@@ -250,15 +251,24 @@ class Controls_Diagnostics:
             self.controls_channel = self.controls_channel + 1
             if(self.controls_channel >= self.controls_channel_total):
                 self.controls_channel = self.controls_channel_reset
+
+    def start_diagnostics_AND_controls_thread(self):
+        self.d_and_c = threading.Thread(target=self.start_diagnostic_AND_controls)
+        self.d_and_c.daemon = True
+        self.d_and_c.start()
+
             
-            
-
-
-
+        
 cd = Controls_Diagnostics(verbose=True)
 cd.connect_to_arduino()
 cd.start_arduino_command(0)
-cd.start_diagnostic_AND_controls()
+# cd.start_diagnostic_AND_controls()
+
+cd.start_diagnostics_AND_controls_thread()
+
+while True:
+    print("hello")
+    time.sleep(0.01)
 
     # # Main thread continues to run the Arduino communication
     # def majik_merigoround(i):
