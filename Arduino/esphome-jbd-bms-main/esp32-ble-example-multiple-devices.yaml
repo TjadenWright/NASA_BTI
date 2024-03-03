@@ -100,6 +100,14 @@ sensor:
       name: "${bms0} power"
     state_of_charge:
       name: "${bms0} state of charge"
+    nominal_capacity:
+      name: "${bms0} nominal capacity"
+    charging_cycles:
+      name: "${bms0} charging cycles"
+    capacity_remaining:
+      name: "${bms0} capacity remaining"
+    battery_cycle_capacity:
+      name: "${bms0} battery cycle capacity"
     total_voltage:
       name: "${bms0} total voltage"
     average_cell_voltage:
@@ -120,84 +128,84 @@ sensor:
       name: "${bms0} temperature 2"
     temperature_3:
       name: "${bms0} temperature 3"
-    temperature_4:
-      name: "${bms0} temperature 4"
-    temperature_5:
-      name: "${bms0} temperature 5"
-    temperature_6:
-      name: "${bms0} temperature 6"
-    cell_voltage_1:
-      name: "${bms0} cell voltage 1"
-    cell_voltage_2:
-      name: "${bms0} cell voltage 2"
-    cell_voltage_3:
-      name: "${bms0} cell voltage 3"
-    cell_voltage_4:
-      name: "${bms0} cell voltage 4"
-    cell_voltage_5:
-      name: "${bms0} cell voltage 5"
-    cell_voltage_6:
-      name: "${bms0} cell voltage 6"
-    cell_voltage_7:
-      name: "${bms0} cell voltage 7"
-    cell_voltage_8:
-      name: "${bms0} cell voltage 8"
-    cell_voltage_9:
-      name: "${bms0} cell voltage 9"
-    cell_voltage_10:
-      name: "${bms0} cell voltage 10"
-    cell_voltage_11:
-      name: "${bms0} cell voltage 11"
-    cell_voltage_12:
-      name: "${bms0} cell voltage 12"
-    cell_voltage_13:
-      name: "${bms0} cell voltage 13"
-    cell_voltage_14:
-      name: "${bms0} cell voltage 14"
-    cell_voltage_15:
-      name: "${bms0} cell voltage 15"
-    cell_voltage_16:
-      name: "${bms0} cell voltage 16"
-    cell_voltage_17:
-      name: "${bms0} cell voltage 17"
-    cell_voltage_18:
-      name: "${bms0} cell voltage 18"
-    cell_voltage_19:
-      name: "${bms0} cell voltage 19"
-    cell_voltage_20:
-      name: "${bms0} cell voltage 20"
-    cell_voltage_21:
-      name: "${bms0} cell voltage 21"
-    cell_voltage_22:
-      name: "${bms0} cell voltage 22"
-    cell_voltage_23:
-      name: "${bms0} cell voltage 23"
-    cell_voltage_24:
-      name: "${bms0} cell voltage 24"
-    cell_voltage_25:
-      name: "${bms0} cell voltage 25"
-    cell_voltage_26:
-      name: "${bms0} cell voltage 26"
-    cell_voltage_27:
-      name: "${bms0} cell voltage 27"
-    cell_voltage_28:
-      name: "${bms0} cell voltage 28"
-    cell_voltage_29:
-      name: "${bms0} cell voltage 29"
-    cell_voltage_30:
-      name: "${bms0} cell voltage 30"
-    cell_voltage_31:
-      name: "${bms0} cell voltage 31"
-    cell_voltage_32:
-      name: "${bms0} cell voltage 32"
-    operation_status_bitmask:
-      name: "${bms0} operation status bitmask"
-    errors_bitmask:
-      name: "${bms0} errors bitmask"
-    balancer_status_bitmask:
-      name: "${bms0} balancer status bitmask"
-    software_version:
-      name: "${bms0} software version"
+    # temperature_4:
+    #   name: "${bms0} temperature 4"
+    # temperature_5:
+    #   name: "${bms0} temperature 5"
+    # temperature_6:
+    #   name: "${bms0} temperature 6"
+    # cell_voltage_1:
+    #   name: "${bms0} cell voltage 1"
+    # cell_voltage_2:
+    #   name: "${bms0} cell voltage 2"
+    # cell_voltage_3:
+    #   name: "${bms0} cell voltage 3"
+    # cell_voltage_4:
+    #   name: "${bms0} cell voltage 4"
+    # cell_voltage_5:
+    #   name: "${bms0} cell voltage 5"
+    # cell_voltage_6:
+    #   name: "${bms0} cell voltage 6"
+    # cell_voltage_7:
+    #   name: "${bms0} cell voltage 7"
+    # cell_voltage_8:
+    #   name: "${bms0} cell voltage 8"
+    # cell_voltage_9:
+    #   name: "${bms0} cell voltage 9"
+    # cell_voltage_10:
+    #   name: "${bms0} cell voltage 10"
+    # cell_voltage_11:
+    #   name: "${bms0} cell voltage 11"
+    # cell_voltage_12:
+    #   name: "${bms0} cell voltage 12"
+    # cell_voltage_13:
+    #   name: "${bms0} cell voltage 13"
+    # cell_voltage_14:
+    #   name: "${bms0} cell voltage 14"
+    # cell_voltage_15:
+    #   name: "${bms0} cell voltage 15"
+    # cell_voltage_16:
+    #   name: "${bms0} cell voltage 16"
+    # cell_voltage_17:
+    #   name: "${bms0} cell voltage 17"
+    # cell_voltage_18:
+    #   name: "${bms0} cell voltage 18"
+    # cell_voltage_19:
+    #   name: "${bms0} cell voltage 19"
+    # cell_voltage_20:
+    #   name: "${bms0} cell voltage 20"
+    # cell_voltage_21:
+    #   name: "${bms0} cell voltage 21"
+    # cell_voltage_22:
+    #   name: "${bms0} cell voltage 22"
+    # cell_voltage_23:
+    #   name: "${bms0} cell voltage 23"
+    # cell_voltage_24:
+    #   name: "${bms0} cell voltage 24"
+    # cell_voltage_25:
+    #   name: "${bms0} cell voltage 25"
+    # cell_voltage_26:
+    #   name: "${bms0} cell voltage 26"
+    # cell_voltage_27:
+    #   name: "${bms0} cell voltage 27"
+    # cell_voltage_28:
+    #   name: "${bms0} cell voltage 28"
+    # cell_voltage_29:
+    #   name: "${bms0} cell voltage 29"
+    # cell_voltage_30:
+    #   name: "${bms0} cell voltage 30"
+    # cell_voltage_31:
+    #   name: "${bms0} cell voltage 31"
+    # cell_voltage_32:
+    #   name: "${bms0} cell voltage 32"
+    # operation_status_bitmask:
+    #   name: "${bms0} operation status bitmask"
+    # errors_bitmask:
+    #   name: "${bms0} errors bitmask"
+    # balancer_status_bitmask:
+    #   name: "${bms0} balancer status bitmask"
+    # software_version:
+    #   name: "${bms0} software version"
 
   - platform: jbd_bms_ble
     jbd_bms_ble_id: bms1
@@ -205,6 +213,14 @@ sensor:
       name: "${bms1} power"
     state_of_charge:
       name: "${bms1} state of charge"
+    nominal_capacity:
+      name: "${bms1} nominal capacity"
+    charging_cycles:
+      name: "${bms1} charging cycles"
+    capacity_remaining:
+      name: "${bms1} capacity remaining"
+    battery_cycle_capacity:
+      name: "${bms1} battery cycle capacity"
     total_voltage:
       name: "${bms1} total voltage"
     average_cell_voltage:
@@ -225,84 +241,84 @@ sensor:
       name: "${bms1} temperature 2"
     temperature_3:
       name: "${bms1} temperature 3"
-    temperature_4:
-      name: "${bms1} temperature 4"
-    temperature_5:
-      name: "${bms1} temperature 5"
-    temperature_6:
-      name: "${bms1} temperature 6"
-    cell_voltage_1:
-      name: "${bms1} cell voltage 1"
-    cell_voltage_2:
-      name: "${bms1} cell voltage 2"
-    cell_voltage_3:
-      name: "${bms1} cell voltage 3"
-    cell_voltage_4:
-      name: "${bms1} cell voltage 4"
-    cell_voltage_5:
-      name: "${bms1} cell voltage 5"
-    cell_voltage_6:
-      name: "${bms1} cell voltage 6"
-    cell_voltage_7:
-      name: "${bms1} cell voltage 7"
-    cell_voltage_8:
-      name: "${bms1} cell voltage 8"
-    cell_voltage_9:
-      name: "${bms1} cell voltage 9"
-    cell_voltage_10:
-      name: "${bms1} cell voltage 10"
-    cell_voltage_11:
-      name: "${bms1} cell voltage 11"
-    cell_voltage_12:
-      name: "${bms1} cell voltage 12"
-    cell_voltage_13:
-      name: "${bms1} cell voltage 13"
-    cell_voltage_14:
-      name: "${bms1} cell voltage 14"
-    cell_voltage_15:
-      name: "${bms1} cell voltage 15"
-    cell_voltage_16:
-      name: "${bms1} cell voltage 16"
-    cell_voltage_17:
-      name: "${bms1} cell voltage 17"
-    cell_voltage_18:
-      name: "${bms1} cell voltage 18"
-    cell_voltage_19:
-      name: "${bms1} cell voltage 19"
-    cell_voltage_20:
-      name: "${bms1} cell voltage 20"
-    cell_voltage_21:
-      name: "${bms1} cell voltage 21"
-    cell_voltage_22:
-      name: "${bms1} cell voltage 22"
-    cell_voltage_23:
-      name: "${bms1} cell voltage 23"
-    cell_voltage_24:
-      name: "${bms1} cell voltage 24"
-    cell_voltage_25:
-      name: "${bms1} cell voltage 25"
-    cell_voltage_26:
-      name: "${bms1} cell voltage 26"
-    cell_voltage_27:
-      name: "${bms1} cell voltage 27"
-    cell_voltage_28:
-      name: "${bms1} cell voltage 28"
-    cell_voltage_29:
-      name: "${bms1} cell voltage 29"
-    cell_voltage_30:
-      name: "${bms1} cell voltage 30"
-    cell_voltage_31:
-      name: "${bms1} cell voltage 31"
-    cell_voltage_32:
-      name: "${bms1} cell voltage 32"
-    operation_status_bitmask:
-      name: "${bms1} operation status bitmask"
-    errors_bitmask:
-      name: "${bms1} errors bitmask"
-    balancer_status_bitmask:
-      name: "${bms1} balancer status bitmask"
-    software_version:
-      name: "${bms1} software version"
+    # temperature_4:
+    #   name: "${bms1} temperature 4"
+    # temperature_5:
+    #   name: "${bms1} temperature 5"
+    # temperature_6:
+    #   name: "${bms1} temperature 6"
+    # cell_voltage_1:
+    #   name: "${bms1} cell voltage 1"
+    # cell_voltage_2:
+    #   name: "${bms1} cell voltage 2"
+    # cell_voltage_3:
+    #   name: "${bms1} cell voltage 3"
+    # cell_voltage_4:
+    #   name: "${bms1} cell voltage 4"
+    # cell_voltage_5:
+    #   name: "${bms1} cell voltage 5"
+    # cell_voltage_6:
+    #   name: "${bms1} cell voltage 6"
+    # cell_voltage_7:
+    #   name: "${bms1} cell voltage 7"
+    # cell_voltage_8:
+    #   name: "${bms1} cell voltage 8"
+    # cell_voltage_9:
+    #   name: "${bms1} cell voltage 9"
+    # cell_voltage_10:
+    #   name: "${bms1} cell voltage 10"
+    # cell_voltage_11:
+    #   name: "${bms1} cell voltage 11"
+    # cell_voltage_12:
+    #   name: "${bms1} cell voltage 12"
+    # cell_voltage_13:
+    #   name: "${bms1} cell voltage 13"
+    # cell_voltage_14:
+    #   name: "${bms1} cell voltage 14"
+    # cell_voltage_15:
+    #   name: "${bms1} cell voltage 15"
+    # cell_voltage_16:
+    #   name: "${bms1} cell voltage 16"
+    # cell_voltage_17:
+    #   name: "${bms1} cell voltage 17"
+    # cell_voltage_18:
+    #   name: "${bms1} cell voltage 18"
+    # cell_voltage_19:
+    #   name: "${bms1} cell voltage 19"
+    # cell_voltage_20:
+    #   name: "${bms1} cell voltage 20"
+    # cell_voltage_21:
+    #   name: "${bms1} cell voltage 21"
+    # cell_voltage_22:
+    #   name: "${bms1} cell voltage 22"
+    # cell_voltage_23:
+    #   name: "${bms1} cell voltage 23"
+    # cell_voltage_24:
+    #   name: "${bms1} cell voltage 24"
+    # cell_voltage_25:
+    #   name: "${bms1} cell voltage 25"
+    # cell_voltage_26:
+    #   name: "${bms1} cell voltage 26"
+    # cell_voltage_27:
+    #   name: "${bms1} cell voltage 27"
+    # cell_voltage_28:
+    #   name: "${bms1} cell voltage 28"
+    # cell_voltage_29:
+    #   name: "${bms1} cell voltage 29"
+    # cell_voltage_30:
+    #   name: "${bms1} cell voltage 30"
+    # cell_voltage_31:
+    #   name: "${bms1} cell voltage 31"
+    # cell_voltage_32:
+    #   name: "${bms1} cell voltage 32"
+    # operation_status_bitmask:
+    #   name: "${bms1} operation status bitmask"
+    # errors_bitmask:
+    #   name: "${bms1} errors bitmask"
+    # balancer_status_bitmask:
+    #   name: "${bms1} balancer status bitmask"
+    # software_version:
+    #   name: "${bms1} software version"
 
 text_sensor:
   - platform: jbd_bms_ble
