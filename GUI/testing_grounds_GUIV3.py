@@ -13,6 +13,8 @@ from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization
 from Controls_ClassV2 import Rover_Controls
 
+# import time
+
 Input_Res = (1920, 1080)                              # <--- change camera resolution (if change reclaibrate)
 FPS_video = 15                                        # <--- change fps (no need to recalibrate)
 MARKER_SIZE = 10                                      # <--- height of the whole tag in cm (or same units as in calibrate sheet)
@@ -84,5 +86,11 @@ while True:
         break
 
     l1.controller_handler(calibrateM, up_key, down_key)
+
+    # print(time.time())
+    # 1709419750.3838131
+    # 1709419750.4018545
+    # 1709419750.4189227
+    # ~20ms
 
 g1.release_main()

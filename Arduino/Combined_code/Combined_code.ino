@@ -20,8 +20,8 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // cActuator Channel# EN_EFUSE FR PWM
 // sMotorCurrent Channel#                (starts the current conversion)
 // dMotor Channel#                       you get this: ALARM TEMP CURRENT OC_FAULT
-// sMotorSpeed Channel#                  (starts the speed conversion)
-// dMotorSpeed Channel#                  you get this: SPEED
+// sMotrSpeed Channel#                   (starts the speed conversion)
+// dMotrSpeed Channel#                   you get this: SPEED
 // sActuatorCurrent Channel#             (starts the current conversion)
 // dActuator Channel#                    you get this: TEMP CURRENT OC_FAULT
 // sActuatrFeeback Channel#              (starts the feedback conversion)
