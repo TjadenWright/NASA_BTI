@@ -154,10 +154,10 @@ class GUI:
         self.font_small = pygame.font.Font(None, 26)
 
         # spacing
-        self.camera_connect_space = 6.7
-        self.camera_disconnect_space = 7
+        self.camera_connect_space = 8
+        self.camera_disconnect_space = 8.5
         self.reg_keys = 20
-        self.debugging_off = 28
+        self.debugging_off = 28.444443
         self.calib_local = 5
         self.calib_imu = 2
         self.diag_keys = 18
@@ -1151,6 +1151,12 @@ class GUI:
         print("Screen Width: ", self.screen_width)
         print("Screen Height: ", self.screen_height)
 
+        print("Screen Width: ", self.video_w)
+        print("Screen Height: ", self.video_h)
+
+        print("Screen Width: ", self.local_w)
+        print("Screen Height: ", self.local_h)
+
         root.destroy()
 
         return self.video_w, self.video_h, self.local_w + 132, self.local_h
@@ -1234,22 +1240,22 @@ class GUI:
         # move camera left and right
         # frame_with_color = Frame(self.frame1, bg="white")
         # frame_with_color.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height, width=Back_width, height=Back_height)  # Adjust size as needed
-        button1 = Button(self.frame1, text="<", bg="#FFD100", fg="black")
-        button1.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
-        button1.bind("<ButtonPress>", lambda event: left())
-        button1.bind("<ButtonRelease>", lambda event: stop())
-        button2 = Button(self.frame1, text=">", bg="#FFD100", fg="black")
-        button2.place(x=self.video_w-5*pady - Back_width + 2*button_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
-        button2.bind("<ButtonPress>", lambda event: right())
-        button2.bind("<ButtonRelease>", lambda event: stop())
-        button3 = Button(self.frame1, text="^", bg="#FFD100", fg="black")
-        button3.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height, width=button_width, height=button_height) 
-        button3.bind("<ButtonPress>", lambda event: up())
-        button3.bind("<ButtonRelease>", lambda event: stop())
-        button4 = Button(self.frame1, text="v", bg="#FFD100", fg="black")
-        button4.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height + 2*button_height, width=button_width, height=button_height) 
-        button4.bind("<ButtonPress>", lambda event: down())
-        button4.bind("<ButtonRelease>", lambda event: stop())
+                # button1 = Button(self.frame1, text="<", bg="#FFD100", fg="black")
+                # button1.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
+                # button1.bind("<ButtonPress>", lambda event: left())
+                # button1.bind("<ButtonRelease>", lambda event: stop())
+                # button2 = Button(self.frame1, text=">", bg="#FFD100", fg="black")
+                # button2.place(x=self.video_w-5*pady - Back_width + 2*button_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
+                # button2.bind("<ButtonPress>", lambda event: right())
+                # button2.bind("<ButtonRelease>", lambda event: stop())
+                # button3 = Button(self.frame1, text="^", bg="#FFD100", fg="black")
+                # button3.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height, width=button_width, height=button_height) 
+                # button3.bind("<ButtonPress>", lambda event: up())
+                # button3.bind("<ButtonRelease>", lambda event: stop())
+                # button4 = Button(self.frame1, text="v", bg="#FFD100", fg="black")
+                # button4.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height + 2*button_height, width=button_width, height=button_height) 
+                # button4.bind("<ButtonPress>", lambda event: down())
+                # button4.bind("<ButtonRelease>", lambda event: stop())
 
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
@@ -1351,7 +1357,7 @@ class GUI:
         print("Distance Between Each Icon: ", self.steps, "Distance From Top: ", self.down_step)
 
     # loop function for main gui
-    def loop_Main_UI(self, local_img):
+    def loop_Main_UI(self, local_img, imu_image = None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1383,7 +1389,10 @@ class GUI:
             # end, img_2 = localization.update_pygames_screen()
             self.label2['image'] = local_img
         else:
-            self.label2['image'] = self.black_image_right_tk
+            if(imu_image == None):
+                self.label2['image'] = self.black_image_right_tk
+            else:
+                self.label2['image'] = imu_image
 
         # update UI
         self.root.update()

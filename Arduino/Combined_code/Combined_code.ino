@@ -12,11 +12,11 @@
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
-String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback"}; 
+String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU"}; 
 
 // Commands
 // startup LOW_HIGH
-// cMotor Channel# EN EN_EFUSE PWM FR BREAK 
+// cMotor Channel# EN EN_EFUSE PWM FR BRAKE 
 // cActuator Channel# EN_EFUSE FR PWM
 // sMotorCurrent Channel#                (starts the current conversion)
 // dMotor Channel#                       you get this: ALARM TEMP CURRENT OC_FAULT
@@ -26,6 +26,9 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // dActuator Channel#                    you get this: TEMP CURRENT OC_FAULT
 // sActuatrFeeback Channel#              (starts the feedback conversion)
 // dActuatrFeeback Channel# FEEBACK      you get this: FEEDBACK
+// cMotherboard Channel# _, _, ...     
+// dMotherboard Channel#                 you get this: _, _, ...
+// dIMU Channel#                         you get this: _, _, ...
 
 // check values
 const int max_commands = 5, max_channels = 8; // for commands channel# doesn't count
@@ -62,6 +65,10 @@ ADS1219 ads(P3);
 // I2C MUX //
 /////////////
 TCA9548A I2CMux;                  // Address can be passed into the constructor
+
+////////////////
+// 1. I2C IMU //
+////////////////
 
 
 void setup() {
@@ -127,6 +134,10 @@ void setup() {
     /////////////
     I2CMux.begin(Wire);             // Wire instance is passed to the library
     I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+
+    ////////////////
+    // 2. I2C IMU //
+    ////////////////
 }
 
 void command_finder(int index, String command_from_python){
@@ -166,6 +177,15 @@ void command_finder(int index, String command_from_python){
         case 10:
             actuator_diagnostic(command_from_python, true); // yes feedback
             break;    
+        case 11:
+            control_motherboard(command_from_python);
+            break;
+        case 12:
+            diagnostics_motherboard(command_from_python);
+            break;
+        case 13:
+            diagnostics_IMU(command_from_python);
+            break;
         // Add cases for additional words as needed
     }
 }
@@ -194,7 +214,7 @@ void startup_command(String command_from_python){
 }
 
 // control motor
-// cMotor Channel# EN EN_EFUSE PWM FR BREAK 
+// cMotor Channel# EN EN_EFUSE PWM FR BRAKE 
 void control_motor(String command_from_python){
   if(TestArduinoScript)
     Serial.println("Controling the motor (change PWM and DIR signals)");
@@ -523,6 +543,84 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
     // feedback
     Serial.println(ads.readSingleEnded(0, 0)*MAX_SPEED/pow(2,23),5);
   }
+
+}
+
+// cMotherboard Channel# _, _, ...     
+void control_motherboard(String command_from_python){
+  if(TestArduinoScript)
+    Serial.println("Motherboard control");
+
+  // get the locations of the commands
+  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+
+  // get the strings
+  String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
+
+  int Channel = number1String.toInt();
+
+  // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
+  if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
+    if(TestArduinoScript){
+      Serial.print("Moved over to Channel ");
+      Serial.println(Channel);
+    }
+  }
+
+  // do motherboard stuff...
+
+}
+
+// dMotherboard Channel#                 you get this: _, _, ...  
+void diagnostics_motherboard(String command_from_python){
+  if(TestArduinoScript)
+    Serial.println("Motherboard diagnostics");
+
+  // get the locations of the commands
+  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+
+  // get the strings
+  String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
+
+  int Channel = number1String.toInt();
+
+  // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
+  if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
+    if(TestArduinoScript){
+      Serial.print("Moved over to Channel ");
+      Serial.println(Channel);
+    }
+  }
+
+  // diagnostics for motherboard .. 
+
+}
+
+// dIMU Channel#                 you get this: _, _, ...  
+void diagnostics_IMU(String command_from_python){
+  if(TestArduinoScript)
+    Serial.println("IMU diagnostics");
+
+  // get the locations of the commands
+  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+
+  // get the strings
+  String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
+
+  int Channel = number1String.toInt();
+
+  // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
+  if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
+    if(TestArduinoScript){
+      Serial.print("Moved over to Channel ");
+      Serial.println(Channel);
+    }
+  }
+
+  // diagnostics for IMU .. 
+  ////////////////
+  // 3. I2C IMU //
+  ////////////////
 
 }
 

@@ -84,8 +84,8 @@ class Controls_Diagnostics:
             self.diagnostics_channel_reset = 1
             self.controls_channel_reset = self.diagnostics_channel_reset
 
-    def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BREAK):
-        motor_control_command = "cMotor " + str(Channel_Numb) + " " + str(EN) + " " + str(EN_EFUSE) + " " + str(PWM) + " " + str(FR) + " " + str(BREAK)
+    def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE):
+        motor_control_command = "cMotor " + str(Channel_Numb) + " " + str(EN) + " " + str(EN_EFUSE) + " " + str(PWM) + " " + str(FR) + " " + str(BRAKE)
 
         if(self.verbose):
             print(motor_control_command)
