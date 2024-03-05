@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 import numpy as np
 
 class Amcrest_Camera:
-    def VideoCapture(self, ip = "http://nasabtic:nasabs123@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", timeout = 0.2):
+    def VideoCapture(self, ip = "http://nasabtic:nasabs123@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", timeout = 0.5):
 
         def convert_ip_to_base_user_pass(ip):
 
