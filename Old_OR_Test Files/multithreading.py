@@ -5,7 +5,11 @@ from threading import Thread # library for implementing multi-threaded processin
 
 # defining a helper class for implementing multi-threaded processing 
 class WebcamStream :
-    def __init__(self, stream_id=0):
+    def __init__(self, stream_id="http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1"):
+        # http://admin:admin@192.168.1.49/onvif/video
+        # "http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1"
+        # "rtsp://admin:admin@192.168.1.49/cam/realmonitor?channel=1&subtype=00&authbasic=YWRtaW46YWRtaW4="
+        # "rtsp://admin:admin@192.168.1.49:554/cam/realmonitor?channel=1&subtype=0"
         self.stream_id = stream_id   # default is 0 for primary camera 
         
         # opening video capture stream 
@@ -56,7 +60,7 @@ class WebcamStream :
 
 
 # initializing and starting multi-threaded webcam capture input stream 
-webcam_stream = WebcamStream(stream_id="https://172.168.100.39:8080/video") #  stream_id = 0 is for primary camera 
+webcam_stream = WebcamStream() #  stream_id = 0 is for primary camera 
 webcam_stream.start()
 
 # processing frames in input stream

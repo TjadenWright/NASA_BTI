@@ -30,7 +30,7 @@ def main():
     param_markers = aruco.DetectorParameters_create()
 
     # Open a video capture object using the best backend available
-    cap = cv2.VideoCapture("http://192.168.137.118:8080/video")  # Use 0 for the default camera
+    cap = cv2.VideoCapture("http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1")  # Use 0 for the default camera
 
     if not cap.isOpened():
         print("Error: Could not open video source.")
