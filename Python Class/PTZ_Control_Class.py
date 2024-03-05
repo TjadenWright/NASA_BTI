@@ -1,8 +1,27 @@
 from onvif import ONVIFCamera
 from time import sleep
+from urllib.parse import urlparse
 
 class ptzControl():
-    def __init__(self, IP = "192.168.166.148", PORT = 80, USER = "admin", PASS = "nasabs123"):
+    def ptz_setup(self, ip ="http://nasabtic:nasabs123@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", PORT = 80):
+        def convert_ip_to_base_user_pass(ip):
+
+            parsed_url = urlparse(ip)
+
+            username = parsed_url.username
+            password = parsed_url.password
+
+            # Get the IP address from the parsed URL
+            ip_address = parsed_url.hostname
+
+            print("Username:", username)
+            print("Password:", password)
+            print("IP Address:", ip_address)
+
+            return username, password, ip_address
+
+        USER, PASS, IP = convert_ip_to_base_user_pass(ip)
+
         super(ptzControl, self).__init__()
         self.mycam = ONVIFCamera(IP,PORT,USER,PASS)
         # create media service object
