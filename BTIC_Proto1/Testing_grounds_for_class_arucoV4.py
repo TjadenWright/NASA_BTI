@@ -286,6 +286,3 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 # at the end make sure that the rover doesn't go flying
 rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # end program stop the rover
 rc1.Disable_write_arduino()
-
-# Release the VideoCapture and close all OpenCV windows
-a1.release()

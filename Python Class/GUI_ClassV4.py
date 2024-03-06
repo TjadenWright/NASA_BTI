@@ -126,6 +126,7 @@ class GUI:
         # threading
         self.lock_bat = threading.Lock()
         self.lock_cam = threading.Lock()
+        self.lock_camCV = threading.Lock()
         self.lock_ptz = threading.Lock()
 
         # buttons for localization
@@ -343,20 +344,69 @@ class GUI:
         self.ptz_thread.daemon = True
         self.ptz_thread.start()
 
+    # opnecv thread
+    def run_opencvCam(self):
+        # connection
+        connection = False
+        ac = Amcrest_Camera()
+
+        # images 
+        img = None
+        ret = None
+
+        # camera selected previous
+        current_camera_selected = self.selected_camera
+
+        while True:
+            # get current
+            current_camera_selected = self.selected_camera
+
+            if(current_camera_selected != 0):
+                # connect to camera if not already connected to the selected camera
+                if(connection == False):
+                    connection = ac.VideoCapture(self.cam[self.opneCVCam])
+                    print("opneCV Camera Created")
+                
+                # if connected to the camera and we are on camera zero, copy imgCV to img (both ai image and view image are the same)
+                if(connection):
+                    ret, img = ac.read()
+                else:
+                    ret = False
+
+
+                # if we got an image call er a day
+                if(connection):
+                    if(ret):
+                        with self.lock_camCV:
+                            self.imgCV = img
+                else:
+                    with self.lock_camCV:
+                        self.imgCV = None
+            
+            else:
+                if(self.img is None):
+                    img = None
+                else:
+                    img = self.img.copy()
+                with self.lock_camCV:
+                    self.imgCV = img
+
+                time.sleep(0.033) # 30fps
+                
+    def start_cameraCV_thread(self):
+        self.cameraCV_connect_thread = threading.Thread(target=self.run_opencvCam)
+        self.cameraCV_connect_thread.daemon = True
+        self.cameraCV_connect_thread.start()
 
     # connecting to the camera and ptz
     def run_camera(self):
         # connection
         connection = [False] * self.number_of_cams
-        connectionCV = False
         ac = [Amcrest_Camera() for _ in range(self.number_of_cams)] 
-        acCV = Amcrest_Camera()
 
         # images 
         img = [None] * self.number_of_cams
-        imgCV = None
         ret = [None] * self.number_of_cams
-        retCV = None
 
         # camera selected previous
         prev_camera_selected = self.selected_camera
@@ -373,20 +423,15 @@ class GUI:
                     ac[prev_camera_selected].destroy()
                     connection[prev_camera_selected] = False
 
-                    # did we go from something -> 0?
-                    # if(prev_camera_selected != 0):
-                    #     acCV.destroy()
-            
-                    # connectionCV = False
+
+
 
                 # connect to camera if not already connected to the selected camera
                 if(connection[current_camera_selected] == False): # connect if not connected to gui camera
                     connection[current_camera_selected] = ac[current_camera_selected].VideoCapture(self.cam[current_camera_selected])
                     print("camera created")
-                if(current_camera_selected == 0): # copy to opnecv connection status if same as openCVcam
-                    connectionCV = connection[current_camera_selected]
-                # elif(connectionCV == False): # connect to opnecv camera if not on the man ui
-                #     connectionCV = acCV.VideoCapture(self.cam[self.opneCVCam])
+        
+
 
 
 
@@ -395,14 +440,11 @@ class GUI:
                     ret[current_camera_selected], img[current_camera_selected] = ac[current_camera_selected].read()
                 else:
                     ret[current_camera_selected] = False
-                if(current_camera_selected == 0):
-                    if(img[current_camera_selected] is not None):
-                        imgCV = img[current_camera_selected].copy()
-                    else:
-                        imgCV = None
-                    retCV = ret[current_camera_selected]
-                # elif(connectionCV):
-                #     retCV, imgCV = acCV.read()
+
+
+
+
+
                 
                 # if we got an image call er a day
                 if(connection[current_camera_selected]):
@@ -413,19 +455,15 @@ class GUI:
                     with self.lock_cam:
                         self.img = None
 
-                if(connectionCV):
-                    if(retCV):
-                        with self.lock_cam:
-                            self.imgCV = imgCV
-                else:
-                    with self.lock_cam:
-                        self.imgCV = None
+
+
+
+
 
             else:
                 with self.lock_cam:
                     self.img = None
-                with self.lock_cam:
-                    self.imgCV = None               
+                 
 
     def start_camera_thread(self):
         self.camera_connect_thread = threading.Thread(target=self.run_camera)
@@ -1277,6 +1315,7 @@ class GUI:
 
         # start camera thread
         self.start_camera_thread()
+        self.start_cameraCV_thread()
         self.start_ptz_thread()
     
         # battery display
