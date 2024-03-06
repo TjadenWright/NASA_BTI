@@ -333,7 +333,7 @@ class GUI:
                     with self.lock_ptz:
                         self.ptz = None
             elif(img is None and first):
-                print("ptz disable")
+                # print("ptz disable 1")
                 with self.lock_ptz:
                     self.ptz = None
 
@@ -382,6 +382,8 @@ class GUI:
                 else:
                     with self.lock_camCV:
                         self.imgCV = None
+
+                    time.sleep(0.1)
             
             else:
                 if(connection):
@@ -458,6 +460,8 @@ class GUI:
                     with self.lock_cam:
                         self.img = None
 
+                    time.sleep(0.1)
+
 
 
 
@@ -466,6 +470,8 @@ class GUI:
             else:
                 with self.lock_cam:
                     self.img = None
+
+                time.sleep(0.1)
                  
 
     def start_camera_thread(self):
