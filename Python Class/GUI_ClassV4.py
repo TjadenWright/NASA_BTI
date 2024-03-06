@@ -384,6 +384,9 @@ class GUI:
                         self.imgCV = None
             
             else:
+                if(connection):
+                    ac.destroy()
+                    connection = False
                 if(self.img is None):
                     img = None
                 else:
