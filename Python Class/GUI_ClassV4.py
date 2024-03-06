@@ -144,8 +144,8 @@ class GUI:
         # spacing
         self.camera_connect_space = 6.2
         self.camera_disconnect_space = 6.4
-        self.reg_keys = 11.35
-        self.debugging_off = 11.9
+        self.reg_keys = 11.371
+        self.debugging_off = 11.97
         self.calib_local = 10 # 4.5
         self.calib_imu = 2
         self.diag_keys = 17.9
