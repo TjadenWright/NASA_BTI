@@ -83,7 +83,7 @@ void ADS1219::resetConfig(){
 	writeRegister(0x00);
 }
 
-long ADS1219::readSingleEnded(int channel){
+long ADS1219::readSingleEnded(int channel, int ping){
 	config &= MUX_MASK;
 	switch (channel){
     case (0):
@@ -103,10 +103,13 @@ long ADS1219::readSingleEnded(int channel){
   }
   writeRegister(config);
 	  start();
-	  while(pcf8574.digitalRead(data_ready)==1){
-      delay(time_delay);
+    if(ping == 0){
+      while(pcf8574.digitalRead(data_ready)==1){
+        delay(time_delay);
+      }
+      return readConversionResult();
     }
-	  return readConversionResult();
+    return 0.0;
 }
 
 long ADS1219::readDifferential_0_1(){

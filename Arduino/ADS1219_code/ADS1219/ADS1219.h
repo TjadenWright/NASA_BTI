@@ -66,7 +66,7 @@ class ADS1219  {
     // Methods
     void begin();
 	void resetConfig();
-	long readSingleEnded(int channel);
+	long readSingleEnded(int channel, int ping);
 	long readDifferential_0_1();
 	long readDifferential_2_3();
 	long readDifferential_1_2();
@@ -85,6 +85,5 @@ class ADS1219  {
 	boolean singleShot;
 	int data_ready;
 	PCF8574 pcf8574;
-	PCF8574 PCF8574_2;
 };
 #endif
