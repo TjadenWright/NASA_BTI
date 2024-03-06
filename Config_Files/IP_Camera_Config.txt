@@ -1,4 +1,4 @@
-Camera 1: rtsp://admin:nasabs123@192.168.166.148:554/cam/realmonitor?channel=1&subtype=0
+Camera 1: http://admin:nasabs123@192.168.166.148/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
 Camera 2: http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
 Camera 3: 
 Camera 4: 

@@ -81,6 +81,8 @@ class ptzControl():
         self.requestg.ProfileToken = self.media_profile.token
         self.stop()
 
+        return True
+
     # Stop pan, tilt and zoom
     def stop(self):
         self.requests.PanTilt = True

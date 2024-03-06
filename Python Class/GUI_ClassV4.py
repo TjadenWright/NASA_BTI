@@ -8,7 +8,8 @@ import pygame
 import numpy as np
 import random
 import os
-from PTZ_Control import ptzControl
+from PTZ_Control_Class import ptzControl
+from Camera_Class import Amcrest_Camera
 
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
 config_data_path = os.path.join(current_file_path, '../Config_Files')
@@ -48,42 +49,27 @@ THERMOMETER_HEIGHT = 70
 
 
 class GUI:
-    def __init__(self, Camera_usb=False):
+    def __init__(self, Camera_usb=False, number_of_cams = 6):
         # make the cameras usbs or not (default to not)
         self.Camera_usb = Camera_usb
+        self.number_of_cams = number_of_cams
 
         # for camera stuff
-        self.cam1 = None
-        self.cam2 = None
-        self.cam3 = None
-        self.cam4 = None
-        self.cam5 = None
-        self.cam6 = None
         self.FirstCamIP = 0
+        self.opneCVCam = 0
 
-        self.cap = None
-        self.toggleCamera = np.array([0, 0, 0, 0, 0, 0])
-
-        self.cap1 = None
-        self.cap2 = None
-        self.cap3 = None
-        self.cap4 = None
-        self.cap5 = None
-        self.cap6 = None
+        self.toggleCamera = [0] * self.number_of_cams
+        self.cam = [""] * self.number_of_cams
 
         # ptz classes
         self.ptz = None
-        self.ptz1 = None
-        self.ptz2 = None
-        self.ptz3 = None
-        self.ptz4 = None
-        self.ptz5 = None
-        self.ptz6 = None
 
         self.img = None
         self.imgCV = None
 
-        self.first_camera = 0
+        self.configured_camera_IPs = False
+
+        self.selected_camera = 0
 
         self.debugger = 0
 
@@ -140,8 +126,7 @@ class GUI:
         # threading
         self.lock_bat = threading.Lock()
         self.lock_cam = threading.Lock()
-        self.lock_camCV = threading.Lock()
-        self.lock_cam_connect = threading.Lock()
+        self.lock_ptz = threading.Lock()
 
         # buttons for localization
         self.calibrateM = 0
@@ -162,45 +147,49 @@ class GUI:
         self.calib_imu = 2
         self.diag_keys = 17.9
 
+    # Functions for getting the cameras IPs
     def on_closing_IPs(self):
         self.masterIP.destroy()
         self.FirstCamIP = 0
 
     def connect(self):
-        self.cam1 = self.camera_entry1.get()
-        self.cam2 = self.camera_entry2.get()
-        self.cam3 = self.camera_entry3.get()
-        self.cam4 = self.camera_entry4.get()
-        self.cam5 = self.camera_entry5.get()
-        self.cam6 = self.camera_entry6.get()
+        self.cam[0] = self.camera_entry1.get()
+        self.cam[1] = self.camera_entry2.get()
+        self.cam[2] = self.camera_entry3.get()
+        self.cam[3] = self.camera_entry4.get()
+        self.cam[4] = self.camera_entry5.get()
+        self.cam[5] = self.camera_entry6.get()
         self.FirstCamIP = 1
-        print("Camera 1: ", self.cam1, "Camera 2: ", self.cam2, "Camera 3: ", self.cam3, "Camera 4: ", self.cam4, "Camera 5: ", self.cam5, "Camera 6: ", self.cam6)
+        print("Camera 1: ", self.cam[0], "Camera 2: ", self.cam[1], "Camera 3: ", self.cam[2], "Camera 4: ", self.cam[3], "Camera 5: ", self.cam[4], "Camera 6: ", self.cam[5])
+        self.configured_camera_IPs = True
 
     def write_connect(self):
         # write to file
+        cam = [] * 6
         with open(file_path_IP, 'w') as file:
-            cam1 = self.camera_entry1.get()
-            cam2 = self.camera_entry2.get()
-            cam3 = self.camera_entry3.get()
-            cam4 = self.camera_entry4.get()
-            cam5 = self.camera_entry5.get()
-            cam6 = self.camera_entry6.get()
+            cam[0] = self.camera_entry1.get()
+            cam[1] = self.camera_entry2.get()
+            cam[2] = self.camera_entry3.get()
+            cam[3] = self.camera_entry4.get()
+            cam[4] = self.camera_entry5.get()
+            cam[5] = self.camera_entry6.get()
 
             file.write("Camera 1: ")
-            file.write(cam1)
+            file.write(cam[0])
             file.write("\nCamera 2: ")
-            file.write(cam2)
+            file.write(cam[1])
             file.write("\nCamera 3: ")
-            file.write(cam3)
+            file.write(cam[2])
             file.write("\nCamera 4: ")
-            file.write(cam4)
+            file.write(cam[3])
             file.write("\nCamera 5: ")
-            file.write(cam5)
+            file.write(cam[4])
             file.write("\nCamera 6: ")
-            file.write(cam6)
+            file.write(cam[5])
 
     def read_connect(self):
         # read from file
+        cam = [None] * 6
         camera_values = {}
         with open(file_path_IP, 'r') as file:
             for line in file:
@@ -210,40 +199,35 @@ class GUI:
                     value = parts[1].strip()
                     camera_values[camera_name] = value
 
-        # print(camera_values)
-
         # Assign values to variables
-        cam1 = camera_values.get("Camera 1")
-        cam2 = camera_values.get("Camera 2")
-        cam3 = camera_values.get("Camera 3")
-        cam4 = camera_values.get("Camera 4")
-        cam5 = camera_values.get("Camera 5")
-        cam6 = camera_values.get("Camera 6")
+        cam[0] = camera_values.get("Camera 1")
+        cam[1] = camera_values.get("Camera 2")
+        cam[2] = camera_values.get("Camera 3")
+        cam[3] = camera_values.get("Camera 4")
+        cam[4] = camera_values.get("Camera 5")
+        cam[5] = camera_values.get("Camera 6")
 
-        # print(cam1)
-        # print(cam2)
-        # print(cam3)
-
+        # delete previous entry
         self.camera_entry1.delete(0, 'end')  # Clear previous content
-        self.camera_entry1.insert(0, cam1)
+        self.camera_entry1.insert(0, cam[0])
         self.camera_entry2.delete(0, 'end')  # Clear previous content
-        self.camera_entry2.insert(0, cam2)
+        self.camera_entry2.insert(0, cam[1])
         self.camera_entry3.delete(0, 'end')  # Clear previous content
-        self.camera_entry3.insert(0, cam3)
+        self.camera_entry3.insert(0, cam[2])
         self.camera_entry4.delete(0, 'end')  # Clear previous content
-        self.camera_entry4.insert(0, cam4)
+        self.camera_entry4.insert(0, cam[3])
         self.camera_entry5.delete(0, 'end')  # Clear previous content
-        self.camera_entry5.insert(0, cam5)
+        self.camera_entry5.insert(0, cam[4])
         self.camera_entry6.delete(0, 'end')  # Clear previous content
-        self.camera_entry6.insert(0, cam6)
+        self.camera_entry6.insert(0, cam[5])
 
         # Print values
-        print("Cam1:", cam1)
-        print("Cam2:", cam2)
-        print("Cam3:", cam3)
-        print("Cam4:", cam4)
-        print("Cam5:", cam5)
-        print("Cam6:", cam6)
+        print("Cam1:", cam[0])
+        print("Cam2:", cam[1])
+        print("Cam3:", cam[2])
+        print("Cam4:", cam[3])
+        print("Cam5:", cam[4])
+        print("Cam6:", cam[5])
 
     def Get_Camera_IPs(self):
         self.FirstCamIP = 2
@@ -309,108 +293,154 @@ class GUI:
             self.masterIP.destroy()
             self.FirstCamIP = 0
 
-    def connect_camera(self):
-        cap1 = None
-        cap2 = None
-        cap3 = None
-        cap4 = None
-        cap5 = None
-        cap6 = None
-        cap = None
-        
-        ptz = None
-        ptz1 = None
-        ptz2 = None
-        ptz3 = None
-        ptz4 = None
-        ptz5 = None
-        ptz6 = None
+    def ptz_controls(self):
+        ptz = [ptzControl() for _ in range(self.number_of_cams)]
 
+        ptzEnable = [False] * self.number_of_cams
+
+        # camera selected previous
+        prev_camera_selected = self.selected_camera
+        current_camera_selected = self.selected_camera
+
+        # first time through
+        first = True
 
         while True:
-            if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 1 and cap1 is None):
-                if(self.Camera_usb):
-                    cap1 = cv2.VideoCapture(int(self.cam1))
-                else:
-                    cap1 = cv2.VideoCapture(self.cam1)
-                    ptz1 = ptzControl()
-            elif(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 1 and cap2 is None):
-                if(self.Camera_usb):
-                    cap2 = cv2.VideoCapture(int(self.cam2))
-                else:
-                    cap2 = cv2.VideoCapture(self.cam2)
-            elif(self.first_camera == 2 and self.toggleCamera[self.first_camera] == 1 and cap3 is None):
-                cap3 = cv2.VideoCapture(self.cam3)
-            elif(self.first_camera == 3 and self.toggleCamera[self.first_camera] == 1 and cap4 is None):
-                cap4 = cv2.VideoCapture(self.cam4)
-            elif(self.first_camera == 4 and self.toggleCamera[self.first_camera] == 1 and cap5 is None):
-                cap5 = cv2.VideoCapture(self.cam5)
-            elif(self.first_camera == 5 and self.toggleCamera[self.first_camera] == 1 and cap6 is None):
-                cap6 = cv2.VideoCapture(self.cam6)
+            img = self.img
+            # save previous
+            prev_camera_selected = current_camera_selected
+            # get current
+            current_camera_selected = self.selected_camera
 
-            if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap1
-                ptz = ptz1
-            elif(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap2
-            elif(self.first_camera == 2 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap3
-            elif(self.first_camera == 3 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap4
-            elif(self.first_camera == 4 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap5
-            elif(self.first_camera == 5 and self.toggleCamera[self.first_camera] == 1):
-                cap = cap6
+            # any time we transition we need to switch so change first to true.
+            if(prev_camera_selected != current_camera_selected):
+                first = True
+                with self.lock_ptz:
+                    self.ptz = None
 
-            if(self.first_camera == 0 and self.toggleCamera[self.first_camera] == 0):
-                cap1 = None
-                cap = cap1
-                ptz1 = None
-                ptz = ptz1
-            if(self.first_camera == 1 and self.toggleCamera[self.first_camera] == 0):
-                cap2 = None
-                cap = cap2
-            if(self.first_camera == 2 and self.toggleCamera[self.first_camera] == 0):
-                cap3 = None
-                cap = cap3
-            if(self.first_camera == 3 and self.toggleCamera[self.first_camera] == 0):
-                cap4 = None
-                cap = cap4
-            if(self.first_camera == 4 and self.toggleCamera[self.first_camera] == 0):
-                cap5 = None
-                cap = cap4
-            if(self.first_camera == 5 and self.toggleCamera[self.first_camera] == 0):
-                cap6 = None
-                cap = cap5
+            if(img is not None and first):
+                ptzEnable[current_camera_selected] = ptz[current_camera_selected].ptz_setup(self.cam[current_camera_selected])
+                first = False
+                print("ptz setup")
+
+                if(ptzEnable[current_camera_selected]):
+                    print("ptz enable")
+                    with self.lock_ptz:
+                        self.ptz = ptz[current_camera_selected]
+                else:
+                    print("ptz disable")
+                    with self.lock_ptz:
+                        self.ptz = None
+            elif(img is None and first):
+                print("ptz disable")
+                with self.lock_ptz:
+                    self.ptz = None
 
             time.sleep(0.1)
 
-            with self.lock_cam_connect:
-                self.cap = cap
-                self.cap1 = cap1
-                self.cap2 = cap2
-                self.cap3 = cap3
-                self.cap4 = cap4
-                self.cap5 = cap5
-                self.cap6 = cap6
+    def start_ptz_thread(self):
+        self.ptz_thread = threading.Thread(target=self.ptz_controls)
+        self.ptz_thread.daemon = True
+        self.ptz_thread.start()
 
-                self.ptz = ptz
-                self.ptz1 = ptz1
 
-    def start_camera_connect_thread(self):
-        self.camera_connect_thread = threading.Thread(target=self.connect_camera)
+    # connecting to the camera and ptz
+    def run_camera(self):
+        # connection
+        connection = [False] * self.number_of_cams
+        connectionCV = False
+        ac = [Amcrest_Camera() for _ in range(self.number_of_cams)] 
+        acCV = Amcrest_Camera()
+
+        # images 
+        img = [None] * self.number_of_cams
+        imgCV = None
+        ret = [None] * self.number_of_cams
+        retCV = None
+
+        # camera selected previous
+        prev_camera_selected = self.selected_camera
+        current_camera_selected = self.selected_camera
+
+        while True:
+            if(self.configured_camera_IPs):
+                # save previous
+                prev_camera_selected = current_camera_selected
+                # get current
+                current_camera_selected = self.selected_camera
+                # use the current and previous so that they don;t switch midway
+                if(prev_camera_selected != current_camera_selected):
+                    ac[prev_camera_selected].destroy()
+                    connection[prev_camera_selected] = False
+
+                    # did we go from something -> 0?
+                    # if(prev_camera_selected != 0):
+                    #     acCV.destroy()
+            
+                    # connectionCV = False
+
+                # connect to camera if not already connected to the selected camera
+                if(connection[current_camera_selected] == False): # connect if not connected to gui camera
+                    connection[current_camera_selected] = ac[current_camera_selected].VideoCapture(self.cam[current_camera_selected])
+                    print("camera created")
+                if(current_camera_selected == 0): # copy to opnecv connection status if same as openCVcam
+                    connectionCV = connection[current_camera_selected]
+                # elif(connectionCV == False): # connect to opnecv camera if not on the man ui
+                #     connectionCV = acCV.VideoCapture(self.cam[self.opneCVCam])
+
+
+
+                # if connected to the camera and we are on camera zero, copy imgCV to img (both ai image and view image are the same)
+                if(connection[current_camera_selected]):
+                    ret[current_camera_selected], img[current_camera_selected] = ac[current_camera_selected].read()
+                else:
+                    ret[current_camera_selected] = False
+                if(current_camera_selected == 0):
+                    if(img[current_camera_selected] is not None):
+                        imgCV = img[current_camera_selected].copy()
+                    else:
+                        imgCV = None
+                    retCV = ret[current_camera_selected]
+                # elif(connectionCV):
+                #     retCV, imgCV = acCV.read()
+                
+                # if we got an image call er a day
+                if(connection[current_camera_selected]):
+                    if(ret[current_camera_selected]):
+                        with self.lock_cam:
+                            self.img = img[current_camera_selected]
+                else:
+                    with self.lock_cam:
+                        self.img = None
+
+                if(connectionCV):
+                    if(retCV):
+                        with self.lock_cam:
+                            self.imgCV = imgCV
+                else:
+                    with self.lock_cam:
+                        self.imgCV = None
+
+            else:
+                with self.lock_cam:
+                    self.img = None
+                with self.lock_cam:
+                    self.imgCV = None               
+
+    def start_camera_thread(self):
+        self.camera_connect_thread = threading.Thread(target=self.run_camera)
         self.camera_connect_thread.daemon = True
         self.camera_connect_thread.start()
 
     # helper functions for camera
     def toggle(self):   
-        if(self.toggleCamera[self.first_camera] == 0): # turn on camera
-            self.toggleCamera[self.first_camera] = 1
+        if(self.toggleCamera[self.selected_camera] == 0): # turn on camera
+            self.toggleCamera[self.selected_camera] = 1
             button_text = "Disconnect Camera"
             ipadx = self.video_w/self.camera_disconnect_space
         else:
             # self.cap.release()
-            self.toggleCamera[self.first_camera] = 0
+            self.toggleCamera[self.selected_camera] = 0
             button_text = "Connect Camera"
             ipadx = self.video_w/self.camera_connect_space
 
@@ -418,29 +448,29 @@ class GUI:
         self.cameraB.pack(ipadx=ipadx)
 
     def change_cam_add(self):
-        if(self.first_camera < 5):
-            self.first_camera = self.first_camera + 1
+        if(self.selected_camera < 5):
+            self.selected_camera = self.selected_camera + 1
         else:
-            self.first_camera = 0
+            self.selected_camera = 0
 
-        if(self.toggleCamera[self.first_camera] == 0):
+        if(self.toggleCamera[self.selected_camera] == 0):
             self.cameraB.config(text="Connect Camera")
             self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
         else:
             self.cameraB.config(text="Disconnect Camera")
             self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
-        self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
+        self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
 
-        print("Camera Selected: ", self.first_camera, "Camera Array: ", self.toggleCamera)
+        print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
 
     def change_cam_sub(self):
-        if(self.first_camera > 0):
-            self.first_camera = self.first_camera - 1
+        if(self.selected_camera > 0):
+            self.selected_camera = self.selected_camera - 1
         else:
-            self.first_camera = 5
+            self.selected_camera = 5
 
-        if(self.toggleCamera[self.first_camera] == 0):
+        if(self.toggleCamera[self.selected_camera] == 0):
             self.cameraB.config(text="Connect Camera")
             self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
         else:
@@ -448,9 +478,9 @@ class GUI:
             self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
 
-        self.frame1.config(text="Camera Feed " + str(self.first_camera+1))
+        self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
 
-        print("Camera Selected: ", self.first_camera, "Camera Array: ", self.toggleCamera)
+        print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
 
     def debug(self):
         if(self.debugger == 0):
@@ -629,6 +659,7 @@ class GUI:
         self.battery_thread_F.daemon = True
         self.battery_thread_F.start()
 
+    # channel select functions
     def on_closing(self):
         self.master.destroy()
         self.FirstChannelSelect = 0
@@ -670,19 +701,6 @@ class GUI:
         for i in range(1, 17):
             self.selected_options[i-1].set(channel_values[i-1])
             # option_menu.children['menu'].entryconfig(0, label="IMU")
-
-        # self.camera_entry1.delete(0, 'end')  # Clear previous content
-        # self.camera_entry1.insert(0, cam1)
-        # self.camera_entry2.delete(0, 'end')  # Clear previous content
-        # self.camera_entry2.insert(0, cam2)
-        # self.camera_entry3.delete(0, 'end')  # Clear previous content
-        # self.camera_entry3.insert(0, cam3)
-        # self.camera_entry4.delete(0, 'end')  # Clear previous content
-        # self.camera_entry4.insert(0, cam4)
-        # self.camera_entry5.delete(0, 'end')  # Clear previous content
-        # self.camera_entry5.insert(0, cam5)
-        # self.camera_entry6.delete(0, 'end')  # Clear previous content
-        # self.camera_entry6.insert(0, cam6)
 
     def channel_select(self):
         self.FirstChannelSelect = 2
@@ -729,6 +747,7 @@ class GUI:
             self.master.destroy()
             self.FirstChannelSelect == 0
 
+    # battery stuff
     def change_batt(self):
         if(self.bms_numb == 0):
             self.bms_numb = 1
@@ -1042,61 +1061,6 @@ class GUI:
 
         self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
 
-    # camera thread
-    def camera_update(self):
-        frame_count = 0
-        start_time = time.time()
-        fps = 0
-
-        while True:
-            if self.cap is not None:
-                ret, img = self.cap.read()
-                # Add FPS text to the frame
-                if(self.debugger == 1):
-                    cv2.putText(img, f'FPS: {round(fps, 2)}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-            elif self.cap is None:
-                time.sleep(1)
-                img = None
-
-            with self.lock_cam:
-                self.img = img
-
-            # Measure FPS
-            frame_count += 1
-            if frame_count >= 10:
-                end_time = time.time()
-                if(end_time - start_time != 0):
-                    fps = frame_count / (end_time - start_time)
-                else:
-                    fps = 0
-                frame_count = 0
-                start_time = end_time     
-
-    def start_cam_thread(self):
-        self.cam_thread = threading.Thread(target=self.camera_update)
-        self.cam_thread.daemon = True
-        self.cam_thread.start()
-
-    # camera thread
-    def camera_updateCV(self):
-        while True:
-            if self.cap1 is not None and self.cap != self.cap1:
-                ret, img = self.cap1.read()
-            elif self.cap == self.cap1 and self.img is not None:
-                img = self.img.copy()
-            elif self.cap1 is None:
-                time.sleep(1)
-                img = None
-
-            with self.lock_camCV:
-                self.imgCV = img
-
-    def start_cam_threadCV(self):
-        self.cam_threadCV = threading.Thread(target=self.camera_updateCV)
-        self.cam_threadCV.daemon = True
-        self.cam_threadCV.start()
-
     # positioning
     def change_right_side(self):
         if(self.position_IMU == 0):
@@ -1235,34 +1199,7 @@ class GUI:
 
         self.button2a = Button(self.frame1, text="Debugging", bg="#FFD100", fg="black", command=self.debug)
         self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
-
-
-        # Back_width = 150
-        # Back_height = Back_width
-
-        # button_width = 50
-        # button_height = button_width
-
-        # move camera left and right
-        # frame_with_color = Frame(self.frame1, bg="white")
-        # frame_with_color.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height, width=Back_width, height=Back_height)  # Adjust size as needed
-                # button1 = Button(self.frame1, text="<", bg="#FFD100", fg="black")
-                # button1.place(x=self.video_w-5*pady - Back_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
-                # button1.bind("<ButtonPress>", lambda event: left())
-                # button1.bind("<ButtonRelease>", lambda event: stop())
-                # button2 = Button(self.frame1, text=">", bg="#FFD100", fg="black")
-                # button2.place(x=self.video_w-5*pady - Back_width + 2*button_width, y=self.video_h-5*padx - Back_height + button_height, width=button_width, height=button_height) 
-                # button2.bind("<ButtonPress>", lambda event: right())
-                # button2.bind("<ButtonRelease>", lambda event: stop())
-                # button3 = Button(self.frame1, text="^", bg="#FFD100", fg="black")
-                # button3.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height, width=button_width, height=button_height) 
-                # button3.bind("<ButtonPress>", lambda event: up())
-                # button3.bind("<ButtonRelease>", lambda event: stop())
-                # button4 = Button(self.frame1, text="v", bg="#FFD100", fg="black")
-                # button4.place(x=self.video_w-5*pady - Back_width + button_width, y=self.video_h-5*padx - Back_height + 2*button_height, width=button_width, height=button_height) 
-                # button4.bind("<ButtonPress>", lambda event: down())
-                # button4.bind("<ButtonRelease>", lambda event: stop())
-
+      
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
         self.frame2 = LabelFrame(frame_container1, text="Positioning", padx=padx, pady=pady)
@@ -1339,13 +1276,8 @@ class GUI:
             self.start_false_battery_thread()
 
         # start camera thread
-        self.start_cam_thread()
-
-        # start cv camera thread
-        self.start_cam_threadCV()
-
-        # camera connection
-        self.start_camera_connect_thread()
+        self.start_camera_thread()
+        self.start_ptz_thread()
     
         # battery display
         self.screenDiag = self.init_pygame()
@@ -1371,7 +1303,7 @@ class GUI:
 
 
         # get the camera feed
-        if self.cap is not None:
+        if self.img is not None:
             cv_img = self.img
             if(cv_img is not None):
                 img1 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
