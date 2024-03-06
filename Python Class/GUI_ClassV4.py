@@ -361,7 +361,7 @@ class GUI:
             # get current
             current_camera_selected = self.selected_camera
 
-            if(current_camera_selected != 0):
+            if(current_camera_selected != self.opneCVCam):
                 # connect to camera if not already connected to the selected camera
                 if(connection == False):
                     connection = ac.VideoCapture(self.cam[self.opneCVCam])
