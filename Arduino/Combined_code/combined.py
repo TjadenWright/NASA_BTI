@@ -43,8 +43,8 @@ class Controls_Diagnostics:
 
     def connect_to_arduino(self):
         # Initializing Arduino Serial Connection
-        self.arduino = serial.Serial(port='COM5', baudrate=2000000)
-        time.sleep(2) # wait for connection to complete
+        self.arduino = serial.Serial(port='COM6', baudrate=self.baudrate)
+        time.sleep(4) # wait for connection to complete
 
     def write_read(self, x):
         self.arduino.write(bytes(x + "\n", 'utf-8'))
@@ -259,7 +259,7 @@ class Controls_Diagnostics:
 
             
         
-cd = Controls_Diagnostics(verbose=True)
+cd = Controls_Diagnostics(baudrate = 115200, verbose=True)
 cd.connect_to_arduino()
 cd.start_arduino_command(0)
 # cd.start_diagnostic_AND_controls()
@@ -267,8 +267,8 @@ cd.start_arduino_command(0)
 cd.start_diagnostics_AND_controls_thread()
 
 while True:
-    print("hello")
-    time.sleep(0.01)
+    # print("hello")
+    time.sleep(0.1)
 
     # # Main thread continues to run the Arduino communication
     # def majik_merigoround(i):

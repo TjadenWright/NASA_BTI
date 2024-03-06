@@ -73,7 +73,7 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 
 void setup() {
     // put your setup code here, to run once:
-    Serial.begin(2000000);
+    Serial.begin(115200);
 
     // Initialize all elements of the array to -1
     for (int i = 0; i < max_commands; i++) {
