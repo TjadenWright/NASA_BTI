@@ -1344,9 +1344,12 @@ class GUI:
         # get the camera feed
         if self.img is not None:
             cv_img = self.img
-            if(cv_img is not None):
+            if cv_img is not None:
                 img1 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
                 img2 = cv2.resize(img1, (self.video_w, self.video_h))
+                if self.debugger == 1:
+                    fps_text = "FPS: {:.2f}".format(1.0 / self.elapsed_time)
+                    cv2.putText(img2, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 img = ImageTk.PhotoImage(Image.fromarray(img2))
                 self.label1['image'] = img
             else:
