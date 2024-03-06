@@ -144,8 +144,8 @@ class GUI:
         # spacing
         self.camera_connect_space = 6.2
         self.camera_disconnect_space = 6.4
-        self.reg_keys = 11.38
-        self.debugging_off = 12
+        self.reg_keys = 11.35
+        self.debugging_off = 11.9
         self.calib_local = 10 # 4.5
         self.calib_imu = 2
         self.diag_keys = 17.9
@@ -1226,11 +1226,11 @@ class GUI:
         button1 = Button(self.frame1, text="        >        ", bg="#FFD100", fg="black", command=self.change_cam_add)
         button1.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
 
-        self.button1a = Button(self.frame1, text="Configure Camera ", bg="#FFD100", fg="black", command=self.Get_Camera_IPs)
-        self.button1a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
-                            
         self.button2a = Button(self.frame1, text="    Debugging    ", bg="#FFD100", fg="black", command=self.debug)
-        self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
+        self.button2a.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
+
+        self.button1a = Button(self.frame1, text="Configure Camera ", bg="#FFD100", fg="black", command=self.Get_Camera_IPs)
+        self.button1a.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
       
         # mapping
         # Create the second LabelFrame stacked horizontally using pack
@@ -1239,6 +1239,13 @@ class GUI:
 
         self.label2 = Label(self.frame2, bg="black")
         self.label2.pack()
+
+        # change right side view
+        button5 = Button(self.frame2, text=">", bg="#FFD100", fg="black", command=self.change_right_side)
+        button5.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
+
+        button6 = Button(self.frame2, text="<", bg="#FFD100", fg="black", command=self.change_right_side)
+        button6.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
 
         # + and - for positioning
         self.button4 = Button(self.frame2, text="+", bg="#FFD100", fg="black")
@@ -1257,13 +1264,6 @@ class GUI:
         self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_local)
         self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
         self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
-
-        # change right side view
-        button5 = Button(self.frame2, text=">", bg="#FFD100", fg="black", command=self.change_right_side)
-        button5.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
-
-        button6 = Button(self.frame2, text="<", bg="#FFD100", fg="black", command=self.change_right_side)
-        button6.pack(side=RIGHT, ipadx=self.local_w/self.reg_keys)
 
         # diagnostic data
         # Create a frame for the third LabelFrame and use pack
@@ -1330,7 +1330,7 @@ class GUI:
         self.prev_time = time.time()
 
     # loop function for main gui
-    def loop_Main_UI(self, controls, local_img, imu_image = None, mode = 0):
+    def loop_Main_UI(self, controls, local_img, mode = 0, imu_image = None):
         self.mode = mode
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
