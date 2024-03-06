@@ -1351,10 +1351,10 @@ class GUI:
                 img2 = cv2.resize(img1, (self.video_w, self.video_h))
                 if self.debugger == 1:
                     curr_time = time.time()
-                    elapsed_time = curr_time - prev_time
+                    elapsed_time = curr_time - self.prev_time
                     fps_text = "FPS: {:.2f}".format(1.0 / elapsed_time)
                     cv2.putText(img2, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                    prev_time = curr_time
+                    self.prev_time = curr_time
                 img = ImageTk.PhotoImage(Image.fromarray(img2))
                 self.label1['image'] = img
             else:

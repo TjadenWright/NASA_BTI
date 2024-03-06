@@ -199,7 +199,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             print(str(rc1.Motor_PWM_controller())  + " Manual Mode")
         else:
             print(str(rc1.Motor_PWM_controller())  + " Connection Lost")
-        #print("manual")
+        # print("manual")
 
     elif(mode == 1): # auto mode
         
