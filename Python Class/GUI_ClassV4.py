@@ -1333,6 +1333,8 @@ class GUI:
         self.down_step = int(self.diag_h/2.5)
         print("Distance Between Each Icon: ", self.steps, "Distance From Top: ", self.down_step)
 
+        self.prev_time = time.time()
+
     # loop function for main gui
     def loop_Main_UI(self, controls, local_img, imu_image = None):
         for event in pygame.event.get():
