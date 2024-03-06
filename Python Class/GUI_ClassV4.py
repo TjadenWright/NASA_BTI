@@ -27,6 +27,7 @@ RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+GRAY = (128, 128, 128)
 
 # Battery dimensions
 BATTERY_WIDTH = 100
@@ -72,6 +73,7 @@ class GUI:
         self.selected_camera = 0
 
         self.debugger = 0
+        self.mode = 0
 
         # for bms stuff
         self.total_voltage = np.array([0.0, 0.0])
@@ -361,42 +363,49 @@ class GUI:
             # get current
             current_camera_selected = self.selected_camera
 
-            if(current_camera_selected != self.opneCVCam):
-                # connect to camera if not already connected to the selected camera
-                if(connection == False):
-                    connection = ac.VideoCapture(self.cam[self.opneCVCam])
-                    print("opneCV Camera Created")
-                
-                # if connected to the camera and we are on camera zero, copy imgCV to img (both ai image and view image are the same)
-                if(connection):
-                    ret, img = ac.read()
-                else:
-                    ret = False
+            if(self.mode == 1):
+                if(current_camera_selected != self.opneCVCam):
+                    # connect to camera if not already connected to the selected camera
+                    if(connection == False):
+                        connection = ac.VideoCapture(self.cam[self.opneCVCam])
+                        print("opneCV Camera Created")
+                    
+                    # if connected to the camera and we are on camera zero, copy imgCV to img (both ai image and view image are the same)
+                    if(connection):
+                        ret, img = ac.read()
+                    else:
+                        ret = False
 
 
-                # if we got an image call er a day
-                if(connection):
-                    if(ret):
+                    # if we got an image call er a day
+                    if(connection):
+                        if(ret):
+                            with self.lock_camCV:
+                                self.imgCV = img
+                    else:
                         with self.lock_camCV:
-                            self.imgCV = img
+                            self.imgCV = None
+
+                        time.sleep(0.1)
+                
                 else:
+                    if(connection):
+                        ac.destroy()
+                        connection = False
+                    if(self.img is None):
+                        img = None
+                    else:
+                        img = self.img.copy()
                     with self.lock_camCV:
-                        self.imgCV = None
+                        self.imgCV = img
 
-                    time.sleep(0.1)
-            
+                    time.sleep(0.033) # 30fps
             else:
-                if(connection):
-                    ac.destroy()
-                    connection = False
-                if(self.img is None):
-                    img = None
-                else:
-                    img = self.img.copy()
                 with self.lock_camCV:
-                    self.imgCV = img
-
-                time.sleep(0.033) # 30fps
+                    self.imgCV = None
+                
+                connection = False
+                time.sleep(1)
                 
     def start_cameraCV_thread(self):
         self.cameraCV_connect_thread = threading.Thread(target=self.run_opencvCam)
@@ -1049,7 +1058,7 @@ class GUI:
         if(on_off == 1):
             color = GREEN
         else:
-            color = RED
+            color = GRAY
 
         pygame.draw.circle(screen, color, (x, y+10), 20) 
 
@@ -1144,9 +1153,9 @@ class GUI:
         return self.video_w, self.video_h, self.local_w + 132, self.local_h
 
     # ptz camera stuff
-    def update_ptz(self, pan_right, pan_left, tilt_up, tilt_down):
+    def update_ptz(self, pan_right, pan_left, tilt_up, tilt_down, zoom_in, zoom_out):
         if(self.ptz is not None):
-            if(self.pan_right is not pan_right or self.pan_left is not pan_left or self.tilt_up is not tilt_up or self.tilt_down is not tilt_down):
+            if(self.pan_right is not pan_right or self.pan_left is not pan_left or self.tilt_up is not tilt_up or self.tilt_down is not tilt_down or self.zoom_in is not zoom_in or self.zoom_out is not zoom_out):
                 if(pan_left):
                     self.ptz.move_pan(-1)
                 elif(pan_right):
@@ -1155,6 +1164,14 @@ class GUI:
                     self.ptz.move_tilt(1)
                 elif(tilt_down):
                     self.ptz.move_tilt(-1)
+                elif(zoom_in):
+                    self.ptz.zoom(1)
+                    self.ptz.move_tilt(0)
+                    self.ptz.move_pan(0)
+                elif(zoom_out):
+                    self.ptz.zoom(-1)
+                    self.ptz.move_tilt(0)
+                    self.ptz.move_pan(0)
                 else:
                     self.ptz.stop()
 
@@ -1162,6 +1179,8 @@ class GUI:
         self.pan_left = pan_left
         self.tilt_up = tilt_up
         self.tilt_down = tilt_down
+        self.zoom_in = zoom_in
+        self.zoom_out = zoom_out
 
     # setup for main gui
     def set_up_Main_UI(self, battery, false_traffic=True):
@@ -1311,7 +1330,8 @@ class GUI:
         self.prev_time = time.time()
 
     # loop function for main gui
-    def loop_Main_UI(self, controls, local_img, imu_image = None):
+    def loop_Main_UI(self, controls, local_img, imu_image = None, mode = 0):
+        self.mode = mode
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1355,7 +1375,7 @@ class GUI:
                 self.label2['image'] = imu_image
 
         # check controls
-        self.update_ptz(controls.Get_Button_From_Controller("Dpad_Right"), controls.Get_Button_From_Controller("Dpad_Left"), controls.Get_Button_From_Controller("Dpad_Up"), controls.Get_Button_From_Controller("Dpad_Down"))
+        self.update_ptz(controls.Get_Button_From_Controller("Dpad_Right"), controls.Get_Button_From_Controller("Dpad_Left"), controls.Get_Button_From_Controller("Dpad_Up"), controls.Get_Button_From_Controller("Dpad_Down"), controls.Get_Button_From_Controller("R1_Button"), controls.Get_Button_From_Controller("L1_Button"))
 
         # update UI
         self.root.update()
