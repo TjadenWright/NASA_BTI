@@ -142,9 +142,9 @@ class GUI:
         # spacing
         self.camera_connect_space = 6.2
         self.camera_disconnect_space = 6.4
-        self.reg_keys = 20
-        self.debugging_off = 26
-        self.calib_local = 4.5
+        self.reg_keys = 11.38
+        self.debugging_off = 12
+        self.calib_local = 10 # 4.5
         self.calib_imu = 2
         self.diag_keys = 17.9
 
@@ -473,33 +473,11 @@ class GUI:
         self.camera_connect_thread.daemon = True
         self.camera_connect_thread.start()
 
-    # helper functions for camera
-    def toggle(self):   
-        if(self.toggleCamera[self.selected_camera] == 0): # turn on camera
-            self.toggleCamera[self.selected_camera] = 1
-            button_text = "Disconnect Camera"
-            ipadx = self.video_w/self.camera_disconnect_space
-        else:
-            # self.cap.release()
-            self.toggleCamera[self.selected_camera] = 0
-            button_text = "Connect Camera"
-            ipadx = self.video_w/self.camera_connect_space
-
-        self.cameraB.config(text=button_text)
-        self.cameraB.pack(ipadx=ipadx)
-
     def change_cam_add(self):
         if(self.selected_camera < 5):
             self.selected_camera = self.selected_camera + 1
         else:
             self.selected_camera = 0
-
-        if(self.toggleCamera[self.selected_camera] == 0):
-            self.cameraB.config(text="Connect Camera")
-            self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
-        else:
-            self.cameraB.config(text="Disconnect Camera")
-            self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
         self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
 
@@ -510,13 +488,6 @@ class GUI:
             self.selected_camera = self.selected_camera - 1
         else:
             self.selected_camera = 5
-
-        if(self.toggleCamera[self.selected_camera] == 0):
-            self.cameraB.config(text="Connect Camera")
-            self.cameraB.pack(ipadx=self.video_w/self.camera_connect_space)
-        else:
-            self.cameraB.config(text="Disconnect Camera")
-            self.cameraB.pack(ipadx=self.video_w/self.camera_disconnect_space)
 
 
         self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
@@ -529,11 +500,11 @@ class GUI:
         else:
             self.debugger = 0
 
-        if(self.debugger == 1):
-            self.button2a.config(text="Stop Debugging")
+        if(self.debugger == 1):  
+            self.button2a.config(text=" Stop Debugging ")
             self.button2a.pack(ipadx=self.video_w/self.debugging_off)
         else:
-            self.button2a.config(text="Debugging")
+            self.button2a.config(text="    Debugging    ")
             self.button2a.pack(ipadx=self.video_w/self.reg_keys)
 
     # helper functions for map
@@ -1224,21 +1195,16 @@ class GUI:
         self.label1['image'] = self.black_image_video_tk
 
         # move camera left and right
-        button2 = Button(self.frame1, text="<", bg="#FFD100", fg="black", command=self.change_cam_sub)
+        button2 = Button(self.frame1, text="        <        ", bg="#FFD100", fg="black", command=self.change_cam_sub)
         button2.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
 
-        button1 = Button(self.frame1, text=">", bg="#FFD100", fg="black", command=self.change_cam_add)
+        button1 = Button(self.frame1, text="        >        ", bg="#FFD100", fg="black", command=self.change_cam_add)
         button1.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
 
-        # connect camera button
-        button_text = "Connect Camera"
-        self.cameraB = Button(self.frame1, text=button_text, bg="#FFD100", fg="black", command=self.toggle)
-        self.cameraB.pack(side=LEFT, ipadx=self.video_w/self.camera_connect_space)
-
-        self.button1a = Button(self.frame1, text="Configure Camera", bg="#FFD100", fg="black", command=self.Get_Camera_IPs)
+        self.button1a = Button(self.frame1, text="Configure Camera ", bg="#FFD100", fg="black", command=self.Get_Camera_IPs)
         self.button1a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
-
-        self.button2a = Button(self.frame1, text="Debugging", bg="#FFD100", fg="black", command=self.debug)
+                            
+        self.button2a = Button(self.frame1, text="    Debugging    ", bg="#FFD100", fg="black", command=self.debug)
         self.button2a.pack(side=RIGHT, ipadx=self.video_w/self.reg_keys)
       
         # mapping
