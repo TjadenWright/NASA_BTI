@@ -6,10 +6,16 @@ import serial.tools.list_ports
 import time
 from pygame.locals import *
 import sys
+import numpy as np
+import threading
 
 class Rover_Controls:
-    def __init__(self, verbose = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
+    def __init__(self, verbose = False, timing = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
+        # print out stuff
         self.verbose = verbose                       # debuggin purposes.
+        self.timing = timing
+
+        # controls stuff
         self.maximum_voltage = maximum_voltage       # maximum voltage of the driving motors.
         self.dead_zone = dead_zone                   # deadzone for the joysticks.
         self.upper_loss = upper_loss                 # fix for inconsistancies in the upper values of controller.
@@ -20,6 +26,34 @@ class Rover_Controls:
         self.controller = False
         self.joystick = None
         pygame.init()
+
+        # arduino stuff
+        self.arduino = [None] * 2
+
+        # make a list of things that need to happen
+        self.act_OR_motor = np.zeros(16) # 0 is a motor, 1 is an actuator, 2 is slew gear, 3 is motherboard
+
+        # setup channels
+        self.diagnostics_channel = [1, 9]
+        self.controls_channel = self.diagnostics_channel.copy()
+
+        self.diagnostics_channel_total = [8, 16]
+        self.controls_channel_total = self.diagnostics_channel_total.copy()
+        
+        self.diagnostics_channel_reset = [1, 9]
+        self.controls_channel_reset = self.diagnostics_channel_reset.copy()
+
+        # controls
+        self.controls_vals = np.zeros((16, 10), int)
+
+        # diagnostics
+        self.diagnostics_vals = np.zeros((16, 10))
+        self.diagnostic_select = np.zeros(16)
+        self.diagnostic_lock = [threading.Lock(), threading.Lock()]
+
+        # more diagnostics
+        self.start = [0] * 2
+
     
     def setup_USB_Controller(self, controller_numb = 0):
         if(self.controller == False):
@@ -305,38 +339,6 @@ class Rover_Controls:
 
             return [left_side_motors, right_side_motors, left_dir, right_dir]
         return [0, 0, 0]
-
-    def Enable_Write_arduino(self, arduino_name = 'Arduino', baud_rate = 115200):
-        # Find the Arduino port automatically (assuming there's only one Arduino connected)
-        arduino_port = None
-        ports = serial.tools.list_ports.comports()
-        for port in ports:
-            print(port.description)
-            if arduino_name in port.description:  # Adjust the description as needed
-                arduino_port = port.device
-                break
-
-        if arduino_port is None:
-            print("Arduino not found. Check the connection or adjust the description.")
-            exit(1)
-
-        print(arduino_port)
-        # Set up the serial connection
-        self.serial_inst = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
-        time.sleep(1)
-
-    def Disable_write_arduino(self):
-        self.serial_inst.close()
-
-    def Write_message(self, data):
-        data_send = self.format_list(list = data)
-        # Send the two integers separated by a comma and terminated with a newline character
-        self.serial_inst.write(data_send.encode('utf-8'))
-        self.serial_inst.flush()  # Ensure data is sent immediately
-
-    def format_list(self, list):
-        formatted_string = ",".join(map(str, list)) + "\n"
-        return formatted_string
     
     def Get_Button_From_Controller(self, stop_button = 'PS_Logo'):
         if(self.controller):
@@ -409,3 +411,301 @@ class Rover_Controls:
                             'Select', 'Start', 'PS_Logo', 'Left_Stick_In', 'Right_Stick_In']
         
         return Controls_Names.index(button_name)
+
+    # arduino
+    def Enable_Write_arduino(self, index = 0, arduino_name = 'Arduino', baud_rate = 115200):
+        # Find the Arduino port automatically (assuming there's only one Arduino connected)
+        arduino_port = None
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            print(port.description)
+            if arduino_name in port.description:  # Adjust the description as needed
+                arduino_port = port.device
+                break
+
+        if arduino_port is None:
+            print("Arduino not found. Check the connection or adjust the description.")
+            exit(1)
+
+        print(arduino_port)
+        # Set up the serial connection
+        self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
+        time.sleep(1)
+
+    def Disable_write_arduino(self, index = 0):
+        self.arduino[index].close()
+
+    def write_read(self, data, index = 0):
+        # send a command with a \n at the end
+        self.arduino[index].write(bytes(data + "\n", 'utf-8'))
+        
+        # Read from the serial port until data is received
+        data = self.arduino[index].readline().decode('utf-8').strip()
+        return str(data)
+    
+    def set_act_OR_motor(self, config=np.zeros(15)):
+        self.act_OR_motor = config
+
+    def start_arduino_command(self, HIGH_LOW, index = 0):
+        if(HIGH_LOW == 1):
+            self.diagnostics_channel[index] = 9
+            self.controls_channel[index] = self.diagnostics_channel[index]
+
+            self.diagnostics_channel_total[index] = 16
+            self.controls_channel_total[index] = self.diagnostics_channel_total[index]
+            
+            self.diagnostics_channel_reset[index] = 9
+            self.controls_channel_reset[index] = self.diagnostics_channel_reset[index]
+            high_low_str = "high"
+        else:
+            self.diagnostics_channel[index] = 1
+            self.controls_channel[index] = self.diagnostics_channel[index]
+
+            self.diagnostics_channel_total[index] = 8
+            self.controls_channel_total[index] = self.diagnostics_channel_total[index]
+            
+            self.diagnostics_channel_reset[index] = 1
+            self.controls_channel_reset[index] = self.diagnostics_channel_reset[index]
+            high_low_str = "low"
+
+        start_command = "startup " + high_low_str
+        if(self.verbose):
+            print(start_command)
+            print(self.write_read(start_command, index))
+        else:
+            self.write_read(start_command, index)
+
+    def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
+        motor_control_command = "cMotor " + str(Channel_Numb) + " " + str(EN) + " " + str(EN_EFUSE) + " " + str(PWM) + " " + str(FR) + " " + str(BRAKE)
+
+        if(self.verbose):
+            print(motor_control_command)
+            print(self.write_read(motor_control_command, index))
+        else:
+            self.write_read(motor_control_command, index)
+
+    def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
+        actuator_control_command = "cActuator " + str(Channel_Numb) + " " + str(EN_EFUSE) + " " + str(FR) + " " + str(PWM)
+
+        if(self.verbose):
+            print(actuator_control_command)
+            print(self.write_read(actuator_control_command, index))
+        else:
+            self.write_read(actuator_control_command, index)
+
+    def start_motor_current_arduino_command(self, Channel_Numb, index = 0):
+        motor_start_current_command = "sMotorCurrent " + str(Channel_Numb)
+
+        if(self.verbose):
+            print(motor_start_current_command)
+            print(self.write_read(motor_start_current_command, index))
+        else:
+            self.write_read(motor_start_current_command, index)
+
+    def diagnostic_motor_arduino_command(self, Channel_Numb, index = 0):
+        motor_diagnostic_command = "dMotor " + str(Channel_Numb)
+        data = self.write_read(motor_diagnostic_command, index)
+
+        if(self.verbose):
+            print(motor_diagnostic_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = [float(num) for num in numbers]
+        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+
+    def start_motor_speed_arduino_command(self, Channel_Numb, index = 0):
+        start_motor_diagnostic_speed_command = "sMotrSpeed " + str(Channel_Numb)
+
+        if(self.verbose):
+            print(start_motor_diagnostic_speed_command)
+            print(self.write_read(start_motor_diagnostic_speed_command, index))
+        else:
+            self.write_read(start_motor_diagnostic_speed_command, index)
+
+    def diagnostic_motor_speed_arduino_command(self, Channel_Numb, index = 0):
+        motor_diagnostic_speed_command = "dMotrSpeed " + str(Channel_Numb)
+        data = self.write_read(motor_diagnostic_speed_command, index)
+
+        if(self.verbose):
+            print(motor_diagnostic_speed_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = [float(num) for num in numbers]
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+
+    def start_actuator_current_arduino_command(self, Channel_Numb, index = 0):
+        start_actuator_diagnostic_current_command = "sActuatorCurrent " + str(Channel_Numb)
+
+        if(self.verbose):
+            print(start_actuator_diagnostic_current_command)
+            print(self.write_read(start_actuator_diagnostic_current_command, index))
+        else:
+            self.write_read(start_actuator_diagnostic_current_command, index)
+
+    def diagnostic_actuator_arduino_command(self, Channel_Numb, index = 0):
+        actuator_diagnostic_command = "dActuator " + str(Channel_Numb)
+        data = self.write_read(actuator_diagnostic_command, index)
+
+        if(self.verbose):
+            print(actuator_diagnostic_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = [float(num) for num in numbers]
+        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+
+    def start_actuator_SLEWGEAR_feedback_arduino_command(self, Channel_Numb, index = 0):
+        start_actuator_feedback_command = "sActuatrFeeback " + str(Channel_Numb)
+
+        if(self.verbose):
+            print(start_actuator_feedback_command)
+            print(self.write_read(start_actuator_feedback_command, index))
+        else:
+            self.write_read(start_actuator_feedback_command, index)
+
+    def diagnostic_actuator_SLEWGEAR_feedback_arduino_command(self, Channel_Numb, index = 0):
+        actuator_feedback_command = "dActuatrFeeback " + str(Channel_Numb)
+        data = self.write_read(actuator_feedback_command, index)
+
+        if(self.verbose):
+            print(actuator_feedback_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = [float(num) for num in numbers]
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+
+    def select_controls(self, index = 0):
+        # print(self.controls_channel, )
+        if(self.act_OR_motor[self.controls_channel[index]-1] == 0 or self.act_OR_motor[self.controls_channel[index]-1] == 2): # motor or slewgear
+            self.control_motor_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], self.controls_vals[self.controls_channel[index]-1][3], self.controls_vals[self.controls_channel[index]-1][4], index)
+        elif(self.act_OR_motor[self.controls_channel[index]-1] == 1): # actuator
+            self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][2], self.controls_vals[self.controls_channel[index]-1][3], index)
+        # elif(self.act_OR_motor[self.controls_channel-1] == 3): # motherboard
+            
+    def select_diagnostic(self, index = 0):
+        
+        # debug timming
+        if(self.timing):
+            if(self.diagnostics_channel[index] == self.diagnostics_channel_reset[index] and self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                print("start of ", threading.current_thread().name)
+                self.start[index] = time.time()
+
+        # actual diagnstoic data retrival
+        if(self.act_OR_motor[self.diagnostics_channel[index]-1] == 0): # motor
+            if(self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                self.start_motor_current_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 1
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 1):
+                self.diagnostic_motor_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 2
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 2):
+                self.start_motor_speed_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                self.diagnostic_motor_speed_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
+
+        elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 1): # actuator
+            if(self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                self.start_actuator_current_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 1
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 1):
+                self.diagnostic_actuator_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 2
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 2):
+                self.start_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                self.diagnostic_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
+
+        elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 2): # slewgear
+            if(self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                self.start_motor_current_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 1
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 1):
+                self.diagnostic_motor_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 2
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 2):
+                self.start_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                self.diagnostic_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
+
+        elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 3): # motherboard
+            if(self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 1
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 1):
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 2
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 2):
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 3    
+            elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
+                
+        # end of debug timing
+        if(self.timing):
+            if(self.diagnostics_channel[index] == self.diagnostics_channel_total[index] and self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                print(self.diagnostics_channel[index], self.diagnostic_select[self.diagnostics_channel[index]-1])
+                print("Time of ", threading.current_thread().name, " is ", time.time() - self.start[index])
+
+    def start_diagnostic_AND_controls(self, index = 0):
+        # only worry about 8 channels
+        while True:
+            self.select_diagnostic(index)
+            self.diagnostics_channel[index] = self.diagnostics_channel[index] + 1
+            if(self.diagnostics_channel[index] >= self.diagnostics_channel_total[index] + 1):
+                self.diagnostics_channel[index] = self.diagnostics_channel_reset[index]
+            self.select_controls(index)
+            self.controls_channel[index] = self.controls_channel[index] + 1
+            self.select_controls(index)
+            self.controls_channel[index] = self.controls_channel[index] + 1
+            self.select_controls(index)
+            self.controls_channel[index] = self.controls_channel[index] + 1
+            self.select_controls(index)
+            self.controls_channel[index] = self.controls_channel[index] + 1
+            if(self.controls_channel[index] >= self.controls_channel_total[index]):
+                self.controls_channel[index] = self.controls_channel_reset[index]
+
+    def index_0_thread(self):
+        self.start_diagnostic_AND_controls(index = 0)
+
+    def index_1_thread(self):
+        self.start_diagnostic_AND_controls(index = 1)
+
+    def start_diagnostics_AND_controls_thread(self, index):
+        if(index == 0):
+            self.d_and_c = threading.Thread(target=self.index_0_thread, name="Arduino Mega Thread")
+            self.d_and_c.daemon = True
+            self.d_and_c.start()
+        else:
+            self.d_and_c1 = threading.Thread(target=self.index_1_thread, name="LattePanda Thread")
+            self.d_and_c1.daemon = True
+            self.d_and_c1.start()
+
+    def print_diagnostics(self):
+        print(self.diagnostics_vals)
+
+    # def control_motor_OR_actutor(self):
+        # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
+        # def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
+
+        # Both - channel number, EN_EFUSE, PWM, FR
+        # motor - EN motor, break

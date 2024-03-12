@@ -7,6 +7,7 @@
 #include "TCA9548A.h"
 
 #define TestArduinoScript false
+#define Arduino_or_latte true // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
@@ -77,7 +78,12 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 
 void setup() {
     // put your setup code here, to run once:
-    Serial.begin(9600);
+    if(Arduino_or_latte){
+      Serial.begin(115200);
+    }
+    else{
+      Serial.begin(9600);
+    }
 
 
     /////////
