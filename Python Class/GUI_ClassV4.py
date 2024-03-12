@@ -1158,12 +1158,16 @@ class GUI:
             if(self.pan_right is not pan_right or self.pan_left is not pan_left or self.tilt_up is not tilt_up or self.tilt_down is not tilt_down or self.zoom_in is not zoom_in or self.zoom_out is not zoom_out):
                 if(pan_left):
                     self.ptz.move_pan(-1)
+                    self.ptz.zoom(0)
                 elif(pan_right):
                     self.ptz.move_pan(1)
+                    self.ptz.zoom(0)
                 elif(tilt_up):
                     self.ptz.move_tilt(1)
+                    self.ptz.zoom(0)
                 elif(tilt_down):
                     self.ptz.move_tilt(-1)
+                    self.ptz.zoom(0)
                 elif(zoom_in):
                     self.ptz.zoom(1)
                     self.ptz.move_tilt(0)

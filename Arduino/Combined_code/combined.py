@@ -57,7 +57,7 @@ class Controls_Diagnostics:
         self.act_OR_motor = config
 
     def start_arduino_command(self, HIGH_LOW):
-        start_command = "startup " + str(HIGH_LOW)
+        start_command = "startup " + HIGH_LOW
         if(self.verbose):
             print(start_command)
             print(self.write_read(start_command))
@@ -259,10 +259,9 @@ class Controls_Diagnostics:
 
             
         
-cd = Controls_Diagnostics(baudrate = 115200, verbose=True)
+cd = Controls_Diagnostics(buadrate = 9600, verbose=True)
 cd.connect_to_arduino()
-cd.start_arduino_command(0)
-# cd.start_diagnostic_AND_controls()
+cd.start_arduino_command("low")
 
 cd.start_diagnostics_AND_controls_thread()
 

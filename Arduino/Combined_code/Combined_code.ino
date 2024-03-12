@@ -31,11 +31,15 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // dIMU Channel#                         you get this: _, _, ...
 
 // check values
-const int max_commands = 5, max_channels = 8; // for commands channel# doesn't count
-int values[max_commands][max_channels];
+const int max_channels = 8; // for commands channel# doesn't count
 
 // PWM channel pins
-const int PWM_Channel[max_channels] = {2, 3, 4, 5, 6, 7, 8, 9};
+int Mega[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6};
+// Mega reset = 5
+int Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
+// Panda reset = 4
+
+int PWM_Channel[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6};
 int Channel_Offset = 1;   // either 1 for 1-8 or 9 for 9-16
 int Channel_Selected = -1; // start with a channel we can't be in
 
@@ -73,14 +77,8 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 
 void setup() {
     // put your setup code here, to run once:
-    Serial.begin(115200);
+    Serial.begin(9600);
 
-    // Initialize all elements of the array to -1
-    for (int i = 0; i < max_commands; i++) {
-        for (int j = 0; j < max_channels; j++) {
-            values[i][j] = -1;
-        }
-    }
 
     /////////
     // PWM //
@@ -126,7 +124,7 @@ void setup() {
     ads.begin();
     // Set some stuff for ADC
     ads.setVoltageReference(REF_EXTERNAL);
-    ads.setConversionMode(MODE_CONTINUOUS);
+    ads.setConversionMode(CONTINUOUS);
     // A1 feedback, A2 SPEED, A3 Current
 
     /////////////
@@ -134,6 +132,12 @@ void setup() {
     /////////////
     I2CMux.begin(Wire);             // Wire instance is passed to the library
     I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+
+    // resets for either arduino mega or panda (default them to high or not reset)
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
+    digitalWrite(4, HIGH);
+    digitalWrite(5, HIGH);
 
     ////////////////
     // 2. I2C IMU //
@@ -203,9 +207,15 @@ void startup_command(String command_from_python){
 
   if(number1String == "high"){
     Channel_Offset = 9;
+    for(int i = 0; i < max_channels; i++){
+      PWM_Channel[i] = Panda[i];
+    }
   }
   else{
     Channel_Offset = 1;
+    for(int i = 0; i < max_channels; i++){
+      PWM_Channel[i] = Mega[i];
+    }
   }
 
   // else low keep the same
@@ -242,6 +252,7 @@ void control_motor(String command_from_python){
   int FR = number5String.toInt();
   int BREAK = number6String.toInt();
 
+
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
     if(TestArduinoScript){
@@ -254,40 +265,25 @@ void control_motor(String command_from_python){
     Channel_Selected = Channel;
   }
 
-  if(EN != values[0][Channel-Channel_Offset]){ // check whats stored for EN so we don't waist time
-    if(TestArduinoScript)
-      Serial.println("ENable Motor");
-    pcf8574_first.digitalWrite(P1, EN); // change EN
-    values[0][Channel-Channel_Offset] = EN;
-  }
+  if(TestArduinoScript)
+    Serial.println("ENable Motor");
+  pcf8574_first.digitalWrite(P1, EN); // change EN
 
-  if(EN_EFUSE != values[1][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("EN_EFUSE");
-    pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
-    values[1][Channel-Channel_Offset] = EN_EFUSE;
-  }
+  if(TestArduinoScript)
+    Serial.println("EN_EFUSE");
+  pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
 
-  if(PWM != values[2][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("PWM");
-    analogWrite(PWM_Channel[Channel-Channel_Offset], PWM);
-    values[2][Channel-Channel_Offset] = PWM;
-  }
+  if(TestArduinoScript)
+    Serial.println("PWM");
+  analogWrite(PWM_Channel[Channel-Channel_Offset], PWM);
 
-  if(FR != values[3][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("FR");
-    pcf8574_first.digitalWrite(P0, FR);
-    values[3][Channel-Channel_Offset] = FR;
-  }
+  if(TestArduinoScript)
+    Serial.println("FR");
+  pcf8574_first.digitalWrite(P0, FR);
 
-  if(BREAK != values[4][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("BREAK");
-    pcf8574_first.digitalWrite(P2, BREAK); // Brake
-    values[4][Channel-Channel_Offset] = BREAK;
-  }
+  if(TestArduinoScript)
+    Serial.println("BREAK");
+  pcf8574_first.digitalWrite(P2, BREAK); // Brake
 
   if(TestArduinoScript){
     Serial.println(Channel);
@@ -335,26 +331,20 @@ void control_actuator(String command_from_python){
     Channel_Selected = Channel;
   }
 
-  if(EN_EFUSE != values[0][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("EN_EFUSE");
-    pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
-    values[0][Channel-Channel_Offset] = EN_EFUSE;
-  }
+  if(TestArduinoScript)
+    Serial.println("EN_EFUSE");
+  pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
 
-  if(PWM != values[2][Channel-Channel_Offset] or FR != values[1][Channel-Channel_Offset]){
-    if(TestArduinoScript)
-      Serial.println("H-bridge majik");
-    int direction = 1;
-    if(FR == 1){
-      direction = 1;
-    }
-    else
-      direction = -1;
-    vnh.H_bridge_change(PWM, direction);
-    values[2][Channel-Channel_Offset] = PWM;
-    values[1][Channel-Channel_Offset] = FR;
+  if(TestArduinoScript)
+    Serial.println("H-bridge majik");
+  int direction = 1;
+  if(FR == 1){
+    direction = 1;
   }
+  else
+    direction = -1;
+  vnh.H_bridge_change(PWM, direction);
+
 
   if(TestArduinoScript){
     Serial.println(Channel);
