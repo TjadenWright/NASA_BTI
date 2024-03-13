@@ -71,9 +71,9 @@ ADS1219 ads(P3);
 /////////////
 TCA9548A I2CMux;                  // Address can be passed into the constructor
 
-////////////////
-// 1. I2C IMU //
-////////////////
+/////////////////
+// 1a. I2C IMU //
+/////////////////
 
 
 void setup() {
@@ -145,9 +145,9 @@ void setup() {
     digitalWrite(4, HIGH);
     digitalWrite(5, HIGH);
 
-    ////////////////
-    // 2. I2C IMU //
-    ////////////////
+    /////////////////
+    // 1b. I2C IMU //
+    /////////////////
 }
 
 void command_finder(int index, String command_from_python){
@@ -614,9 +614,9 @@ void diagnostics_IMU(String command_from_python){
   }
 
   // diagnostics for IMU .. 
-  ////////////////
-  // 3. I2C IMU //
-  ////////////////
+  /////////////////
+  // 1c. I2C IMU //
+  /////////////////
 
 }
 
