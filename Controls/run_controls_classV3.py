@@ -32,18 +32,31 @@ rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 rc1.start_diagnostics_AND_controls_thread(index = 0)
 rc1.start_diagnostics_AND_controls_thread(index = 1)
 
+def reset_threads():
+    print("stopping threads")
+    time.sleep(0.1)
+    rc1.set_act_OR_motor(config = np.array([1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3]))
+    rc1.start_diagnostics_AND_controls_thread(index = 0)
+    rc1.start_diagnostics_AND_controls_thread(index = 1)
+
 print(rc1.get_diagnostics_array())
 # run the code for manual and automatic.
 while True: # not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # print("hello world")
-    # all_threads = threading.enumerate()
-    # print("List of threads: ")
-    # for thread in all_threads:
-    #     print(thread.name)
+    all_threads = threading.enumerate()
+    print("List of threads: ")
+    for thread in all_threads:
+        print(thread.name)
     # time.sleep(1)
-    print(rc1.print_diagnostics())
+    print(rc1.get_diagnostics_array())
     # connection = rc1.handle_events()
 
     # rc1.control_motor_OR_actutor(channel_Numb = 1, select = 1, verbose = True)
 
-    time.sleep(0.5)
+    time.sleep(5)
+
+    rc1.stop_thread()
+
+    stop = threading.Thread(target=reset_threads, name="stop")
+    stop.daemon = True
+    stop.start()

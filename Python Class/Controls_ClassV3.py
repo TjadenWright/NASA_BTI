@@ -446,6 +446,9 @@ class Rover_Controls:
     def set_act_OR_motor(self, config=np.zeros(15)):
         self.act_OR_motor = config
 
+    def get_act_OR_motor(self):
+        return self.act_OR_motor
+
     def start_arduino_command(self, HIGH_LOW, index = 0):
         if(HIGH_LOW == 1):
             self.diagnostics_channel[index] = 9
@@ -704,12 +707,6 @@ class Rover_Controls:
 
     def get_diagnostics_array(self):
         return self.diagnostics_vals
-    
-    def get_motor_act_list(self):
-        return self.act_OR_motor
-    
-    def set_motor_act_list(self, list = np.zeros(16)):
-        self.act_OR_motor = list
 
     def stop_thread(self):
         self.run_thread = False
