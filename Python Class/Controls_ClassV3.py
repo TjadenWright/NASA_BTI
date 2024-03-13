@@ -703,9 +703,69 @@ class Rover_Controls:
     def print_diagnostics(self):
         print(self.diagnostics_vals)
 
-    # def control_motor_OR_actutor(self):
+    def control_motor_OR_actutor(self, channel_Numb, select, verbose = False):
         # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
         # def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
 
         # Both - channel number, EN_EFUSE, PWM, FR
-        # motor - EN motor, break
+        # motor - EN motor, bake
+
+        # Motor:
+        # self.controls_vals[0] = Motor Enable
+        # self.controls_vals[1] = ENable EFUSE
+        # self.controls_vals[2] = PWM
+        # self.controls_vals[3] = FR
+        # self.controls_vals[4] = BRAKE
+
+        right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+        left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+
+        if(right_t > left_t):
+            direction = 1 # go forward
+        else:
+            direction = 0 # go back
+
+        trigger = max(right_t, left_t)
+
+        motor_speed = self.maximum_voltage*trigger
+
+        if(select):
+            if(self.controller): # if the controller is connected
+                self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[channel_Numb-1][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[channel_Numb-1][2] = motor_speed
+                self.controls_vals[channel_Numb-1][3] = direction
+                self.controls_vals[channel_Numb-1][4] = self.Get_Button_From_Controller('B_Button')
+            else:
+                self.controls_vals[channel_Numb-1][0] = 0
+                self.controls_vals[channel_Numb-1][1] = 0
+                self.controls_vals[channel_Numb-1][2] = 0
+                self.controls_vals[channel_Numb-1][3] = 0
+                self.controls_vals[channel_Numb-1][4] = 1
+        
+            if(verbose):
+                print("EN: ", self.controls_vals[channel_Numb-1][0])
+                print("EN EFUSE: ", self.controls_vals[channel_Numb-1][1])
+                print("PWM: ", self.controls_vals[channel_Numb-1][2])
+                print("FR: ", self.controls_vals[channel_Numb-1][3])
+                print("BRAKE: ", self.controls_vals[channel_Numb-1][4])
+
+        # Actuator:
+        # self.controls_vals[0] = ENable EFUSE
+        # self.controls_vals[1] = PWM
+        # self.controls_vals[2] = FR
+        
+        else:
+            if(self.controller): # if the controller is connected
+                self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[channel_Numb-1][1] = motor_speed
+                self.controls_vals[channel_Numb-1][2] = direction
+            else:
+                self.controls_vals[channel_Numb-1][0] = 0
+                self.controls_vals[channel_Numb-1][1] = 0
+                self.controls_vals[channel_Numb-1][2] = 0
+
+            if(verbose):
+                print("EN: ", self.controls_vals[channel_Numb-1][0])
+                print("PWM: ", self.controls_vals[channel_Numb-1][1])
+                print("FR: ", self.controls_vals[channel_Numb-1][2])
