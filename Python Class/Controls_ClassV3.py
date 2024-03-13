@@ -668,7 +668,7 @@ class Rover_Controls:
 
     def start_diagnostic_AND_controls(self, index = 0):
         # only worry about 8 channels
-        while True:
+        while self.run_thread:
             self.select_diagnostic(index)
             self.diagnostics_channel[index] = self.diagnostics_channel[index] + 1
             if(self.diagnostics_channel[index] >= self.diagnostics_channel_total[index] + 1):
@@ -692,16 +692,27 @@ class Rover_Controls:
 
     def start_diagnostics_AND_controls_thread(self, index):
         if(index == 0):
+            self.run_thread = True
             self.d_and_c = threading.Thread(target=self.index_0_thread, name="Arduino Mega Thread")
             self.d_and_c.daemon = True
             self.d_and_c.start()
         else:
+            self.run_thread = True
             self.d_and_c1 = threading.Thread(target=self.index_1_thread, name="LattePanda Thread")
             self.d_and_c1.daemon = True
             self.d_and_c1.start()
 
     def get_diagnostics_array(self):
         return self.diagnostics_vals
+    
+    def get_motor_act_list(self):
+        return self.act_OR_motor
+    
+    def set_motor_act_list(self, list = np.zeros(16)):
+        self.act_OR_motor = list
+
+    def stop_thread(self):
+        self.run_thread = False
 
     def control_motor_OR_actutor(self, channel_Numb, select, verbose = False):
         # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):

@@ -34,7 +34,7 @@ rc1.start_diagnostics_AND_controls_thread(index = 0)
 
 print(rc1.get_diagnostics_array())
 # run the code for manual and automatic.
-while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while True: # not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # print("hello world")
     # all_threads = threading.enumerate()
     # print("List of threads: ")
