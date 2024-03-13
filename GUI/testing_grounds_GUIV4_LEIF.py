@@ -11,7 +11,7 @@ from GUI_ClassV4 import GUI
 from Battery_ClassV2 import Battery_class
 from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization
-from Controls_ClassV3 import Rover_Controls
+from Controls_ClassV3_LEIF import Rover_Controls
 
 Input_Res = (1920, 1080)                              # <--- change camera resolution (if change reclaibrate)
 FPS_video = 15                                        # <--- change fps (no need to recalibrate)
