@@ -1196,8 +1196,10 @@ class GUI:
         # startup for fps
         self.prev_time = time.time()
 
-        # startup for snmp
-        
+        ########################
+        # 1a. startup for snmp #
+        ########################
+
 
     # loop debugger
     def loop_debugger(self, img):
@@ -1208,7 +1210,9 @@ class GUI:
         cv2.putText(img, fps_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         self.prev_time = curr_time
 
-        # print snmp info on image
+        ################################
+        # 1b. print snmp info on image #
+        ################################
 
     # setup for main gui
     def set_up_Main_UI(self, battery, false_traffic=True):

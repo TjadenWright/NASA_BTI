@@ -7,7 +7,7 @@ class_folder_path = os.path.join(current_file_path, '../Python Class')  # get th
 calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get the caibrated data path
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up
 
-from GUI_ClassV4 import GUI
+from GUI_ClassV4_LEIF import GUI
 from Battery_ClassV2 import Battery_class
 from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization
