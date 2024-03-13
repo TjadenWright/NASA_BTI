@@ -32,7 +32,7 @@ rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 rc1.start_diagnostics_AND_controls_thread(index = 0)
 rc1.start_diagnostics_AND_controls_thread(index = 1)
 
-rc1.print_diagnostics()
+print(rc1.get_diagnostics_array())
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # print("hello world")

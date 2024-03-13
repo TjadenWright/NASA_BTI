@@ -700,8 +700,8 @@ class Rover_Controls:
             self.d_and_c1.daemon = True
             self.d_and_c1.start()
 
-    def print_diagnostics(self):
-        print(self.diagnostics_vals)
+    def get_diagnostics_array(self):
+        return self.diagnostics_vals
 
     def control_motor_OR_actutor(self, channel_Numb, select, verbose = False):
         # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):

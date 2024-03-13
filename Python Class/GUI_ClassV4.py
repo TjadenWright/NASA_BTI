@@ -1069,24 +1069,29 @@ class GUI:
         screen.blit(txt, tet_rect)
 
     # show off battery data
-    def battery_data_pygames(self):
+    def diagnostics_data_pygames(self, select=0):
+        # select numbs
+        # 0 -> battery diagnostics, 1 -> motherboard, actuator, mother diagnostics
+
         # Check if one second has passed since the last call to update_battery_diagnostics()
         if time.time() - self.last_update_time >= 1 or self.prev_bms is not self.bms_numb or self.first:
             # update the battery diagnostic data
-            self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00, BATTERY_X + self.steps/5, self.down_step)
-            self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 100, 60, 40, BATTERY_X + BATTERY_WIDTH + self.steps, self.down_step + BATTERY_HEIGHT // 2)
-            self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + 2*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-            self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + 3*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-            self.speedometerINV(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 120, 100, 50, BATTERY_X + BATTERY_WIDTH + 4*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-            self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 5*self.steps, self.down_step - 30)
-            self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
+            if(select == 0):
+                self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00, BATTERY_X + self.steps/5, self.down_step)
+                self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 100, 60, 40, BATTERY_X + BATTERY_WIDTH + self.steps, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + 2*self.steps, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + 3*self.steps, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometerINV(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 120, 100, 50, BATTERY_X + BATTERY_WIDTH + 4*self.steps, self.down_step + BATTERY_HEIGHT // 2)
+                self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 5*self.steps, self.down_step - 30)
+                self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
+                self.prev_bms = self.bms_numb
 
             self.last_update_time = time.time()  # Update the last update time
-            self.prev_bms = self.bms_numb
 
             self.first = 0
 
-        self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
+        if(select == 0):
+            self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
 
     # positioning
     def change_right_side(self):
@@ -1362,7 +1367,7 @@ class GUI:
             self.label1['image'] = self.black_image_video_tk
 
         # Check if one second has passed since the last call to update_battery_diagnostics()
-        self.battery_data_pygames()
+        self.diagnostics_data_pygames()
 
         # update diagnostics UI
         img_3 = self.update_pygames_screen(self.screenDiag)
