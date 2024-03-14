@@ -1,16 +1,16 @@
-Channel 1: Actuator
-Channel 2: 
-Channel 3: 
-Channel 4: IMU
-Channel 5: 
+Channel 1: Motor
+Channel 2: Motor
+Channel 3: Motor
+Channel 4: Motor
+Channel 5: Actuator
 Channel 6: Actuator
-Channel 7: 
-Channel 8: 
-Channel 9: 
-Channel 10: IMU
-Channel 11: BIG Motor
-Channel 12: 
-Channel 13: IMU
-Channel 14: 
-Channel 15: 
-Channel 16: Motor
+Channel 7: Actuator
+Channel 8: Actuator
+Channel 9: Motor
+Channel 10: Motor
+Channel 11: Actuator
+Channel 12: Actuator
+Channel 13: Motor
+Channel 14: Actuator
+Channel 15: Slew Gear
+Channel 16: IMU and Motherboard

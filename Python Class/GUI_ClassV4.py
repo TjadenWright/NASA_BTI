@@ -118,12 +118,14 @@ class GUI:
         self.connection = np.array([0, 0])
 
         self.bms_numb = 0
+        self.board_batt = 0
+        self.board_channel = 0
 
         self.FirstChannelSelect = 0
 
         # channel selector
-        self.channel = {} # 16 channels
-        self.channel_options = ["Motor", "BIG Motor", "Actuator", "IMU"]
+        self.channel = np.zeros(16) # 16 channels
+        self.channel_options = ["Motor", "Actuator", "Slew Gear", "IMU and Motherboard"]
 
         # threading
         self.lock_bat = threading.Lock()
@@ -148,7 +150,7 @@ class GUI:
         self.debugging_off = 11.97
         self.calib_local = 10 # 4.5
         self.calib_imu = 2
-        self.diag_keys = 17.9
+        self.diag_keys = 8.5
 
     # Functions for getting the cameras IPs
     def on_closing_IPs(self):
@@ -695,7 +697,10 @@ class GUI:
         self.FirstChannelSelect = 1
         for i in range(1, 17):
             selected_option = self.master.grid_slaves(row=(i-1)//4, column=(i-1)%4)[0].winfo_children()[1].cget("text")
-            self.channel[i] = selected_option
+            try:
+                self.channel[i-1] = self.channel_options.index(selected_option)
+            except:
+                self.channel[i-1] = -1
         print(self.channel)
         
     def write_select_channels(self):
@@ -775,12 +780,53 @@ class GUI:
             self.FirstChannelSelect == 0
 
     # battery stuff
-    def change_batt(self):
-        if(self.bms_numb == 0):
-            self.bms_numb = 1
+    def change_batt_bard_add(self):
+        if(self.board_batt == 0):
+            if(self.bms_numb == 0):
+                
+                self.bms_numb = 1
+            else:
+                self.bms_numb = 0
+            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+            self.first = 1
         else:
-            self.bms_numb = 0
-        self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+            if(self.board_channel < 15):
+                self.board_channel = self.board_channel + 1
+            else:
+                self.board_channel = 0
+            self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+            self.first = 1
+
+    def change_batt_bard_sub(self):
+        if(self.board_batt == 0):
+            if(self.bms_numb == 0):
+                
+                self.bms_numb = 1
+            else:
+                self.bms_numb = 0
+            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+            self.first = 1
+        else:
+            if(self.board_channel > 0):
+                self.board_channel = self.board_channel - 1
+            else:
+                self.board_channel = 15
+            self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+            self.first = 1
+
+    def change_board_batt(self):
+        if(self.board_batt == 0):
+            self.board_batt = 1
+            self.button7a.config(text="Battery")
+            self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
+            self.first = 1
+            self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+        else:
+            self.board_batt = 0
+            self.button7a.config(text="PCB")
+            self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
+            self.first = 1
+            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
 
     def init_pygame(self):
         screen = pygame.Surface((self.diag_w, self.diag_h))
@@ -1062,6 +1108,14 @@ class GUI:
 
         pygame.draw.circle(screen, color, (x, y+10), 20) 
 
+    def draw_bad_status(self, screen, on_off, x=0, y=0):
+        if(on_off == 1):
+            color = RED
+        else:
+            color = GRAY
+
+        pygame.draw.circle(screen, color, (x, y+10), 20) 
+
     def draw_status_text(self, screen, name="Connection Status", x=0, y=0):
         # text
         txt = self.font_small.render(name, True, WHITE)
@@ -1069,29 +1123,87 @@ class GUI:
         screen.blit(txt, tet_rect)
 
     # show off battery data
-    def diagnostics_data_pygames(self, select=0):
+    def diagnostics_data_pygames(self, diagnostics_array):
         # select numbs
         # 0 -> battery diagnostics, 1 -> motherboard, actuator, mother diagnostics
 
         # Check if one second has passed since the last call to update_battery_diagnostics()
-        if time.time() - self.last_update_time >= 1 or self.prev_bms is not self.bms_numb or self.first:
+        if time.time() - self.last_update_time >= 1 or self.first:
             # update the battery diagnostic data
-            if(select == 0):
-                self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00, BATTERY_X + self.steps/5, self.down_step)
-                self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 100, 60, 40, BATTERY_X + BATTERY_WIDTH + self.steps, self.down_step + BATTERY_HEIGHT // 2)
-                self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + 2*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-                self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + 3*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-                self.speedometerINV(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 120, 100, 50, BATTERY_X + BATTERY_WIDTH + 4*self.steps, self.down_step + BATTERY_HEIGHT // 2)
-                self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 5*self.steps, self.down_step - 30)
-                self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
-                self.prev_bms = self.bms_numb
+            self.screenDiag.fill((0, 0, 0))
+            if(self.board_batt == 0):
+                self.draw_battery(self.screenDiag, int(self.state_of_charge[self.bms_numb]), self.charging_power[0] > 0.00, BATTERY_X + self.steps6/5, self.down_step)
+                self.speedometer(self.screenDiag, round(self.total_voltage[self.bms_numb], 1), "V", "Battery Voltage", 100, 60, 40, BATTERY_X + BATTERY_WIDTH + self.steps6, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Battery Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + 2*self.steps6, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "W", "Battery Power", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + 3*self.steps6, self.down_step + BATTERY_HEIGHT // 2)
+                self.speedometerINV(self.screenDiag, round(self.capacity_remaining[self.bms_numb], 1), "Ah", "Battery Capacity", 120, 100, 50, BATTERY_X + BATTERY_WIDTH + 4*self.steps6, self.down_step + BATTERY_HEIGHT // 2)
+                self.draw_thermometer(self.screenDiag, round((self.temperature_1[self.bms_numb] + self.temperature_2[self.bms_numb] + self.temperature_3[self.bms_numb]) / 3, 1), "Battery Temperature", BATTERY_X + BATTERY_WIDTH + 5*self.steps6, self.down_step - 30)
+                self.draw_status_text(self.screenDiag, "Connection Status", BATTERY_X + BATTERY_WIDTH + 6*self.steps6, self.down_step)
+            else:
+                if(self.channel[self.board_channel] == 0): # motor
+                    if(self.false_traffic):
+                        self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Motor Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "m/s", "Motor Speed", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps5, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Motor Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps5, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Motor Alarm", BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                    else:
+                        # ALARM TEMP CURRENT OC_FAULT SPEED
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 2], 1), "A", "Motor Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 4], 1), "m/s", "Motor Speed", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps5, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Motor Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps5, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Motor Alarm", BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 0], BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 3], BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                elif(self.channel[self.board_channel] == 1): # actuator
+                    if(self.false_traffic):
+                        self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Actuator Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "?", "Actuator Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Actuator Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step)
+                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step)
+                    else:
+                        # TEMP CURRENT OC_FAULT FEEDBACK
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "A", "Actuator Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 3], 1), "?", "Actuator Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 0], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Actuator Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step)
+                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 2], BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step)
+                elif(self.channel[self.board_channel] == 2): # slewgear
+                    if(self.false_traffic):
+                        self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Slew Gear Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(self.power[self.bms_numb], 1), "m/s", "Slew Gear Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps5, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Slew Gear Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps5, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Slew Gear Alarm", BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                    else:
+                        # ALARM TEMP CURRENT OC_FAULT FEEDBACK
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 2], 1), "A", "Slew Gear Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 4], 1), "m/s", "Slew Gear Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps5, self.down_step - 30)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_1[self.bms_numb], 1), "Slew Gear Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps5, self.down_step - 30)
+                        self.draw_status_text(self.screenDiag, "Slew Gear Alarm", BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 0], BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
+                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 3], BATTERY_X + BATTERY_WIDTH + 5*self.steps5, self.down_step)
+                # elif(self.channel[self.board_channel] == 3):
 
             self.last_update_time = time.time()  # Update the last update time
 
             self.first = 0
 
-        if(select == 0):
-            self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps, self.down_step)
+        if(self.board_batt == 0):
+            self.draw_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 6*self.steps6, self.down_step)
 
     # positioning
     def change_right_side(self):
@@ -1205,13 +1317,17 @@ class GUI:
         self.prev_time = curr_time
 
         # print snmp on image
+        
+
 
     # setup for main gui
-    def set_up_Main_UI(self, battery, false_traffic=True):
+    def set_up_Main_UI(self, battery, false_traffic=False, fullscreen = True):
+        self.false_traffic = false_traffic
         self.battery = battery
 
         self.root = Tk()
-        self.root.attributes('-fullscreen', True)
+        if fullscreen:
+            self.root.attributes('-fullscreen', True)
         self.root.geometry("{}x{}".format(self.screen_width, self.screen_height))
         self.root.title("Main GUI")
         self.root.config(bg="#2c3e50")
@@ -1304,23 +1420,14 @@ class GUI:
         self.label3['image'] = self.black_image_diag_tk
         
         # change battery diagnostics
-        button8 = Button(self.frame3, text="<", bg="#FFD100", fg="black", command=self.change_batt)
+        button8 = Button(self.frame3, text="<", bg="#FFD100", fg="black", command=self.change_batt_bard_sub)
         button8.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
-        button7 = Button(self.frame3, text=">", bg="#FFD100", fg="black", command=self.change_batt)
+        button7 = Button(self.frame3, text=">", bg="#FFD100", fg="black", command=self.change_batt_bard_add)
         button7.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
-        button7a = Button(self.frame3, text="Battery", bg="#FFD100", fg="black")
-        button7a.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
-
-        button7b = Button(self.frame3, text="Motor", bg="#FFD100", fg="black")
-        button7b.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
-
-        button7c = Button(self.frame3, text="Actuator", bg="#FFD100", fg="black")
-        button7c.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
-
-        button7d = Button(self.frame3, text="Motherboard", bg="#FFD100", fg="black")
-        button7d.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
+        self.button7a = Button(self.frame3, text="PCB", bg="#FFD100", fg="black", command=self.change_board_batt)
+        self.button7a.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
 
         button9 = Button(self.frame3, text="Channel Selector", bg="#FFD100", fg="black", command=self.channel_select)
         button9.pack(side=RIGHT, ipadx=self.diag_w/self.diag_keys)
@@ -1347,9 +1454,13 @@ class GUI:
 
         self.first = 1
 
-        self.steps = int(self.diag_w/7.5)
+        self.steps6 = int(self.diag_w/7.5)
+        self.steps5 = int(self.diag_w/6)
+        self.steps4 = int(self.diag_w/5)
         self.down_step = int(self.diag_h/2.5)
-        print("Distance Between Each Icon: ", self.steps, "Distance From Top: ", self.down_step)
+        print("Distance Between Each Battery Icon: ", self.steps6, "Distance From Top: ", self.down_step)
+        print("Distance Between Each Motor Icon: ", self.steps5, "Distance From Top: ", self.down_step)
+        print("Distance Between Each Actuator Icon: ", self.steps4, "Distance From Top: ", self.down_step)
 
         self.start_debugger()
 
@@ -1378,7 +1489,7 @@ class GUI:
             self.label1['image'] = self.black_image_video_tk
 
         # Check if one second has passed since the last call to update_battery_diagnostics()
-        self.diagnostics_data_pygames()
+        self.diagnostics_data_pygames(controls.get_diagnostics_array())
 
         # update diagnostics UI
         img_3 = self.update_pygames_screen(self.screenDiag)

@@ -27,6 +27,7 @@ VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
 Fake_traffic = True
+fullscreen = False
 img_Localization = None # start of image at nothing
 
 # setup the rover controls class.
@@ -55,7 +56,7 @@ a1.calibrated_cam_data()
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # main gui
-g1.set_up_Main_UI(b1, Fake_traffic)
+g1.set_up_Main_UI(b1, Fake_traffic, fullscreen)
 
 #################
 # 3bi setup IMU #
