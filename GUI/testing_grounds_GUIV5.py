@@ -7,11 +7,11 @@ class_folder_path = os.path.join(current_file_path, '../Python Class')  # get th
 calib_data_path = os.path.join(current_file_path, '../Calibrated_data') # get the caibrated data path
 sys.path.append(class_folder_path)                                      # set the path as the class folder so that the classes show up
 
-from GUI_ClassV4_LEIF import GUI
+from GUI_ClassV5 import GUI
 from Battery_ClassV2 import Battery_class
 from Distance_ClassV6 import aruco_detect
 from Localization_ClassV3 import localization
-from Controls_ClassV3_LEIF import Rover_Controls
+from Controls_ClassV3 import Rover_Controls
 
 Input_Res = (1920, 1080)                              # <--- change camera resolution (if change reclaibrate)
 FPS_video = 15                                        # <--- change fps (no need to recalibrate)
@@ -27,6 +27,7 @@ VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
 Fake_traffic = True
+fullscreen = False
 img_Localization = None # start of image at nothing
 
 # setup the rover controls class.
@@ -55,9 +56,17 @@ a1.calibrated_cam_data()
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # main gui
-g1.set_up_Main_UI(b1, Fake_traffic)
+g1.set_up_Main_UI(b1, Fake_traffic, fullscreen)
+
+#################
+# 3bi setup IMU #
+#################
 
 while True:    
+    #################
+    # 3ci loop IMU #
+    #################
+    
     opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=0, imu_image=None)
 
     x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
