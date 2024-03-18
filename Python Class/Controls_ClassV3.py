@@ -730,8 +730,11 @@ class Rover_Controls:
 
         if(right_t > left_t):
             direction = 1 # go forward
-        else:
+        elif(right_t < left_t):
             direction = 0 # go back
+        else:
+            direction = 1
+        
 
         trigger = max(right_t, left_t)
 
@@ -748,15 +751,17 @@ class Rover_Controls:
                 self.controls_vals[channel_Numb-1][0] = 0
                 self.controls_vals[channel_Numb-1][1] = 0
                 self.controls_vals[channel_Numb-1][2] = 0
-                self.controls_vals[channel_Numb-1][3] = 0
+                self.controls_vals[channel_Numb-1][3] = 1
                 self.controls_vals[channel_Numb-1][4] = 1
         
             if(verbose):
+                print("-----------------------------")
                 print("EN: ", self.controls_vals[channel_Numb-1][0])
                 print("EN EFUSE: ", self.controls_vals[channel_Numb-1][1])
                 print("PWM: ", self.controls_vals[channel_Numb-1][2])
                 print("FR: ", self.controls_vals[channel_Numb-1][3])
                 print("BRAKE: ", self.controls_vals[channel_Numb-1][4])
+                print("-----------------------------")
 
         # Actuator:
         # self.controls_vals[0] = ENable EFUSE
@@ -774,6 +779,8 @@ class Rover_Controls:
                 self.controls_vals[channel_Numb-1][2] = 0
 
             if(verbose):
+                print("-----------------------------")
                 print("EN: ", self.controls_vals[channel_Numb-1][0])
                 print("PWM: ", self.controls_vals[channel_Numb-1][1])
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
+                print("-----------------------------")
