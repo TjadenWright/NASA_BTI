@@ -16,4 +16,7 @@
 ## Version 5* of the GUI - Updated diagnostics data for the Motor, Actutator, and Slew Gear. 
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI_V5" title="GUI_V5" />
 
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/diagnostics data.png" alt="diagnostics data" title="diagnostics data" />
+
+
 
