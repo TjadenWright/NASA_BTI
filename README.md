@@ -48,17 +48,18 @@
 
 # GUI
 <ul>
-  <li>This is using BTIC_Proto5 code.</li>
+  <li>This is the main GUI used for the NASA BTIC project.</li>
+  <li>The diagnostics data, video feed, and localization/imu viewer are located on this GUI.</li>
 </ul>
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
 
 <ul>
-  <li>This is using BTIC_Proto5 code.</li>
+  <li>This is the IP Webcame Selector. This will allow the user to manually type the IPs of their webcames and save to a config file.</li>
 </ul>
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/IP_of_webcams.png" alt="IP Of Webcams" title="IP Of Webcams" />
 
 <ul>
-  <li>This is using BTIC_Proto5 code.</li>
+  <li>This is the Channel Selector. This will allow the user configure the I2C channels of the motherboard. The cofiguration of this can also be saved to a file.</li>
 </ul>
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
 
