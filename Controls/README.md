@@ -11,12 +11,12 @@
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture.png" alt="Controls Architecture" title="Controls Architecture" />
 
 ## V3 Software Pinout
-### Table 1a. Motor Controls
+### Table 1a. Motherboard Controls
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
 | EFUSE_EN | PCF8574 (P1) |	OUT	| Channel 15 | Channel 16 |
 
-### Table 1b. Motor Diagnostics
+### Table 1b. Motherboard Diagnostics
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
 | CURRENT |	ADS1219 (Channel 3)	| IN |	Channel 15	| Channel 16 |
