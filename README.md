@@ -48,15 +48,14 @@
 
 # GUI
 <ul>
-  <li>This is using BTIC_Proto5 code.
-    <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
-  </li>
-  <li>This is using BTIC_Proto5 code.
-    <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/IP_of_webcams.png" alt="IP Of Webcams" title="IP Of Webcams" />
-  </li>
-  <li>This is using BTIC_Proto5 code.
-    <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
-  </li>
+  <li>This is using BTIC_Proto5 code.</li>
+  <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
+
+  <li>This is using BTIC_Proto5 code.</li>
+  <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/IP_of_webcams.png" alt="IP Of Webcams" title="IP Of Webcams" />
+
+  <li>This is using BTIC_Proto5 code.</li>
+  <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
 </ul>
 
 # Autonomy and Localization
