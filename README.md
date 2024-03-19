@@ -1,5 +1,12 @@
 # NASA_BTI
 
+| Prototype Number  | Change Log | File to Run |
+| ------------- | ------------- |--------------|
+| BTIC_Proto1 | Content Cell  | 
+| BTIC_Proto2 | Content Cell  |
+| BTIC_Proto3 |
+| BTIC_Proto4 |
+
 # Prototypes
 *  **BTIC_Proto1**: Prototype code for the rover following the aruco tag with opencv. This was upgraded to 1280x720 at 10fps from 640x480 at 5fps.
 *  **BTIC_Proto2**: Includes the addition of following aruco tags with an x offset, with the ability to see multiple tags at once. Also upgraded to lattepanda, which increased resolution to 4k at 20fps.
