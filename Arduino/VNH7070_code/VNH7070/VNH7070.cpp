@@ -7,15 +7,14 @@
 #include "VNH7070.h"
 #include "PCF8574.h"
 
-VNH7070::VNH7070(int PWM, int INA, int INB, int SEL0, uint8_t addr_expander) : pcf8574(addr_expander) {
+VNH7070::VNH7070(int INA, int INB, int SEL0, uint8_t addr_expander) : pcf8574(addr_expander) {
   A = INA;
   B = INB;
   S = SEL0;
-  PWM_OUT = PWM;
   pcf8574.pinMode(A, OUTPUT);
   pcf8574.pinMode(B, OUTPUT);
   pcf8574.pinMode(S, OUTPUT);
-  pinMode(PWM_OUT, OUTPUT);
+  // pinMode(PWM_OUT, OUTPUT);
 }
 
 void VNH7070::begin() {
@@ -26,7 +25,7 @@ void VNH7070::begin() {
   stateOFF = 0;
 }
 
-void VNH7070::H_bridge_change(uint8_t PMW_value, int direction) {
+void VNH7070::H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction) {
   // if we are at B make sure to switch PWM to max and INB and INA to 0
   // INA = 0, INB = 1, SLE0 = 1, PWM = x
   if(direction > 0) {
