@@ -43,6 +43,14 @@
 6. Upload to Github as normal through VS code.
 7. If you need to delete a commit: git reset --soft HEAD~.
 
+## GitHub Repositories Used
+* https://github.com/RichardoMrMu/python-onvif
+* https://github.com/syssi/esphome-jbd-bms
+* https://github.com/gregsrabian/MCP41HVX1
+* https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/DS3930_code
+* https://github.com/PatrickBaus/Arduino-TMP1075
+* https://github.com/DocSunset/ADS1219
+
 # Software Architecture
 ## This is the software architecture as of 3/18/24
 * This does not include the Autonomous Excavation, Autonomous Docking, IMU diagnostics, and SNMP diagnostics.
