@@ -42,7 +42,7 @@
 
 # GUI
 **V5 of the GUI**
-* This is using BTIC_Proto5 code.
+* This is using BTIC_Proto5 code.\
 ![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")
 
 # Autonomy
