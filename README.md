@@ -47,7 +47,6 @@
 * https://github.com/RichardoMrMu/python-onvif
 * https://github.com/syssi/esphome-jbd-bms
 * https://github.com/gregsrabian/MCP41HVX1
-* https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/DS3930_code
 * https://github.com/PatrickBaus/Arduino-TMP1075
 * https://github.com/DocSunset/ADS1219
 
