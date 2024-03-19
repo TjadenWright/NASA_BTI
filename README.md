@@ -59,4 +59,4 @@
 # Controls
 **V3 of the controls**
 * Visual representation of the communication between Arduino and Python.
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture" alt="Controls Architecture" title="Controls Architecture" />
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture.png" alt="Controls Architecture" title="Controls Architecture" />
