@@ -6,10 +6,10 @@
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV1.jpg" alt="guiV1" title="guiV1" />
 
 ## Version 2 of the GUI - Added battery diagnostics and localization information.
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV1.jpg" alt="guiV1" title="guiV1" />
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV2.png" alt="guiV2" title="guiV2" />
 
 ## Version 3 of the GUI - Updated the battery diagnostics with icons.
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV2.gif" alt="guiV2" title="guiV2" />
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV3.gif" alt="guiV3" title="guiV3" />
 
 ## Version 4 of the GUI - Updated for the 16x10 aspect ratio of the Lenovo Legion Go, fixed issues with the camera video stream, fixed popup gui's, added PTZ.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/guiV4.png" alt="guiV4" title="guiV4" />
