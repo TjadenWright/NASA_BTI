@@ -40,12 +40,17 @@
 6. Upload to Github as normal through VS code.
 7. If you need to delete a commit: git reset --soft HEAD~.
 
+# Software Architecture
+**This is the software architecture as of 3/18/24.**
+* This does not include the Autonomous Excavation, Autonomous Docking, IMU diagnostics, and SNMP diagnostics.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Software%20Architecture.png" alt="Software Architecture" title="Software Architecture" />
+
 # GUI
 **V5 of the GUI**
 * This is using BTIC_Proto5 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
 
-# Autonomy
-**V3 (Final) of the Autonomy**
+# Autonomy and Localization
+**V3 (Final) of the Autonomy and Localization**
 * This is using BTIC_Proto3 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
