@@ -41,11 +41,11 @@
 7. If you need to delete a commit: git reset --soft HEAD~.
 
 # GUI
-**V5 of the GUI**\
-
-![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")
+**V5 of the GUI**
+* This is using BTIC_Proto5 code.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
 
 # Autonomy
-**V3 (Final) of the Autonomy**\
-
-![](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif)
+**V3 (Final) of the Autonomy**
+* This is using BTIC_Proto3 code.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
