@@ -44,9 +44,8 @@
 **V5 of the GUI**
 * This is using BTIC_Proto5 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
-![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")
 
 # Autonomy
 **V3 (Final) of the Autonomy**
 * This is using BTIC_Proto3 code.
-![](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif)
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
