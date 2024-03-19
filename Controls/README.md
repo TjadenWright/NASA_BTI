@@ -23,7 +23,7 @@
 | OC FAULT | PCF8574 (P2) |	IN |	Channel 15 | Channel 16 |
 | OT ALERT	| PCF8574 (P0) | IN | Channel 15 | Channel 16 |
 | BOARD TEMP | TMP1075DR | IN |Channel 15 |Channel 16 |
-| LOAD CELL	| NAU7802SGI | IN | Channels 15, 14, 12, and 13 | Channels 16, 14, 13, and 12 |
+| LOAD CELL	| NAU7802SGI | IN | Channels 15, 14, 12, and 13 | Channels 16, 15, 14, and 13 |
 | OFF BOARD TEMP | MCP9601 | IN | Channels 0-14 | Channels 1-15 |
 
 
