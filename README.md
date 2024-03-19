@@ -50,6 +50,11 @@
 **V5 of the GUI**
 * This is using BTIC_Proto5 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
+* This is using BTIC_Proto5 code.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/IP_of_webcams.png" alt="IP Of Webcams" title="IP Of Webcams" />
+* This is using BTIC_Proto5 code.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
+
 
 # Autonomy and Localization
 **V3 (Final) of the Autonomy and Localization**

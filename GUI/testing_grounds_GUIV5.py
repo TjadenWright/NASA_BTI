@@ -27,7 +27,7 @@ VERBOSE = False                            # <--- do you want diagnostic data?
 baud_rate = 9600                           # <--- make this the same as the arduino
 PC_or_PI = "PC"                            # <--- PC or pi?
 Fake_traffic = True
-fullscreen = False
+fullscreen = True
 img_Localization = None # start of image at nothing
 
 # setup the rover controls class.
