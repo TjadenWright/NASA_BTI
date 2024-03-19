@@ -14,7 +14,7 @@ class VNH7070  {
 	uint8_t address;
   public:
     // Constructor 
-    VNH7070(int INA = P6, int INB = P5, int SEL0 = P7, uint8_t addr_expander = 0x20);
+    VNH7070(uint8_t addr_expander = 0x20, int INA = P6, int INB = P5, int SEL0 = P7);
 
     // Methods
     void begin();

@@ -59,7 +59,7 @@ TMP1075::TMP1075 tmp1075 = TMP1075::TMP1075(wire);    // The library uses the na
 //////////////
 // H-bridge //
 //////////////
-VNH7070 vnh(6);
+VNH7070 vnh(0x20);
 
 /////////////
 // I2C ADC //

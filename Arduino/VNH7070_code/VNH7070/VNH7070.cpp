@@ -7,7 +7,7 @@
 #include "VNH7070.h"
 #include "PCF8574.h"
 
-VNH7070::VNH7070(int INA, int INB, int SEL0, uint8_t addr_expander) : pcf8574(addr_expander) {
+VNH7070::VNH7070(uint8_t addr_expander, int INA, int INB, int SEL0) : pcf8574(addr_expander) {
   A = INA;
   B = INB;
   S = SEL0;

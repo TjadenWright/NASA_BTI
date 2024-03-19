@@ -2,7 +2,7 @@
 #include "VNH7070.h"
 
 // Set the i2c HEX address
-VNH7070 vnh(6);
+VNH7070 vnh(0x20);
 
 void setup(){
   Serial.begin(9600);
