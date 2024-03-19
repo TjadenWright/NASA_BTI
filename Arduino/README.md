@@ -14,5 +14,6 @@
 | MCP45HVX1* | I2C high voltage Digipot | [NASA_BTI/Arduino/MCP45HVX1_code/MCP45HVX1](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP45HVX1_code/MCP45HVX1) |
 
 
-**Arduino Setup**
+## Arduino Setup
 * Make sure to put any custom functions from Table 1. in the arduino library folder: \Documents\Arduino\libraries\
+* Any devices with * in their name are optional as they are no longer used.
