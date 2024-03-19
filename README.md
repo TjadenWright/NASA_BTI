@@ -28,6 +28,7 @@
 2. cd Arduino\esphome-jbd-bms-main
 3. Open the "esp32-ble-example-multiple-devices.yaml" file and ensure that the bluetooth addresses match the batteries.
 4. Connect esp32 device and run: python3 -m esphome run esp32-ble-example-multiple-devices.yaml
+5. **Never save the make files to this Github**
 
 ## Arduino Setup
 * Make sure to put any custom functions in the arduino library folder: \Documents\Arduino\libraries\
