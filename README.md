@@ -55,3 +55,8 @@
 **V3 (Final) of the Autonomy and Localization**
 * This is using BTIC_Proto3 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
+
+# Controls
+**V3 of the controls**
+* Visual representation of the communication between Arduino and Python.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture" alt="Controls Architecture" title="Controls Architecture" />
