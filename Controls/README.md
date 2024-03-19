@@ -3,6 +3,7 @@
 # Controls
 ## V1 and V2 of the Controls
 * Used for the prototype rover.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/prototype rover.png" alt="prototype rover" title="prototype rover" />
 
 ## V3 of the controls
 * Visual representation of the communication between Arduino and Python.
