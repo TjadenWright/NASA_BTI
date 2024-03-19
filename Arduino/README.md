@@ -1,7 +1,8 @@
 # NASA_BTI
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Space Trajectory logo.jpg" alt="Space Trajectory" title="Space Trajectory" />
 
-# Custom Files
+# Custom Arduino Functions
+* Table 1. Arduino Library Files
 | Device  | Description | Folder Location |
 | ------------- | ------------- |--------------|
 | ADS1219 | I2C 24 bit ADC for the Motor/Actuator Board | [NASA_BTI/Arduino/ADS1219_code/ADS1219](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/ADS1219_code/ADS1219) | 
@@ -14,4 +15,4 @@
 
 
 **Arduino Setup**
-* Make sure to put any custom functions in the arduino library folder: \Documents\Arduino\libraries\
+* Make sure to put any custom functions from Table 1. in the arduino library folder: \Documents\Arduino\libraries\

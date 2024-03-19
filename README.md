@@ -30,7 +30,7 @@
 
 **Arduino Setup**
 * Make sure to put any custom functions in the arduino library folder: \Documents\Arduino\libraries\
-* An example of a custon function is ADS1219_code\ADS1219\
+* An example this can be found in the README.md file [here](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/README.md).
 
 **Upload from VScode**
 1. Use the global repository section: https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git#setting-your-git-username-for-every-repository-on-your-computer
