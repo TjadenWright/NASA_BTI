@@ -1,4 +1,5 @@
 # NASA_BTI
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Space Trajectory logo.jpg" alt="Space Trajectory" title="Space Trajectory" />
 
 # Prototypes
 | Prototype Number  | Change Log | File to Run |
