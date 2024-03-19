@@ -58,30 +58,19 @@
 
 # GUI
 ## The GUI is ran on the Latte Panda and streamed to the Lenovo Legion Go through Sunshine Games Stream
-<ul>
-  <li>This is the main GUI used for the NASA BTIC project.</li>
-  <li>The diagnostics data, video feed, and localization/imu viewer are located on this GUI.</li>
-</ul>
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png" alt="GUI V5" title="GUI V5" />
-
-<ul>
-  <li>This is the IP Webcame Selector. This will allow the user to manually type the IPs of their webcames and save to a config file.</li>
-</ul>
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/IP_of_webcams.png" alt="IP Of Webcams" title="IP Of Webcams" />
-
-<ul>
-  <li>This is the Channel Selector. This will allow the user configure the I2C channels of the motherboard. The cofiguration of this can also be saved to a file.</li>
-</ul>
-<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
+* This is the main GUI used for the NASA BTIC project.
+* The diagnostics data, video feed, and localization/imu viewer are located on this GUI.
+* More detail of the GUI can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/GUI).
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/lenovo_with_GUI.png" alt="lenovo_with_GUI" title="lenovo_with_GUI" />
 
 # Autonomy and Localization
 ## V3 (Final) of the Autonomy and Localization
-<ul>
-  <li>This video shows the Autonomy and Localization of the Prototype rover. The rover uses ArUco tags and OpenCV in Python to track the positioning of the rover and autonomously move to the next ArUco tag. This was using BTIC_Proto3 code.</li>
-</ul>
+* This video shows the Autonomy and Localization of the Prototype rover. The rover uses ArUco tags and OpenCV in Python to track the positioning of the rover and autonomously move to the next ArUco tag. This was using BTIC_Proto3 code.
+* More detail of the Autonomy and Localization can be found at [Camera_Cal](https://github.com/TjadenWright/NASA_BTI/tree/main/Camera_Cal) and [BTIC_Proto](https://github.com/TjadenWright/NASA_BTI/tree/main/BTIC_Proto).
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
 
 # Controls
 ## V3 of the controls
 * Visual representation of the communication between Arduino and Python.
+* More detail of the Autonomy and Localization can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/Controls).
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture.png" alt="Controls Architecture" title="Controls Architecture" />
