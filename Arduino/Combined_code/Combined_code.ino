@@ -35,7 +35,7 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 const int max_channels = 8; // for commands channel# doesn't count
 
 // PWM channel pins
-int Mega[max_channels] = {6, 13, 10, 11, 8, 9, 7, 12}; // actual 12, 13, 10, 11, 8, 9, 7, 6
+int Mega[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6};
 // Mega reset = 5
 int Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
 // Panda reset = 4
