@@ -37,5 +37,5 @@
 6. Upload to Github as normal through VS code.
 7. If you need to delete a commit: git reset --soft HEAD~.
 
-**GUI**\
+# GUI
 ![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Images/GUI_V5.png "GUI V5")
