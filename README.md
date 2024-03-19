@@ -39,4 +39,4 @@
 
 # GUI
 ![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")\
-![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V3.gif "GUI V5")
+![](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V3.gif "GUI V5")
