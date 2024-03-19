@@ -39,4 +39,10 @@
 
 # GUI
 **V5 of the GUI**\
+
 ![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")
+
+# Autonomy
+**V3 (Final) of the Autonomy**\
+
+![](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif)
