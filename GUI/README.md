@@ -25,5 +25,10 @@
 </ul>
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/diagnostics data.png" alt="diagnostics data" title="diagnostics data" />
 
+<ul>
+  <li>GIF showing off all the features.</li>
+</ul>
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUIV5.gif" alt="GUIV5" title="GUIV5" />
+
 
 
