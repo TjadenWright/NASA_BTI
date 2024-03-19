@@ -38,5 +38,5 @@
 7. If you need to delete a commit: git reset --soft HEAD~.
 
 # GUI
-![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")\
-![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V3.gif "GUI V5")
+**V5 of the GUI**\
+![alt text](https://github.com/TjadenWright/NASA_BTI/blob/main/Media/GUI_V5.png "GUI V5")
