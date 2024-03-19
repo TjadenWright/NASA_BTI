@@ -72,5 +72,5 @@
 # Controls
 ## V3 of the controls
 * Visual representation of the communication between Arduino and Python.
-* More detail of the Autonomy and Localization can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/Controls).
+* More detail of the Controls can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/Controls).
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/controls_architecture.png" alt="Controls Architecture" title="Controls Architecture" />
