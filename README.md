@@ -47,6 +47,7 @@
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Software%20Architecture.png" alt="Software Architecture" title="Software Architecture" />
 
 # GUI
+<strong>Test</strong>
 <ul>
   <li>This is the main GUI used for the NASA BTIC project.</li>
   <li>The diagnostics data, video feed, and localization/imu viewer are located on this GUI.</li>
@@ -65,7 +66,7 @@
 
 # Autonomy and Localization
 **V3 (Final) of the Autonomy and Localization**
-* This is using BTIC_Proto3 code.
+* This video shows the Autonomy and Localization of the Prototype rover. The rover uses ArUco tags and OpenCV in Python to track the positioning of the rover and autonomously move to the next ArUco tag. This was using BTIC_Proto3 code.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Autonomy_Localization_Video.gif" alt="Autonomy Localization Video" title="Autonomy Localization Video" />
 
 # Controls
