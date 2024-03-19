@@ -1189,7 +1189,7 @@ class GUI:
                     else:
                         # ALARM TEMP CURRENT OC_FAULT FEEDBACK
                         self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 2], 1), "A", "Slew Gear Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
-                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 4], 1), "m/s", "Slew Gear Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 4], 1), "?", "Slew Gear Feedback", 4000, 3500, 1500, BATTERY_X + BATTERY_WIDTH + self.steps5, self.down_step + BATTERY_HEIGHT // 2)
                         self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "Board Temperature", BATTERY_X + BATTERY_WIDTH + 2*self.steps5, self.down_step - 30)
                         self.draw_thermometer(self.screenDiag, round(0, 1), "Slew Gear Temperature", BATTERY_X + BATTERY_WIDTH + 3*self.steps5, self.down_step - 30)
                         self.draw_status_text(self.screenDiag, "Slew Gear Alarm", BATTERY_X + BATTERY_WIDTH + 4*self.steps5, self.down_step)
