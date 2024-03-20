@@ -599,7 +599,7 @@ class Rover_Controls:
         if(self.act_OR_motor[self.controls_channel[index]-1] == 0 or self.act_OR_motor[self.controls_channel[index]-1] == 2): # motor or slewgear
             self.control_motor_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], self.controls_vals[self.controls_channel[index]-1][3], self.controls_vals[self.controls_channel[index]-1][4], index)
         elif(self.act_OR_motor[self.controls_channel[index]-1] == 1): # actuator
-            self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][2], self.controls_vals[self.controls_channel[index]-1][3], index)
+            self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], index)
         # elif(self.act_OR_motor[self.controls_channel-1] == 3): # motherboard
             
     def select_diagnostic(self, index = 0):
@@ -740,7 +740,7 @@ class Rover_Controls:
 
         motor_speed = self.maximum_voltage*trigger
 
-        if(select):
+        if(select == 0):
             if(self.controller): # if the controller is connected
                 self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[channel_Numb-1][1] = not self.Get_Button_From_Controller('X_Button')
@@ -767,8 +767,9 @@ class Rover_Controls:
         # self.controls_vals[0] = ENable EFUSE
         # self.controls_vals[1] = PWM
         # self.controls_vals[2] = FR
-        
-        else:
+        # self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], index)
+                
+        elif(select == 1):
             if(self.controller): # if the controller is connected
                 self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[channel_Numb-1][1] = motor_speed

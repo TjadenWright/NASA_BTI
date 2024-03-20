@@ -54,6 +54,7 @@ img_Localization = None # start of image at nothing (don't change)
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
+Fullscreen = True
 
 #### Values to not Change ####
 # Initialize your variables
@@ -124,7 +125,7 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 rc1.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
 rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
-rc1.set_act_OR_motor(config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
 
 rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
 rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
@@ -153,7 +154,7 @@ a1.calibrated_cam_data() # add calibrated data to camera
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # main gui
-g1.set_up_Main_UI(b1, Fake_traffic)
+g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
@@ -200,11 +201,12 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
-        rc1.control_motor_OR_actutor(channel_Numb = 1, select = 1, verbose = True)
-        if(connected):
-            print("Manual Mode")
-        else:
-            print("Connection Lost")
+        rc1.control_motor_OR_actutor(channel_Numb = 1, select = rc1.get_act_OR_motor()[0], verbose = False)
+        # print(rc1.get_act_OR_motor()[0])
+        # if(connected):
+        #     print("Manual Mode")
+        # else:
+        #     print("Connection Lost")
 
     elif(mode == 1): # auto mode
         
@@ -288,6 +290,3 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 
     l1.controller_handler(calibrateM, up_key, down_key)
 
-# at the end make sure that the rover doesn't go flying
-rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # end program stop the rover
-rc1.Disable_write_arduino()

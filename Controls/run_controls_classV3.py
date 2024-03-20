@@ -19,12 +19,12 @@ PC_or_PI = "Lenovo"                            # <--- PC or pi?
 
 # setup the rover controls class.
 rc1 = Rover_Controls(verbose=VERBOSE, timing = True, PC_or_PI = PC_or_PI)
-# rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
+rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 rc1.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
 rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
-rc1.set_act_OR_motor(config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
 
 rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
 rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
@@ -32,31 +32,24 @@ rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 rc1.start_diagnostics_AND_controls_thread(index = 0)
 rc1.start_diagnostics_AND_controls_thread(index = 1)
 
-def reset_threads():
-    print("stopping threads")
-    time.sleep(0.1)
-    rc1.set_act_OR_motor(config = np.array([1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3]))
-    rc1.start_diagnostics_AND_controls_thread(index = 0)
-    rc1.start_diagnostics_AND_controls_thread(index = 1)
-
-print(rc1.get_diagnostics_array())
+# print(rc1.get_diagnostics_array())
 # run the code for manual and automatic.
 while True: # not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # print("hello world")
-    all_threads = threading.enumerate()
-    print("List of threads: ")
-    for thread in all_threads:
-        print(thread.name)
-    # time.sleep(1)
-    print(rc1.get_diagnostics_array())
-    # connection = rc1.handle_events()
+    # all_threads = threading.enumerate()
+    # print("List of threads: ")
+    # for thread in all_threads:
+    #     print(thread.name)
+    # # time.sleep(1)
+    # print(rc1.get_diagnostics_array())
+    connection = rc1.handle_events()
 
-    # rc1.control_motor_OR_actutor(channel_Numb = 1, select = 1, verbose = True)
+    if(rc1.Get_Button_From_Controller("Menu")):
+        if(rc1.get_act_OR_motor()[0] == 0):
+            rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+        elif(rc1.get_act_OR_motor()[0] == 1):
+            rc1.set_act_OR_motor(config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
 
-    time.sleep(5)
+    time.sleep(0.033)
 
-    rc1.stop_thread()
-
-    stop = threading.Thread(target=reset_threads, name="stop")
-    stop.daemon = True
-    stop.start()
+    rc1.control_motor_OR_actutor(channel_Numb = 1, select = rc1.get_act_OR_motor()[0], verbose = True) # rc1.get_act_OR_motor()[0]

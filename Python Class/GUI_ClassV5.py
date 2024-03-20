@@ -124,7 +124,7 @@ class GUI:
         self.FirstChannelSelect = 0
 
         # channel selector
-        self.channel = np.zeros(16) # 16 channels
+        self.channel = np.zeros(16, int) # 16 channels
         self.channel_options = ["Motor", "Actuator", "Slew Gear", "IMU and Motherboard"]
 
         # threading
@@ -698,10 +698,10 @@ class GUI:
         for i in range(1, 17):
             selected_option = self.master.grid_slaves(row=(i-1)//4, column=(i-1)%4)[0].winfo_children()[1].cget("text")
             try:
-                self.channel[i-1] = self.channel_options.index(selected_option)
+                self.channel[i-1] = int(self.channel_options.index(selected_option))
             except:
                 self.channel[i-1] = -1
-        print(self.channel)
+        print(self.channel, "hello man")
         
     def write_select_channels(self):
         # write to file
@@ -772,12 +772,14 @@ class GUI:
         self.LOAD_Save.grid(row=4, column=3, pady=10)
         self.LOAD_Save.config(width=20, height=2, bg="#FFD100")
 
-    def channel_select_loop(self):
+    def channel_select_loop(self, controls):
         if(self.FirstChannelSelect == 2):
             self.master.update()
         if(self.FirstChannelSelect == 1):
             self.master.destroy()
-            self.FirstChannelSelect == 0
+            self.FirstChannelSelect = 0
+            print(self.channel, "loop")
+            controls.set_act_OR_motor(config = np.array(self.channel).copy()) # this works with a literal array but not a variable
 
     # battery stuff
     def change_batt_bard_add(self):
@@ -1515,7 +1517,7 @@ class GUI:
         self.Get_Camera_IPs_Loop()
 
         # update channel select
-        self.channel_select_loop()
+        self.channel_select_loop(controls)
 
         return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key
 

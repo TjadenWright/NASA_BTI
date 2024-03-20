@@ -351,7 +351,7 @@ void control_actuator(String command_from_python){
   }
   else
     direction = -1;
-  vnh.H_bridge_change(PWM, direction);
+  vnh.H_bridge_change(PWM_Channel[Channel-Channel_Offset], PWM, direction);
 
 
   if(TestArduinoScript){

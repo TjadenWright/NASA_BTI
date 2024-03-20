@@ -7,16 +7,17 @@ VNH7070 vnh(0x20);
 void setup(){
   Serial.begin(9600);
   vnh.begin();
+  pinMode(6, OUTPUT);
 }
 
 int i = 255;
 
 void loop(){
-  vnh.H_bridge_change(i, 1);
+  vnh.H_bridge_change(6, i, 1);
   Serial.print("Forward ");
   Serial.println(i*16.0/255);
   delay(5000);
-  vnh.H_bridge_change(i, -1);
+  vnh.H_bridge_change(6, i, -1);
   Serial.print("Backward ");
   Serial.println(i*16.0/255);
   delay(5000);
