@@ -44,7 +44,7 @@ time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to a
 Vmax = 0.5                                 # <--- maximum velocity of the rover 0 to 1.
 
 #### Diagnotic Data Values to Change ####
-Fake_traffic = False
+Fake_traffic = True
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -125,7 +125,7 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 rc1.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
 rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
-rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
 
 rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
 rc1.start_arduino_command(index = 1, HIGH_LOW = 1)

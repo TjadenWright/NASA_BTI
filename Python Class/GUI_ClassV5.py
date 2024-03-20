@@ -344,7 +344,7 @@ class GUI:
             time.sleep(0.1)
 
     def start_ptz_thread(self):
-        self.ptz_thread = threading.Thread(target=self.ptz_controls)
+        self.ptz_thread = threading.Thread(target=self.ptz_controls, name="ptz_controller thread")
         self.ptz_thread.daemon = True
         self.ptz_thread.start()
 
@@ -410,7 +410,7 @@ class GUI:
                 time.sleep(1)
                 
     def start_cameraCV_thread(self):
-        self.cameraCV_connect_thread = threading.Thread(target=self.run_opencvCam)
+        self.cameraCV_connect_thread = threading.Thread(target=self.run_opencvCam, name = "OpenCV thread")
         self.cameraCV_connect_thread.daemon = True
         self.cameraCV_connect_thread.start()
 
@@ -486,7 +486,7 @@ class GUI:
                  
 
     def start_camera_thread(self):
-        self.camera_connect_thread = threading.Thread(target=self.run_camera)
+        self.camera_connect_thread = threading.Thread(target=self.run_camera, name="camera_thread")
         self.camera_connect_thread.daemon = True
         self.camera_connect_thread.start()
 
@@ -592,7 +592,7 @@ class GUI:
                 self.connection = connection
 
     def start_bat_thread(self):
-        self.battery_thread = threading.Thread(target=self.get_bat_data)
+        self.battery_thread = threading.Thread(target=self.get_bat_data, name="battery_thread")
         self.battery_thread.daemon = True
         self.battery_thread.start()
 
@@ -684,7 +684,7 @@ class GUI:
                 self.connection = connection
 
     def start_false_battery_thread(self):
-        self.battery_thread_F = threading.Thread(target=self.get_bat_data_F)
+        self.battery_thread_F = threading.Thread(target=self.get_bat_data_F, name="fake_battery_thread")
         self.battery_thread_F.daemon = True
         self.battery_thread_F.start()
 
@@ -701,7 +701,110 @@ class GUI:
                 self.channel[i-1] = int(self.channel_options.index(selected_option))
             except:
                 self.channel[i-1] = -1
-        print(self.channel, "hello man")
+        print(self.channel)
+
+        # self.science()
+
+        # print(type(np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3])))
+        self.start_reset_thread()
+        # print(self.controls.get_act_OR_motor())
+        # np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])
+
+    def science(self):
+        for i in range (0, 4):
+            if(self.channel[i] == 0):
+                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 1):
+                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 2):
+                self.controls.set_act_OR_motor_single(i, 2)
+            elif(self.channel[i] == 3):
+                self.controls.set_act_OR_motor_single(i, 3)
+
+        for i in range (4, 8):
+            if(self.channel[i] == 0):
+                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 1):
+                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 2):
+                self.controls.set_act_OR_motor_single(i, 2)
+            elif(self.channel[i] == 3):
+                self.controls.set_act_OR_motor_single(i, 3)
+
+    def start_reset_thread(self):
+        move_on = True
+        all_threads = threading.enumerate()
+        for thread in all_threads:
+            if(thread.name == "stop"):
+                move_on = False
+        if(move_on):
+            stop = threading.Thread(target=self.reset_thread, name="stop")
+            stop.daemon = True
+            stop.start()
+
+    def reset_thread(self):
+        for i in range (0, 4):
+            if(self.channel[i] == 0):
+                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 1):
+                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 2):
+                self.controls.set_act_OR_motor_single(i, 2)
+            elif(self.channel[i] == 3):
+                self.controls.set_act_OR_motor_single(i, 3)
+
+        time.sleep(10)
+
+        for i in range (4, 8):
+            if(self.channel[i] == 0):
+                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 1):
+                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+            elif(self.channel[i] == 2):
+                self.controls.set_act_OR_motor_single(i, 2)
+            elif(self.channel[i] == 3):
+                self.controls.set_act_OR_motor_single(i, 3)
+        # print("stop thread")
+        # # print("----------------------------------")
+        # # print("Before Stop Command")
+        # # all_threads = threading.enumerate()
+        # # for thread in all_threads:
+        # #     print(thread.name)
+        # # print("----------------------------------")
+        # # self.controls.stop_thread()
+        # time.sleep(1)
+        # # print("----------------------------------")
+        # # print("1s After Stop Command")
+        # # all_threads = threading.enumerate()
+        # # for thread in all_threads:
+        # #     print(thread.name)
+        # # print("----------------------------------")
+        # # self.controls.Disable_write_arduino(index = 0)
+        # # self.controls.Disable_write_arduino(index = 1)
+        # # time.sleep(1)
+        # # print("setting up arduinos")
+        # # self.controls.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
+        # # self.controls.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
+        # # self.controls.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
+        # # self.controls.set_act_OR_motor(config = np.array([int(self.channel[0]), int(self.channel[1]), int(self.channel[2]), int(self.channel[3]), int(self.channel[4]), int(self.channel[5]), int(self.channel[6]), int(self.channel[7]), int(self.channel[8]), int(self.channel[9]), int(self.channel[10]), int(self.channel[11]), int(self.channel[12]), int(self.channel[13]), int(self.channel[14]), int(self.channel[15])]))
+        # # print("setting up threads")
+        # # self.controls.start_arduino_command(index = 0, HIGH_LOW = 0)
+        # # self.controls.start_arduino_command(index = 1, HIGH_LOW = 1)
+        # # print(type(np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3])))
+        # # print(type(np.array([int(self.channel[0]), int(self.channel[1]), int(self.channel[2]), int(self.channel[3]), int(self.channel[4]), int(self.channel[5]), int(self.channel[6]), int(self.channel[7]), int(self.channel[8]), int(self.channel[9]), int(self.channel[10]), int(self.channel[11]), int(self.channel[12]), int(self.channel[13]), int(self.channel[14]), int(self.channel[15])])))
+        # # # np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])
+        # # time.sleep(0.1)
+        # # self.controls.start_diagnostics_AND_controls_thread(index = 0)
+        # # self.controls.start_diagnostics_AND_controls_thread(index = 1)
+        # # time.sleep(1)
+        # # print("----------------------------------")
+        # # print("1s After Reset Command")
+        # # all_threads = threading.enumerate()
+        # # for thread in all_threads:
+        # #     print(thread.name)
+        # # print("----------------------------------")
+        # # print(self.controls.get_controls_array())
+        # # print("----------------------------------")
         
     def write_select_channels(self):
         # write to file
@@ -772,14 +875,15 @@ class GUI:
         self.LOAD_Save.grid(row=4, column=3, pady=10)
         self.LOAD_Save.config(width=20, height=2, bg="#FFD100")
 
-    def channel_select_loop(self, controls):
+    def channel_select_loop(self):
         if(self.FirstChannelSelect == 2):
             self.master.update()
         if(self.FirstChannelSelect == 1):
             self.master.destroy()
             self.FirstChannelSelect = 0
-            print(self.channel, "loop")
-            controls.set_act_OR_motor(config = np.array(self.channel).copy()) # this works with a literal array but not a variable
+            # print(self.channel, "loop")
+            # print(np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]]))
+            # controls.set_act_OR_motor(config = np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])) # have to do this otherwise weird stuff happens
 
     # battery stuff
     def change_batt_bard_add(self):
@@ -1469,6 +1573,7 @@ class GUI:
     # loop function for main gui
     def loop_Main_UI(self, controls, local_img, mode = 0, imu_image = None):
         self.mode = mode
+        self.controls = controls
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1517,7 +1622,7 @@ class GUI:
         self.Get_Camera_IPs_Loop()
 
         # update channel select
-        self.channel_select_loop(controls)
+        self.channel_select_loop()
 
         return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key
 

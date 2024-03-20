@@ -10,9 +10,11 @@ import numpy as np
 import threading
 
 class Rover_Controls:
-    def __init__(self, verbose = False, timing = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
+    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
         # print out stuff
         self.verbose = verbose                       # debuggin purposes.
+        self.verbose_control = verbose_control
+        self.verbose_diagnostics = verbose_diagnostics
         self.timing = timing
 
         # controls stuff
@@ -44,10 +46,10 @@ class Rover_Controls:
         self.controls_channel_reset = self.diagnostics_channel_reset.copy()
 
         # controls
-        self.controls_vals = np.zeros((16, 10), int)
+        self.controls_vals = np.zeros((16, 6), int)
 
         # diagnostics
-        self.diagnostics_vals = np.zeros((16, 10))
+        self.diagnostics_vals = np.zeros((16, 6))
         self.diagnostic_select = np.zeros(16)
         self.diagnostic_lock = [threading.Lock(), threading.Lock()]
 
@@ -430,10 +432,19 @@ class Rover_Controls:
         print(arduino_port)
         # Set up the serial connection
         self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
-        time.sleep(1)
+        time.sleep(2)
 
     def Disable_write_arduino(self, index = 0):
+        # self.arduino[index].close()
+        # self.arduino[index].send_break(duration=1)
+        data = "reset"
+        self.arduino[index].write(bytes(data + "\n", 'utf-8'))
+        time.sleep(1)
+        self.arduino[index].flushInput()
+        # self.arduino[index].setDTR(False)
         self.arduino[index].close()
+        self.arduino[index] = None
+ 
 
     def write_read(self, data, index = 0):
         # send a command with a \n at the end
@@ -443,8 +454,11 @@ class Rover_Controls:
         data = self.arduino[index].readline().decode('utf-8').strip()
         return str(data)
     
-    def set_act_OR_motor(self, config=np.zeros(15)):
+    def set_act_OR_motor(self, config=np.zeros(16)):
         self.act_OR_motor = config
+
+    def set_act_OR_motor_single(self, index, val):
+        self.act_OR_motor[index] = val
 
     def get_act_OR_motor(self):
         return self.act_OR_motor
@@ -481,7 +495,7 @@ class Rover_Controls:
     def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
         motor_control_command = "cMotor " + str(Channel_Numb) + " " + str(EN) + " " + str(EN_EFUSE) + " " + str(PWM) + " " + str(FR) + " " + str(BRAKE)
 
-        if(self.verbose):
+        if(self.verbose_control):
             print(motor_control_command)
             print(self.write_read(motor_control_command, index))
         else:
@@ -490,7 +504,7 @@ class Rover_Controls:
     def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
         actuator_control_command = "cActuator " + str(Channel_Numb) + " " + str(EN_EFUSE) + " " + str(FR) + " " + str(PWM)
 
-        if(self.verbose):
+        if(self.verbose_control):
             print(actuator_control_command)
             print(self.write_read(actuator_control_command, index))
         else:
@@ -499,7 +513,7 @@ class Rover_Controls:
     def start_motor_current_arduino_command(self, Channel_Numb, index = 0):
         motor_start_current_command = "sMotorCurrent " + str(Channel_Numb)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(motor_start_current_command)
             print(self.write_read(motor_start_current_command, index))
         else:
@@ -509,7 +523,7 @@ class Rover_Controls:
         motor_diagnostic_command = "dMotor " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_command, index)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(motor_diagnostic_command)
             print(data)
 
@@ -524,7 +538,7 @@ class Rover_Controls:
     def start_motor_speed_arduino_command(self, Channel_Numb, index = 0):
         start_motor_diagnostic_speed_command = "sMotrSpeed " + str(Channel_Numb)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(start_motor_diagnostic_speed_command)
             print(self.write_read(start_motor_diagnostic_speed_command, index))
         else:
@@ -534,7 +548,7 @@ class Rover_Controls:
         motor_diagnostic_speed_command = "dMotrSpeed " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_speed_command, index)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(motor_diagnostic_speed_command)
             print(data)
 
@@ -548,7 +562,7 @@ class Rover_Controls:
     def start_actuator_current_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_diagnostic_current_command = "sActuatorCurrent " + str(Channel_Numb)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(start_actuator_diagnostic_current_command)
             print(self.write_read(start_actuator_diagnostic_current_command, index))
         else:
@@ -558,7 +572,7 @@ class Rover_Controls:
         actuator_diagnostic_command = "dActuator " + str(Channel_Numb)
         data = self.write_read(actuator_diagnostic_command, index)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(actuator_diagnostic_command)
             print(data)
 
@@ -573,7 +587,7 @@ class Rover_Controls:
     def start_actuator_SLEWGEAR_feedback_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_feedback_command = "sActuatrFeeback " + str(Channel_Numb)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(start_actuator_feedback_command)
             print(self.write_read(start_actuator_feedback_command, index))
         else:
@@ -583,7 +597,7 @@ class Rover_Controls:
         actuator_feedback_command = "dActuatrFeeback " + str(Channel_Numb)
         data = self.write_read(actuator_feedback_command, index)
 
-        if(self.verbose):
+        if(self.verbose_diagnostics):
             print(actuator_feedback_command)
             print(data)
 
@@ -696,11 +710,13 @@ class Rover_Controls:
     def start_diagnostics_AND_controls_thread(self, index):
         if(index == 0):
             self.run_thread = True
+            self.d_and_c = None
             self.d_and_c = threading.Thread(target=self.index_0_thread, name="Arduino Mega Thread")
             self.d_and_c.daemon = True
             self.d_and_c.start()
         else:
             self.run_thread = True
+            self.d_and_c1 = None
             self.d_and_c1 = threading.Thread(target=self.index_1_thread, name="LattePanda Thread")
             self.d_and_c1.daemon = True
             self.d_and_c1.start()
@@ -785,3 +801,6 @@ class Rover_Controls:
                 print("PWM: ", self.controls_vals[channel_Numb-1][1])
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
                 print("-----------------------------")
+
+    def get_controls_array(self):
+        return self.controls_vals

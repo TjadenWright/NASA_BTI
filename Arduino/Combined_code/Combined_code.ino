@@ -5,6 +5,7 @@
 #include "VNH7070.h" // controlling H-Bridge
 #include <ADS1219.h>
 #include "TCA9548A.h"
+#include <avr/wdt.h>
 
 #define TestArduinoScript false
 #define Arduino_or_latte true // true -> arduino mega / false -> latte
@@ -13,7 +14,7 @@
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
-String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU"}; 
+String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU", "reset"}; 
 
 // Commands
 // startup LOW_HIGH
@@ -35,12 +36,12 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 const int max_channels = 8; // for commands channel# doesn't count
 
 // PWM channel pins
-int Mega[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6};
+int Mega[max_channels] = {6, 13, 10, 11, 8, 9, 7, 12}; // flip 6 and 12 for the real deal
 // Mega reset = 5
 int Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
 // Panda reset = 4
 
-int PWM_Channel[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6};
+int PWM_Channel[max_channels];
 int Channel_Offset = 1;   // either 1 for 1-8 or 9 for 9-16
 int Channel_Selected = -1; // start with a channel we can't be in
 
@@ -85,13 +86,12 @@ void setup() {
       Serial.begin(9600);
     }
 
-
+    if(TestArduinoScript)
+      Serial.println("reset");
     /////////
     // PWM //
     /////////
-    for(int i = 0; i < max_channels; i++){
-      pinMode(PWM_Channel[i], OUTPUT);
-    }
+    // initialized in startup
 
     ////////////////////
     // GPIO Expanders //
@@ -196,6 +196,11 @@ void command_finder(int index, String command_from_python){
         case 13:
             diagnostics_IMU(command_from_python);
             break;
+        case 14:
+            // asm volatile(" jmp 0"); // reset arduino
+            wdt_enable(WDTO_15MS);
+            while(true);
+            break;
         // Add cases for additional words as needed
     }
 }
@@ -268,7 +273,7 @@ void control_motor(String command_from_python){
       Serial.println(Channel);
     }
     I2CMux.closeAll();
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -302,7 +307,20 @@ void control_motor(String command_from_python){
     Serial.println(BREAK);
   }
 
-  Serial.println("done!");
+  // Serial.println("done!");
+  Serial.print(Channel);
+  Serial.print(" ");
+  Serial.print(EN);
+  Serial.print(" ");
+  Serial.print(EN_EFUSE);
+  Serial.print(" ");
+  Serial.print(PWM);
+  Serial.print(" (");
+  Serial.print(PWM_Channel[Channel-Channel_Offset]);
+  Serial.print(") ");
+  Serial.print(FR);
+  Serial.print(" ");
+  Serial.println(BREAK);
 }
 // control actuator
 // cActutor Channel# EN_EFUSE FR PWM
@@ -334,7 +352,7 @@ void control_actuator(String command_from_python){
       Serial.println(Channel);
     }
     
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -361,7 +379,19 @@ void control_actuator(String command_from_python){
     Serial.println(PWM);
   }
 
-  Serial.println("done!");
+  // Serial.println("done!");
+  Serial.print(Channel);
+  Serial.print(" ");
+  Serial.print(EN_EFUSE);
+  Serial.print(" ");
+  Serial.print(FR);
+  Serial.print(" ");
+  Serial.print(PWM);
+  Serial.print(" (");
+  Serial.print(PWM_Channel[Channel-Channel_Offset]);
+  Serial.print(" ");
+  Serial.print(direction);
+  Serial.println(") ");
 }
 
 // sMotorCurrent Channel# (starts the current conversion)
@@ -385,7 +415,7 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool){
       Serial.println(Channel);
     }
     I2CMux.closeAll();
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -424,7 +454,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
       Serial.println(Channel);
     }
     I2CMux.closeAll();
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -478,7 +508,7 @@ void actuator_diagnostic_start(String  command_from_python, bool feeback_T_F){
       Serial.println(Channel);
     }
     
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -516,7 +546,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
       Serial.println(Channel);
     }
     
-    I2CMux.openChannel(Channel-1);
+    I2CMux.openChannel(Channel-Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
   }
@@ -563,6 +593,10 @@ void control_motherboard(String command_from_python){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
+
+    I2CMux.openChannel(Channel-Channel_Offset);
+    // store this channel now
+    Channel_Selected = Channel;
   }
 
   // do motherboard stuff...
@@ -588,6 +622,10 @@ void diagnostics_motherboard(String command_from_python){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
+
+    I2CMux.openChannel(Channel-Channel_Offset);
+    // store this channel now
+    Channel_Selected = Channel;
   }
 
   // diagnostics for motherboard .. 
@@ -613,6 +651,10 @@ void diagnostics_IMU(String command_from_python){
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
+
+    I2CMux.openChannel(Channel-Channel_Offset);
+    // store this channel now
+    Channel_Selected = Channel;
   }
 
   // diagnostics for IMU .. 
