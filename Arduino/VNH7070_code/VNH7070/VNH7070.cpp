@@ -20,12 +20,12 @@ VNH7070::VNH7070(uint8_t addr_expander, int INA, int INB, int SEL0) : pcf8574(ad
 void VNH7070::begin() {
   pcf8574.begin();
   // start all off at zero
-  stateA = 0;
-  stateB = 0;
-  stateOFF = 0;
+  // stateA = 0;
+  // stateB = 0;
+  // stateOFF = 0;
 }
 
-void VNH7070::H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction) {
+void VNH7070::H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction, int & stateA, int & stateB) {
   // if we are at B make sure to switch PWM to max and INB and INA to 0
   // INA = 0, INB = 1, SLE0 = 1, PWM = x
   if(direction > 0) {

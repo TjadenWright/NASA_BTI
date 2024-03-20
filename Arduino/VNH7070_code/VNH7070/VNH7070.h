@@ -18,11 +18,11 @@ class VNH7070  {
 
     // Methods
     void begin();
-	void H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction);
+	void H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction, int & stateA, int & stateB);
 
   private:
 	int A, B, S;
-	int stateA, stateB, stateOFF;
+	// int stateA, stateB, stateOFF;
 	PCF8574 pcf8574;
 };
 #endif

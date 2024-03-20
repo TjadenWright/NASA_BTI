@@ -122,6 +122,9 @@ class GUI:
         self.board_channel = 0
 
         self.FirstChannelSelect = 0
+        
+        self.master = None
+        self.masterIP = None
 
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
@@ -156,6 +159,7 @@ class GUI:
     def on_closing_IPs(self):
         self.masterIP.destroy()
         self.FirstCamIP = 0
+        self.masterIP = None
 
     def connect(self):
         self.cam[0] = self.camera_entry1.get()
@@ -237,59 +241,60 @@ class GUI:
     def Get_Camera_IPs(self):
         self.FirstCamIP = 2
 
-        self.masterIP = Toplevel()
-        self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
-        self.masterIP.geometry("800x500")
-        self.masterIP.title("IP of Webcams")
-        self.masterIP.config(bg="#0033A0")
+        if(self.masterIP == None):
+            self.masterIP = Toplevel()
+            self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
+            self.masterIP.geometry("800x500")
+            self.masterIP.title("IP of Webcams")
+            self.masterIP.config(bg="#0033A0")
 
-        ipadx = 327.2
-        pady = 5
+            ipadx = 327.2
+            pady = 5
 
-        # Create an entry for the camera index
-        camera_entry_label1 = Label(self.masterIP, text="Camera 1 IP", bg="white", fg="black")
-        camera_entry_label1.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry1 = Entry(self.masterIP)
-        self.camera_entry1.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label1 = Label(self.masterIP, text="Camera 1 IP", bg="white", fg="black")
+            camera_entry_label1.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry1 = Entry(self.masterIP)
+            self.camera_entry1.pack(ipadx=300, ipady=10)
 
-        # Create an entry for the camera index
-        camera_entry_label2 = Label(self.masterIP, text="Camera 2 IP", bg="white", fg="black")
-        camera_entry_label2.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry2 = Entry(self.masterIP)
-        self.camera_entry2.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label2 = Label(self.masterIP, text="Camera 2 IP", bg="white", fg="black")
+            camera_entry_label2.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry2 = Entry(self.masterIP)
+            self.camera_entry2.pack(ipadx=300, ipady=10)
 
-        # Create an entry for the camera index
-        camera_entry_label3 = Label(self.masterIP, text="Camera 3 IP", bg="white", fg="black")
-        camera_entry_label3.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry3 = Entry(self.masterIP)
-        self.camera_entry3.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label3 = Label(self.masterIP, text="Camera 3 IP", bg="white", fg="black")
+            camera_entry_label3.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry3 = Entry(self.masterIP)
+            self.camera_entry3.pack(ipadx=300, ipady=10)
 
-        # Create an entry for the camera index
-        camera_entry_label4 = Label(self.masterIP, text="Camera 4 IP", bg="white", fg="black")
-        camera_entry_label4.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry4 = Entry(self.masterIP)
-        self.camera_entry4.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label4 = Label(self.masterIP, text="Camera 4 IP", bg="white", fg="black")
+            camera_entry_label4.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry4 = Entry(self.masterIP)
+            self.camera_entry4.pack(ipadx=300, ipady=10)
 
-        # Create an entry for the camera index
-        camera_entry_label5 = Label(self.masterIP, text="Camera 5 IP", bg="white", fg="black")
-        camera_entry_label5.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry5 = Entry(self.masterIP)
-        self.camera_entry5.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label5 = Label(self.masterIP, text="Camera 5 IP", bg="white", fg="black")
+            camera_entry_label5.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry5 = Entry(self.masterIP)
+            self.camera_entry5.pack(ipadx=300, ipady=10)
 
-        # Create an entry for the camera index
-        camera_entry_label6 = Label(self.masterIP, text="Camera 6 IP", bg="white", fg="black")
-        camera_entry_label6.pack(ipadx=ipadx, pady=pady)
-        self.camera_entry6 = Entry(self.masterIP)
-        self.camera_entry6.pack(ipadx=300, ipady=10)
+            # Create an entry for the camera index
+            camera_entry_label6 = Label(self.masterIP, text="Camera 6 IP", bg="white", fg="black")
+            camera_entry_label6.pack(ipadx=ipadx, pady=pady)
+            self.camera_entry6 = Entry(self.masterIP)
+            self.camera_entry6.pack(ipadx=300, ipady=10)
 
-        button = Button(self.masterIP, text="Save Camera IPs", bg="#FFD100", fg="black", command=self.write_connect)
-        button.pack(side=LEFT, pady=20, ipadx=50, padx=50, ipady=2)
+            button = Button(self.masterIP, text="Save Camera IPs", bg="#FFD100", fg="black", command=self.write_connect)
+            button.pack(side=LEFT, pady=20, ipadx=50, padx=50, ipady=2)
 
-        button = Button(self.masterIP, text="Load Camera IPs", bg="#FFD100", fg="black", command=self.connect)
-        button.pack(pady=20, side=LEFT, ipadx=50, ipady=2)
+            button = Button(self.masterIP, text="Load Camera IPs", bg="#FFD100", fg="black", command=self.connect)
+            button.pack(pady=20, side=LEFT, ipadx=50, ipady=2)
 
-        button = Button(self.masterIP, text="Load Camera IPs From Save", bg="#FFD100", fg="black", command=self.read_connect)
-        button.pack(side=RIGHT, pady=20, ipadx=50, padx=50, ipady=2)
+            button = Button(self.masterIP, text="Load Camera IPs From Save", bg="#FFD100", fg="black", command=self.read_connect)
+            button.pack(side=RIGHT, pady=20, ipadx=50, padx=50, ipady=2)
 
     def Get_Camera_IPs_Loop(self):
         if(self.FirstCamIP == 2):
@@ -297,6 +302,7 @@ class GUI:
         if(self.FirstCamIP == 1):
             self.masterIP.destroy()
             self.FirstCamIP = 0
+            self.masterIP = None
 
     def ptz_controls(self):
         ptz = [ptzControl() for _ in range(self.number_of_cams)]
@@ -692,6 +698,7 @@ class GUI:
     def on_closing(self):
         self.master.destroy()
         self.FirstChannelSelect = 0
+        self.master = None
 
     def select_channels(self):
         self.FirstChannelSelect = 1
@@ -703,108 +710,7 @@ class GUI:
                 self.channel[i-1] = -1
         print(self.channel)
 
-        # self.science()
-
-        # print(type(np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3])))
-        self.start_reset_thread()
-        # print(self.controls.get_act_OR_motor())
-        # np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])
-
-    def science(self):
-        for i in range (0, 4):
-            if(self.channel[i] == 0):
-                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 1):
-                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 2):
-                self.controls.set_act_OR_motor_single(i, 2)
-            elif(self.channel[i] == 3):
-                self.controls.set_act_OR_motor_single(i, 3)
-
-        for i in range (4, 8):
-            if(self.channel[i] == 0):
-                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 1):
-                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 2):
-                self.controls.set_act_OR_motor_single(i, 2)
-            elif(self.channel[i] == 3):
-                self.controls.set_act_OR_motor_single(i, 3)
-
-    def start_reset_thread(self):
-        move_on = True
-        all_threads = threading.enumerate()
-        for thread in all_threads:
-            if(thread.name == "stop"):
-                move_on = False
-        if(move_on):
-            stop = threading.Thread(target=self.reset_thread, name="stop")
-            stop.daemon = True
-            stop.start()
-
-    def reset_thread(self):
-        for i in range (0, 4):
-            if(self.channel[i] == 0):
-                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 1):
-                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 2):
-                self.controls.set_act_OR_motor_single(i, 2)
-            elif(self.channel[i] == 3):
-                self.controls.set_act_OR_motor_single(i, 3)
-
-        time.sleep(10)
-
-        for i in range (4, 8):
-            if(self.channel[i] == 0):
-                self.controls.set_act_OR_motor_single(i, 0) # (config = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 1):
-                self.controls.set_act_OR_motor_single(i, 1) # (config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-            elif(self.channel[i] == 2):
-                self.controls.set_act_OR_motor_single(i, 2)
-            elif(self.channel[i] == 3):
-                self.controls.set_act_OR_motor_single(i, 3)
-        # print("stop thread")
-        # # print("----------------------------------")
-        # # print("Before Stop Command")
-        # # all_threads = threading.enumerate()
-        # # for thread in all_threads:
-        # #     print(thread.name)
-        # # print("----------------------------------")
-        # # self.controls.stop_thread()
-        # time.sleep(1)
-        # # print("----------------------------------")
-        # # print("1s After Stop Command")
-        # # all_threads = threading.enumerate()
-        # # for thread in all_threads:
-        # #     print(thread.name)
-        # # print("----------------------------------")
-        # # self.controls.Disable_write_arduino(index = 0)
-        # # self.controls.Disable_write_arduino(index = 1)
-        # # time.sleep(1)
-        # # print("setting up arduinos")
-        # # self.controls.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
-        # # self.controls.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
-        # # self.controls.set_act_OR_motor(config = np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3]))
-        # # self.controls.set_act_OR_motor(config = np.array([int(self.channel[0]), int(self.channel[1]), int(self.channel[2]), int(self.channel[3]), int(self.channel[4]), int(self.channel[5]), int(self.channel[6]), int(self.channel[7]), int(self.channel[8]), int(self.channel[9]), int(self.channel[10]), int(self.channel[11]), int(self.channel[12]), int(self.channel[13]), int(self.channel[14]), int(self.channel[15])]))
-        # # print("setting up threads")
-        # # self.controls.start_arduino_command(index = 0, HIGH_LOW = 0)
-        # # self.controls.start_arduino_command(index = 1, HIGH_LOW = 1)
-        # # print(type(np.array([1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3])))
-        # # print(type(np.array([int(self.channel[0]), int(self.channel[1]), int(self.channel[2]), int(self.channel[3]), int(self.channel[4]), int(self.channel[5]), int(self.channel[6]), int(self.channel[7]), int(self.channel[8]), int(self.channel[9]), int(self.channel[10]), int(self.channel[11]), int(self.channel[12]), int(self.channel[13]), int(self.channel[14]), int(self.channel[15])])))
-        # # # np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])
-        # # time.sleep(0.1)
-        # # self.controls.start_diagnostics_AND_controls_thread(index = 0)
-        # # self.controls.start_diagnostics_AND_controls_thread(index = 1)
-        # # time.sleep(1)
-        # # print("----------------------------------")
-        # # print("1s After Reset Command")
-        # # all_threads = threading.enumerate()
-        # # for thread in all_threads:
-        # #     print(thread.name)
-        # # print("----------------------------------")
-        # # print(self.controls.get_controls_array())
-        # # print("----------------------------------")
+        self.controls.set_act_OR_motor(config = self.channel)
         
     def write_select_channels(self):
         # write to file
@@ -840,40 +746,41 @@ class GUI:
     def channel_select(self):
         self.FirstChannelSelect = 2
 
-        self.master = Toplevel()
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.master.title("Channel Selector")
-        self.master.configure(bg="#0033A0")
+        if(self.master == None):
+            self.master = Toplevel()
+            self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+            self.master.title("Channel Selector")
+            self.master.configure(bg="#0033A0")
 
-        self.selected_options = [StringVar(self.master) for _ in range(16)]
+            self.selected_options = [StringVar(self.master) for _ in range(16)]
 
-        for i in range(1, 17):
-            frame = Frame(self.master, borderwidth=2, relief="groove", width=300, height=300)
-            frame.grid(row=(i-1)//4, column=(i-1)%4, padx=10, pady=10)
+            for i in range(1, 17):
+                frame = Frame(self.master, borderwidth=2, relief="groove", width=300, height=300)
+                frame.grid(row=(i-1)//4, column=(i-1)%4, padx=10, pady=10)
 
-            label = Label(frame, text="Channel {}".format(i), width=15, height=6)
-            label.grid(row=0, column=0)
+                label = Label(frame, text="Channel {}".format(i), width=15, height=6)
+                label.grid(row=0, column=0)
 
-            option_menu = OptionMenu(frame, self.selected_options[i-1], *self.channel_options)
-            option_menu.grid(row=0, column=1)
-            option_menu.config(width=15, height=5, bg="#FFD100")
+                option_menu = OptionMenu(frame, self.selected_options[i-1], *self.channel_options)
+                option_menu.grid(row=0, column=1)
+                option_menu.config(width=15, height=5, bg="#FFD100")
 
-            # Configure the font size of the dropdown menu
-            popup_menu = self.master.nametowidget(option_menu.menuname)
-            popup_menu.config(font=("Helvetica", 20))  # Adjust the font size as needed
+                # Configure the font size of the dropdown menu
+                popup_menu = self.master.nametowidget(option_menu.menuname)
+                popup_menu.config(font=("Helvetica", 20))  # Adjust the font size as needed
 
 
-        self.Save = Button(self.master, text="Save Config", command=self.write_select_channels)
-        self.Save.grid(row=4, columnspan=1, pady=10)
-        self.Save.config(width=20, height=2, bg="#FFD100")
+            self.Save = Button(self.master, text="Save Config", command=self.write_select_channels)
+            self.Save.grid(row=4, columnspan=1, pady=10)
+            self.Save.config(width=20, height=2, bg="#FFD100")
 
-        self.LOAD = Button(self.master, text="Load Config", command=self.select_channels)
-        self.LOAD.grid(row=4, columnspan=4, pady=10)
-        self.LOAD.config(width=20, height=2, bg="#FFD100")
+            self.LOAD = Button(self.master, text="Load Config", command=self.select_channels)
+            self.LOAD.grid(row=4, columnspan=4, pady=10)
+            self.LOAD.config(width=20, height=2, bg="#FFD100")
 
-        self.LOAD_Save = Button(self.master, text="Load Config From Save", command=self.read_select_channels)
-        self.LOAD_Save.grid(row=4, column=3, pady=10)
-        self.LOAD_Save.config(width=20, height=2, bg="#FFD100")
+            self.LOAD_Save = Button(self.master, text="Load Config From Save", command=self.read_select_channels)
+            self.LOAD_Save.grid(row=4, column=3, pady=10)
+            self.LOAD_Save.config(width=20, height=2, bg="#FFD100")
 
     def channel_select_loop(self):
         if(self.FirstChannelSelect == 2):
@@ -881,6 +788,7 @@ class GUI:
         if(self.FirstChannelSelect == 1):
             self.master.destroy()
             self.FirstChannelSelect = 0
+            self.master = None
             # print(self.channel, "loop")
             # print(np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]]))
             # controls.set_act_OR_motor(config = np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])) # have to do this otherwise weird stuff happens

@@ -686,6 +686,8 @@ class Rover_Controls:
     def start_diagnostic_AND_controls(self, index = 0):
         # only worry about 8 channels
         while self.run_thread:
+            if(self.verbose_control):
+                print("----------------------------")
             self.select_diagnostic(index)
             self.diagnostics_channel[index] = self.diagnostics_channel[index] + 1
             if(self.diagnostics_channel[index] >= self.diagnostics_channel_total[index] + 1):
@@ -700,6 +702,9 @@ class Rover_Controls:
             self.controls_channel[index] = self.controls_channel[index] + 1
             if(self.controls_channel[index] >= self.controls_channel_total[index]):
                 self.controls_channel[index] = self.controls_channel_reset[index]
+
+            if(self.verbose_control):
+                time.sleep(1)
 
     def index_0_thread(self):
         self.start_diagnostic_AND_controls(index = 0)

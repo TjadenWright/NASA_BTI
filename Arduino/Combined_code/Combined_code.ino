@@ -34,6 +34,7 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 
 // check values
 const int max_channels = 8; // for commands channel# doesn't count
+const int max_input_outputs = 6;
 
 // PWM channel pins
 int Mega[max_channels] = {6, 13, 10, 11, 8, 9, 7, 12}; // flip 6 and 12 for the real deal
@@ -45,11 +46,17 @@ int PWM_Channel[max_channels];
 int Channel_Offset = 1;   // either 1 for 1-8 or 9 for 9-16
 int Channel_Selected = -1; // start with a channel we can't be in
 
+int stateA[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
+int stateB[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+int vals[max_channels][6];
+
+
 ////////////////////
 // GPIO Expanders //
 ////////////////////
-PCF8574 pcf8574_first(0x20);
-PCF8574 pcf8574_second(0x21);
+PCF8574 pcf8574_Controls20(0x20);
+PCF8574 pcf8574_Controls21(0x21);
 
 ////////////////////////////
 // I2C temperature sensor //
@@ -86,6 +93,11 @@ void setup() {
       Serial.begin(9600);
     }
 
+    // setup vals array
+    for(int i = 0; i < max_channels; i++)
+      for(int j = 0; j < max_input_outputs; j++)
+        vals[i][j] = -1;
+
     if(TestArduinoScript)
       Serial.println("reset");
     /////////
@@ -97,21 +109,21 @@ void setup() {
     // GPIO Expanders //
     ////////////////////
     // Set the pinModes for left expander in schematic
-    pcf8574_first.pinMode(P0, OUTPUT); // Forward/Reverse
-    pcf8574_first.pinMode(P1, OUTPUT); // Motor Enable
-    pcf8574_first.pinMode(P2, OUTPUT); // Brake
+    pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
+    pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
+    pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
     // PIN3 is being used in ADC for DRDY (already setup in the function)
-    pcf8574_first.pinMode(P4, INPUT); // Alarm from Motor
+    pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
     // PIN5-7 are already used in the VNH7070 function
-    pcf8574_first.begin();
+    pcf8574_Controls20.begin();
 
     // Set the pinModes for right expander in schematic
-    pcf8574_second.pinMode(P0, OUTPUT); // Enable Efuse
-    pcf8574_second.pinMode(P1, INPUT); // Over current fault
-    pcf8574_second.pinMode(P2, INPUT); // Over "Temperature" Alert 
-    pcf8574_second.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
+    pcf8574_Controls21.pinMode(P0, OUTPUT); // Enable Efuse
+    pcf8574_Controls21.pinMode(P1, INPUT); // Over current fault
+    pcf8574_Controls21.pinMode(P2, INPUT); // Over "Temperature" Alert 
+    pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
     // Reset of the pins are not used
-    pcf8574_second.begin();
+    pcf8574_Controls21.begin();
 
     ////////////////////////////
     // I2C temperature sensor //
@@ -278,25 +290,41 @@ void control_motor(String command_from_python){
     Channel_Selected = Channel;
   }
 
-  if(TestArduinoScript)
-    Serial.println("ENable Motor");
-  pcf8574_first.digitalWrite(P1, EN); // change EN
+  if(vals[Channel-Channel_Offset][0] != EN){
+    if(TestArduinoScript)
+      Serial.println("ENable Motor");
+    pcf8574_Controls20.digitalWrite(P1, EN); // change EN
+    vals[Channel-Channel_Offset][0] = EN;
+  }
 
-  if(TestArduinoScript)
-    Serial.println("EN_EFUSE");
-  pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
+  if(vals[Channel-Channel_Offset][1] != EN_EFUSE){
+    if(TestArduinoScript)
+      Serial.println("EN_EFUSE");
+    pcf8574_Controls21.digitalWrite(P0, EN_EFUSE); // Enable Efuse
+    vals[Channel-Channel_Offset][1] = EN_EFUSE;
+  }
 
-  if(TestArduinoScript)
-    Serial.println("PWM ");
-  analogWrite(PWM_Channel[Channel-Channel_Offset], PWM);
+  if(vals[Channel-Channel_Offset][2] != PWM){
+    if(TestArduinoScript)
+      Serial.println("PWM ");
+    analogWrite(PWM_Channel[Channel-Channel_Offset], PWM);
+    vals[Channel-Channel_Offset][2] = PWM;
+  }
 
-  if(TestArduinoScript)
-    Serial.println("FR");
-  pcf8574_first.digitalWrite(P0, FR);
+  if(vals[Channel-Channel_Offset][3] != FR){
+    if(TestArduinoScript)
+      Serial.println("FR");
+    pcf8574_Controls20.digitalWrite(P0, FR);
+    vals[Channel-Channel_Offset][3] = FR;
+  }
 
-  if(TestArduinoScript)
-    Serial.println("BREAK");
-  pcf8574_first.digitalWrite(P2, BREAK); // Brake
+  if(vals[Channel-Channel_Offset][4] != BREAK){
+    if(TestArduinoScript)
+      Serial.println("BREAK");
+    pcf8574_Controls20.digitalWrite(P2, BREAK); // Brake
+    vals[Channel-Channel_Offset][4] = BREAK;
+  }
+
 
   if(TestArduinoScript){
     Serial.println(Channel);
@@ -357,20 +385,28 @@ void control_actuator(String command_from_python){
     Channel_Selected = Channel;
   }
 
-  if(TestArduinoScript)
-    Serial.println("EN_EFUSE");
-  pcf8574_second.digitalWrite(P0, EN_EFUSE); // Enable Efuse
-
-  if(TestArduinoScript)
-    Serial.println("H-bridge majik");
-  int direction = 1;
-  if(FR == 1){
-    direction = 1;
+  if(vals[Channel-Channel_Offset][0] != EN_EFUSE){
+    if(TestArduinoScript)
+      Serial.println("EN_EFUSE");
+    pcf8574_Controls21.digitalWrite(P0, EN_EFUSE); // Enable Efuse
+    vals[Channel-Channel_Offset][0] = EN_EFUSE;
   }
-  else
-    direction = -1;
-  vnh.H_bridge_change(PWM_Channel[Channel-Channel_Offset], PWM, direction);
 
+  int direction = 0;
+
+  if(vals[Channel-Channel_Offset][1] != PWM || vals[Channel-Channel_Offset][2] != FR){
+    if(TestArduinoScript)
+      Serial.println("H-bridge majik");
+    direction = 1;
+    if(FR == 1){
+      direction = 1;
+    }
+    else
+      direction = -1;
+    vnh.H_bridge_change(PWM_Channel[Channel-Channel_Offset], PWM, direction, stateA[Channel-Channel_Offset], stateB[Channel-Channel_Offset]);
+    vals[Channel-Channel_Offset][1] = PWM;
+    vals[Channel-Channel_Offset][2] = FR;
+  }
 
   if(TestArduinoScript){
     Serial.println(Channel);
@@ -465,7 +501,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
 
   if(Speed_bool == false){
     // alarm print
-    Serial.print(pcf8574_first.digitalRead(P4)); // Alarm from Motor
+    Serial.print(pcf8574_Controls20.digitalRead(P4)); // Alarm from Motor
     Serial.print(" ");
 
     // temp
@@ -478,7 +514,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
     Serial.print(" ");
 
     // OC fault
-    Serial.println(pcf8574_second.digitalRead(P1)); // Over current fault
+    Serial.println(pcf8574_Controls21.digitalRead(P1)); // Over current fault
   }
   else{
     // speed
@@ -565,7 +601,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
     Serial.print(" ");
 
     // OC fault
-    Serial.println(pcf8574_second.digitalRead(P1)); // Over current fault
+    Serial.println(pcf8574_Controls21.digitalRead(P1)); // Over current fault
   }
   else{
     // feedback
