@@ -1,6 +1,6 @@
-Camera 1: http://admin:nasabs123@192.168.166.148/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
-Camera 2: http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
-Camera 3: 
-Camera 4: 
-Camera 5: 
-Camera 6: 
+Camera 1: http://admin:admin@192.168.1.227/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
+Camera 2: http://admin:admin@192.168.1.167/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
+Camera 3: http://admin:admin@192.168.1.213/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
+Camera 4: http://admin:admin@192.168.1.214/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
+Camera 5: http://admin:admin@192.168.1.220/cgi-bin/mjpg/video.cgi?channel=0&subtype=1
+Camera 6: http://admin:admin@192.168.1.50/cgi-bin/mjpg/video.cgi?channel=0&subtype=1

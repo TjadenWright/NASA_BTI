@@ -174,7 +174,7 @@ class GUI:
 
     def write_connect(self):
         # write to file
-        cam = [] * 6
+        cam = [""] * 6
         with open(file_path_IP, 'w') as file:
             cam[0] = self.camera_entry1.get()
             cam[1] = self.camera_entry2.get()
@@ -240,6 +240,10 @@ class GUI:
 
     def Get_Camera_IPs(self):
         self.FirstCamIP = 2
+
+        if(self.masterIP): # if we loose the window
+            self.masterIP.destroy()
+            self.masterIP = None
 
         if(self.masterIP == None):
             self.masterIP = Toplevel()
@@ -745,6 +749,10 @@ class GUI:
 
     def channel_select(self):
         self.FirstChannelSelect = 2
+
+        if(self.master): # if we loose the window
+            self.master.destroy()
+            self.master = None
 
         if(self.master == None):
             self.master = Toplevel()

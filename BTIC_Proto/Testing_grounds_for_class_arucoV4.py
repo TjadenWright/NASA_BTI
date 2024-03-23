@@ -122,7 +122,7 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 
 #### setup communication with the arduino ####
 if(PC_or_PI == "Lenovo"):
-    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Arduino')
+    rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'Mega')
 else:
     rc1.Enable_Write_arduino(baud_rate = baud_rate, arduino_name = 'ACM')
 

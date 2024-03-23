@@ -15,7 +15,7 @@ from PTZ_Control_Class import ptzControl
 
 size = 2
 
-IP = ["http://admin:admin@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", "http://admin:nasabs123@192.168.166.148/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", "hello", ""]
+IP = ["http://admin:admin@192.168.1.50/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", "http://admin:nasabs123@192.168.166.148/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", "hello", ""]
 
 connection = [False] * size
 
