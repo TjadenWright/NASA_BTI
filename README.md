@@ -49,14 +49,20 @@
 * https://github.com/gregsrabian/MCP41HVX1
 * https://github.com/PatrickBaus/Arduino-TMP1075
 * https://github.com/DocSunset/ADS1219
+* https://github.com/LizardByte/Sunshine
 
 # Software Architecture
 ## This is the software architecture as of 3/18/24
 * This does not include the Autonomous Excavation, Autonomous Docking, IMU diagnostics, and SNMP diagnostics.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Software%20Architecture.png" alt="Software Architecture" title="Software Architecture" />
 
+# Camera
+## The camera used for this project is the [Amcrest IP2M-866EW](https://amcrest.com/2mp-poe-camera-ptz-optical-zoom-ip2m-866ew.html).
+* The configuration of the cameras can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/Config_Files/README.md).
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/amcrest_camera.png" alt="amcrest_camera" title="amcrest_camera" />
+
 # GUI
-## The GUI is ran on the Latte Panda and streamed to the Lenovo Legion Go through Sunshine Games Stream
+## The GUI is ran on the [Latte Panda](https://www.lattepanda.com/lattepanda-sigma) and streamed to the [Lenovo Legion Go](https://www.bestbuy.com/site/lenovo-legion-go-8-8-144hz-wqxga-gaming-handheld-amd-ryzen-z1-extreme-16gb-with-1-tb-ssd-shadow-black/6559604.p?skuId=6559604&extStoreId=17&utm_source=feed&ref=212&loc=20677102012&gad_source=1&gclid=Cj0KCQjw-_mvBhDwARIsAA-Q0Q5JStR1fjypDxy6wOrAogh6heojWA5ad6dLaR_N4Ziuy7XByfNrB-caApVPEALw_wcB&gclsrc=aw.ds) through [Sunshine](https://github.com/LizardByte/Sunshine) Games Stream
 * This is the main GUI used for the NASA BTIC project.
 * The diagnostics data, video feed, and localization/imu viewer are located on this GUI.
 * More detail of the GUI can be found [here](https://github.com/TjadenWright/NASA_BTI/tree/main/GUI).
