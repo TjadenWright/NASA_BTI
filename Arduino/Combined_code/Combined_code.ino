@@ -5,16 +5,17 @@
 #include "VNH7070.h" // controlling H-Bridge
 #include <ADS1219.h>
 #include "TCA9548A.h"
-#include <avr/wdt.h>
+#include <Adafruit_NAU7802.h>
+#include "Adafruit_MCP9601.h"
 
-#define TestArduinoScript false
+#define TestArduinoScript true
 #define Arduino_or_latte true // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
-String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU", "reset"}; 
+String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "dMotherboard", "dTempAndLC", "dIMU"}; 
 
 // Commands
 // startup LOW_HIGH
@@ -27,9 +28,9 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // sActuatorCurrent Channel#             (starts the current conversion)
 // dActuator Channel#                    you get this: TEMP CURRENT OC_FAULT
 // sActuatrFeeback Channel#              (starts the feedback conversion)
-// dActuatrFeeback Channel# FEEBACK      you get this: FEEDBACK
-// cMotherboard Channel# _, _, ...     
-// dMotherboard Channel#                 you get this: _, _, ...
+// dActuatrFeeback Channel# FEEBACK      you get this: FEEDBACK     
+// dMotherboard Channel#                 you get this: ALARM TEMP CURRENT OC_FAULT
+// dTempAndLC Channel#                   you get this: LC, TEMP_OUT
 // dIMU Channel#                         you get this: _, _, ...
 
 // check values
@@ -49,8 +50,8 @@ int Channel_Selected = -1; // start with a channel we can't be in
 int stateA[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
 int stateB[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+// values stored (so we don't send multiple times the same thing)
 int vals[max_channels][6];
-
 
 ////////////////////
 // GPIO Expanders //
@@ -78,6 +79,20 @@ ADS1219 ads(P3);
 // I2C MUX //
 /////////////
 TCA9548A I2CMux;                  // Address can be passed into the constructor
+
+///////////////
+// LOAD CELL //
+///////////////
+Adafruit_NAU7802 nau;
+// load cell check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
+int nau_check[max_channels]; 
+
+//////////////////
+// Thermocouple //
+//////////////////
+Adafruit_MCP9601 mcp;
+// thermocouple check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
+int mcp_check[max_channels]; 
 
 ////////////////
 // 1. I2C IMU //
@@ -116,13 +131,20 @@ void setup() {
       ////////////////////
       // GPIO Expanders //
       ////////////////////
-      // Set the pinModes for left expander in schematic
-      pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
-      pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
-      pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
-      // PIN3 is being used in ADC for DRDY (already setup in the function)
-      pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
-      // PIN5-7 are already used in the VNH7070 function
+      if(i != max_channels - 1){ // motor/actuator
+        // Set the pinModes for left expander in schematic
+        pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
+        pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
+        pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
+        // PIN3 is being used in ADC for DRDY (already setup in the function)
+        pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
+        // PIN5-7 are already used in the VNH7070 function
+      }
+      else{ //motherboard
+        pcf8574_Controls20.pinMode(P0, INPUT); // Over Temperature alert
+        pcf8574_Controls20.pinMode(P1, OUTPUT); // EFUSE_EN (not going to use since it will turn off the computer)
+        pcf8574_Controls20.pinMode(P2, INPUT); // OC Fault
+      }
       pcf8574_Controls20.begin();
 
       // Set the pinModes for right expander in schematic
@@ -151,6 +173,9 @@ void setup() {
       // Set some stuff for ADC
       ads.setVoltageReference(REF_EXTERNAL);
       ads.setConversionMode(CONTINUOUS);
+      if(i == max_channels - 1){ // motherboard
+        ads.readSingleEnded(3, 1); // start the conversion of 3 since it will always convert (never need to change)
+      }
       // A1 feedback, A2 SPEED, A3 Current
 
       // resets for either arduino mega or panda (default them to high or not reset)
@@ -159,6 +184,28 @@ void setup() {
       digitalWrite(4, HIGH);
       digitalWrite(5, HIGH);
 
+      ///////////////
+      // LOAD CELL //
+      ///////////////
+      if(nau.begin()){ // meed to check if it can begin otherwise it will hang the program
+        nau.setLDO(NAU7802_3V0);
+        nau.setGain(NAU7802_GAIN_128);
+        nau.setRate(NAU7802_RATE_10SPS);
+        nau.calibrate(NAU7802_CALMOD_INTERNAL);
+        nau.calibrate(NAU7802_CALMOD_OFFSET);
+        nau_check[i] = 1;
+      }
+
+      //////////////////
+      // Thermocouple //
+      //////////////////
+      if(mcp.begin(0x67)){
+        mcp.setADCresolution(MCP9600_ADCRESOLUTION_18);
+
+        mcp.setThermocoupleType(MCP9600_TYPE_K);
+        mcp.setFilterCoefficient(7);
+        mcp_check[i] = 1;
+      }
 
       ////////////////
       // 2. I2C IMU //
@@ -205,18 +252,13 @@ void command_finder(int index, String command_from_python){
             actuator_diagnostic(command_from_python, true); // yes feedback
             break;    
         case 11:
-            control_motherboard(command_from_python);
+            diagnostics_motherboard(command_from_python);
             break;
         case 12:
-            diagnostics_motherboard(command_from_python);
+            load_cell_and_temp_diagnostics(command_from_python);
             break;
         case 13:
             diagnostics_IMU(command_from_python);
-            break;
-        case 14:
-            // asm volatile(" jmp 0"); // reset arduino
-            wdt_enable(WDTO_15MS);
-            while(true);
             break;
         // Add cases for additional words as needed
     }
@@ -616,9 +658,9 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
 }
 
 // cMotherboard Channel# _, _, ...     
-void control_motherboard(String command_from_python){
+void load_cell_and_temp_diagnostics(String command_from_python){
   if(TestArduinoScript)
-    Serial.println("Motherboard control");
+    Serial.println("load cell and temp diagnostics");
 
   // get the locations of the commands
   int space1 = command_from_python.indexOf(' '); // get the thing after the space
@@ -640,7 +682,23 @@ void control_motherboard(String command_from_python){
     Channel_Selected = Channel;
   }
 
-  // do motherboard stuff...
+  // do load cell and temp stuff...
+  if(nau_check[Channel-Channel_Offset] == 1){
+    int32_t val = nau.read();
+    Serial.print(val); // print the actual value
+  }
+  else{
+    Serial.print("NA"); // print bad value
+  }
+
+  Serial.print(" ");
+
+  if(mcp_check[Channel-Channel_Offset] == 1){
+    Serial.println(mcp.readThermocouple()); // print the actual value
+  }
+  else{
+    Serial.println("NA"); // print bad value
+  }
 
 }
 
@@ -670,6 +728,21 @@ void diagnostics_motherboard(String command_from_python){
   }
 
   // diagnostics for motherboard .. 
+  // alarm print
+  Serial.print(pcf8574_Controls20.digitalRead(P0)); // Alarm from Motor
+  Serial.print(" ");
+
+  // temp
+  tmp1075.setConversionTime(TMP1075::ConversionTime27_5ms);
+  Serial.print(tmp1075.getTemperatureCelsius());
+  Serial.print(" ");
+
+  // current
+  Serial.print(ads.readSingleEnded(3, 0)*MAX_CURRENT/pow(2,23),5);
+  Serial.print(" ");
+
+  // OC fault
+  Serial.println(pcf8574_Controls21.digitalRead(P2)); // Over current fault
 
 }
 
