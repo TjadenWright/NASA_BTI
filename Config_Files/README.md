@@ -24,5 +24,6 @@
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/OSD_overaly.png" alt="OSD_overaly" title="OSD_overaly" />
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/logo_overlay.png" alt="logo_overlay" title="logo_overlay" />
 
+### Channel Selector
 * This is the Channel Selector. This will allow the user configure the I2C channels of the motherboard. The cofiguration of this can also be saved to a file.
 <img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/Channel_Selector.png" alt="Channel Selector" title="Channel Selector" />
