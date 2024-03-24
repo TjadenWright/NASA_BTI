@@ -37,7 +37,7 @@ const int max_channels = 8; // for commands channel# doesn't count
 const int max_input_outputs = 6;
 
 // PWM channel pins
-int Mega[max_channels] = {6, 13, 10, 11, 8, 9, 7, 12}; // flip 6 and 12 for the real deal
+int Mega[max_channels] = {12, 6, 10, 11, 8, 9, 7, 13}; // 12, 13, 10, 11, 8, 9, 7, 6
 // Mega reset = 5
 int Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
 // Panda reset = 4
@@ -109,57 +109,62 @@ void setup() {
     // I2C MUX //
     /////////////
     I2CMux.begin(Wire);             // Wire instance is passed to the library
-    I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+  
+    for(int i = 0; i < max_channels; i++){
+      I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+      I2CMux.openChannel(i);
+      ////////////////////
+      // GPIO Expanders //
+      ////////////////////
+      // Set the pinModes for left expander in schematic
+      pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
+      pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
+      pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
+      // PIN3 is being used in ADC for DRDY (already setup in the function)
+      pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
+      // PIN5-7 are already used in the VNH7070 function
+      pcf8574_Controls20.begin();
 
-    ////////////////////
-    // GPIO Expanders //
-    ////////////////////
-    // Set the pinModes for left expander in schematic
-    pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
-    pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
-    pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
-    // PIN3 is being used in ADC for DRDY (already setup in the function)
-    pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
-    // PIN5-7 are already used in the VNH7070 function
-    pcf8574_Controls20.begin();
+      // Set the pinModes for right expander in schematic
+      pcf8574_Controls21.pinMode(P0, OUTPUT); // Enable Efuse
+      pcf8574_Controls21.pinMode(P1, INPUT); // Over current fault
+      pcf8574_Controls21.pinMode(P2, INPUT); // Over "Temperature" Alert 
+      pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
+      // Reset of the pins are not used
+      pcf8574_Controls21.begin();
 
-    // Set the pinModes for right expander in schematic
-    pcf8574_Controls21.pinMode(P0, OUTPUT); // Enable Efuse
-    pcf8574_Controls21.pinMode(P1, INPUT); // Over current fault
-    pcf8574_Controls21.pinMode(P2, INPUT); // Over "Temperature" Alert 
-    pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
-    // Reset of the pins are not used
-    pcf8574_Controls21.begin();
+      ////////////////////////////
+      // I2C temperature sensor //
+      ////////////////////////////
+      wire.begin(0x48);  // See definition of wire above
+      tmp1075.begin();  // Syncs the config register
 
-    ////////////////////////////
-    // I2C temperature sensor //
-    ////////////////////////////
-    wire.begin(0x48);  // See definition of wire above
-    tmp1075.begin();  // Syncs the config register
+      //////////////
+      // H-bridge //
+      //////////////
+      vnh.begin();
 
-    //////////////
-    // H-bridge //
-    //////////////
-    vnh.begin();
+      /////////////
+      // I2C ADC //
+      /////////////
+      ads.begin();
+      // Set some stuff for ADC
+      ads.setVoltageReference(REF_EXTERNAL);
+      ads.setConversionMode(CONTINUOUS);
+      // A1 feedback, A2 SPEED, A3 Current
 
-    /////////////
-    // I2C ADC //
-    /////////////
-    ads.begin();
-    // Set some stuff for ADC
-    ads.setVoltageReference(REF_EXTERNAL);
-    ads.setConversionMode(CONTINUOUS);
-    // A1 feedback, A2 SPEED, A3 Current
+      // resets for either arduino mega or panda (default them to high or not reset)
+      pinMode(4, OUTPUT);
+      pinMode(5, OUTPUT);
+      digitalWrite(4, HIGH);
+      digitalWrite(5, HIGH);
 
-    // resets for either arduino mega or panda (default them to high or not reset)
-    pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
-    digitalWrite(4, HIGH);
-    digitalWrite(5, HIGH);
 
-    ////////////////
-    // 2. I2C IMU //
-    ////////////////
+      ////////////////
+      // 2. I2C IMU //
+      ////////////////
+
+    }
 }
 
 void command_finder(int index, String command_from_python){

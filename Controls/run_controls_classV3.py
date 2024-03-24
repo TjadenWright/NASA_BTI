@@ -54,8 +54,9 @@ while not rc1.Get_Button_From_Controller("Select"):            # keep getting da
     #         time.sleep(0.5)
     time.sleep(0.033)
 
-    rc1.control_motor_OR_actutor(channel_Numb = 1, select = rc1.get_act_OR_motor()[0], verbose = False) # rc1.get_act_OR_motor()[0]
+    rc1.control_motor_OR_actutor(channel_Numb = 2, select = rc1.get_act_OR_motor()[0], verbose = False) # rc1.get_act_OR_motor()[0]
 
+print(rc1.get_diagnostics_array())
 
 # print("reset")
 # rc1.stop_thread()
