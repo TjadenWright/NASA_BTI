@@ -105,6 +105,12 @@ void setup() {
     /////////
     // initialized in startup
 
+    /////////////
+    // I2C MUX //
+    /////////////
+    I2CMux.begin(Wire);             // Wire instance is passed to the library
+    I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+
     ////////////////////
     // GPIO Expanders //
     ////////////////////
@@ -144,12 +150,6 @@ void setup() {
     ads.setVoltageReference(REF_EXTERNAL);
     ads.setConversionMode(CONTINUOUS);
     // A1 feedback, A2 SPEED, A3 Current
-
-    /////////////
-    // I2C MUX //
-    /////////////
-    I2CMux.begin(Wire);             // Wire instance is passed to the library
-    I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
 
     // resets for either arduino mega or panda (default them to high or not reset)
     pinMode(4, OUTPUT);

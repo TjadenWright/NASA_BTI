@@ -11,13 +11,13 @@ VNH7070::VNH7070(uint8_t addr_expander, int INA, int INB, int SEL0) : pcf8574(ad
   A = INA;
   B = INB;
   S = SEL0;
-  pcf8574.pinMode(A, OUTPUT);
-  pcf8574.pinMode(B, OUTPUT);
-  pcf8574.pinMode(S, OUTPUT);
   // pinMode(PWM_OUT, OUTPUT);
 }
 
 void VNH7070::begin() {
+  pcf8574.pinMode(A, OUTPUT);
+  pcf8574.pinMode(B, OUTPUT);
+  pcf8574.pinMode(S, OUTPUT);
   pcf8574.begin();
   // start all off at zero
   // stateA = 0;
