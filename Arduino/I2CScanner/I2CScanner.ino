@@ -4,6 +4,10 @@
  * Modified by Ashish Adhikari: https://www.youtube.com/user/tarantula3
 **/
 
+#include "TCA9548A.h"
+
+TCA9548A I2CMux;                  // Address can be passed into the constructor
+
 #include "Wire.h"
 extern "C" { 
 #include "utility/twi.h"  // from Wire library, so we can do bus scanning
@@ -40,7 +44,7 @@ byte end_address = 200;       // higher addresses unlock other modes, like 10-bi
 void setup(){
     Wire.begin();
 
-    Serial.begin(9600);                   // Changed from 19200 to 9600 which seems to be default for Arduino serial monitor
+    Serial.begin(115200);                   // Changed from 19200 to 9600 which seems to be default for Arduino serial monitor
     Serial.println("\nI2CScanner ready!");
 
     Serial.print("starting scanning of I2C bus from ");
@@ -49,10 +53,22 @@ void setup(){
     Serial.print(end_address, DEC);
     Serial.println("...");
 
-    // start the scan, will call "scanFunc()" on result from each address
-    scanI2CBus( start_address, end_address, scanFunc );
+    //  Wire.setPins(21, 22);       // ESP32 users, use setPins(sda, scl) if customised, *before* passing Wire to the library (the line below).  
+    I2CMux.begin(Wire);             // Wire instance is passed to the library
 
-    Serial.println("\ndone");
+    I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+
+    for(int i = 0; i < 8; i++){
+      I2CMux.closeAll();
+      I2CMux.openChannel(i);
+      // start the scan, will call "scanFunc()" on result from each address
+      Serial.println("---------------------------------------------------");
+      Serial.print("Channel: "); Serial.println(i+1);
+      Serial.println("---------------------------------------------------");
+      scanI2CBus( start_address, end_address, scanFunc );
+      Serial.println("---------------------------------------------------");
+    }
+
 }
 
 void loop(){}

@@ -8,7 +8,7 @@
 #include <Adafruit_NAU7802.h>
 #include "Adafruit_MCP9601.h"
 
-#define TestArduinoScript true
+#define TestArduinoScript false
 #define Arduino_or_latte true // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
@@ -34,24 +34,24 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // dIMU Channel#                         you get this: _, _, ...
 
 // check values
-const int max_channels = 8; // for commands channel# doesn't count
-const int max_input_outputs = 6;
+const uint8_t max_channels = 8; // for commands channel# doesn't count
+const uint8_t max_input_outputs = 6;
 
 // PWM channel pins
-int Mega[max_channels] = {12, 6, 10, 11, 8, 9, 7, 13}; // 12, 13, 10, 11, 8, 9, 7, 6
+uint8_t Mega[max_channels] = {12, 6, 10, 11, 8, 9, 7, 13}; // 12, 13, 10, 11, 8, 9, 7, 6
 // Mega reset = 5
-int Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
+uint8_t Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
 // Panda reset = 4
 
-int PWM_Channel[max_channels];
-int Channel_Offset = 1;   // either 1 for 1-8 or 9 for 9-16
-int Channel_Selected = -1; // start with a channel we can't be in
+uint8_t PWM_Channel[max_channels];
+uint8_t Channel_Offset = 1;   // either 1 for 1-8 or 9 for 9-16
+int8_t Channel_Selected = -1; // start with a channel we can't be in
 
-int stateA[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
-int stateB[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool stateA[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool stateB[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 // values stored (so we don't send multiple times the same thing)
-int vals[max_channels][6];
+int16_t vals[max_channels][6];
 
 ////////////////////
 // GPIO Expanders //
@@ -85,14 +85,14 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 ///////////////
 Adafruit_NAU7802 nau;
 // load cell check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
-int nau_check[max_channels]; 
+bool nau_check[max_channels]; 
 
 //////////////////
 // Thermocouple //
 //////////////////
 Adafruit_MCP9601 mcp;
 // thermocouple check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
-int mcp_check[max_channels]; 
+bool mcp_check[max_channels]; 
 
 ////////////////
 // 1. I2C IMU //
@@ -108,9 +108,12 @@ void setup() {
       Serial.begin(9600);
     }
 
+    // wait for Serial.print to start
+    delay(2000);
+
     // setup vals array
-    for(int i = 0; i < max_channels; i++)
-      for(int j = 0; j < max_input_outputs; j++)
+    for(uint8_t i = 0; i < max_channels; i++)
+      for(uint8_t j = 0; j < max_input_outputs; j++)
         vals[i][j] = -1;
 
     if(TestArduinoScript)
@@ -125,13 +128,13 @@ void setup() {
     /////////////
     I2CMux.begin(Wire);             // Wire instance is passed to the library
   
-    for(int i = 0; i < max_channels; i++){
+    for(uint8_t i = 0; i < max_channels; i++){
       I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
       I2CMux.openChannel(i);
       ////////////////////
       // GPIO Expanders //
       ////////////////////
-      if(i != max_channels - 1){ // motor/actuator
+      if(i != max_channels - 1 || !Arduino_or_latte){ // motor/actuator only on arduino
         // Set the pinModes for left expander in schematic
         pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
         pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
@@ -211,10 +214,15 @@ void setup() {
       // 2. I2C IMU //
       ////////////////
 
+
+      if(TestArduinoScript)
+        Serial.println(i);
     }
+    if(TestArduinoScript)
+      Serial.println("done!"); 
 }
 
-void command_finder(int index, String command_from_python){
+void command_finder(uint8_t index, String command_from_python){
   if(TestArduinoScript)
     Serial.println(index);
   switch (index) {
@@ -267,32 +275,28 @@ void command_finder(int index, String command_from_python){
 // startup to select between arduinos
 // startup LOW_HIGH
 void startup_command(String command_from_python){
-  // Serial.println("Choose the correct channel");
-
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and the end
 
   if(number1String == "high"){
     Channel_Offset = 9;
-    for(int i = 0; i < max_channels; i++){
+    for(uint8_t i = 0; i < max_channels; i++){
       PWM_Channel[i] = Panda[i];
       pinMode(PWM_Channel[i], OUTPUT);
     }
   }
   else{
     Channel_Offset = 1;
-    for(int i = 0; i < max_channels; i++){
+    for(uint8_t i = 0; i < max_channels; i++){
       PWM_Channel[i] = Mega[i];
       pinMode(PWM_Channel[i], OUTPUT);
     }
   }
 
-  // else low keep the same
-  // Serial.println(Channel_Offset);
-  Serial.println("done!");
+  Serial.println(Channel_Offset);
 }
 
 // control motor
@@ -302,12 +306,12 @@ void control_motor(String command_from_python){
     Serial.println("Controling the motor (change PWM and DIR signals)");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
-  int space2 = command_from_python.indexOf(' ', space1 + 1); // get it after the next space
-  int space3 = command_from_python.indexOf(' ', space2 + 1); // get it after the next space
-  int space4 = command_from_python.indexOf(' ', space3 + 1); // get it after the next space
-  int space5 = command_from_python.indexOf(' ', space4 + 1); // get it after the next space
-  int space6 = command_from_python.indexOf(' ', space5 + 1); // get it after the next space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space2 = command_from_python.indexOf(' ', space1 + 1); // get it after the next space
+  uint8_t space3 = command_from_python.indexOf(' ', space2 + 1); // get it after the next space
+  uint8_t space4 = command_from_python.indexOf(' ', space3 + 1); // get it after the next space
+  uint8_t space5 = command_from_python.indexOf(' ', space4 + 1); // get it after the next space
+  uint8_t space6 = command_from_python.indexOf(' ', space5 + 1); // get it after the next space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1, space2); // between space1 + 1 and space2
@@ -317,12 +321,12 @@ void control_motor(String command_from_python){
   String number5String = command_from_python.substring(space5 + 1, space6); // between space5 + 1 and space6
   String number6String = command_from_python.substring(space6 + 1); // between space6 + 1 and the end
 
-  int Channel = number1String.toInt();
-  int EN = number2String.toInt();
-  int EN_EFUSE = number3String.toInt();
-  int PWM = number4String.toInt();
-  int FR = number5String.toInt();
-  int BREAK = number6String.toInt();
+  uint8_t Channel = number1String.toInt();
+  bool EN = number2String.toInt();
+  bool EN_EFUSE = number3String.toInt();
+  uint8_t PWM = number4String.toInt();
+  bool FR = number5String.toInt();
+  bool BREAK = number6String.toInt();
 
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
@@ -404,10 +408,10 @@ void control_actuator(String command_from_python){
     Serial.println("Controling the actuator (change PWM and DIR signals)");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
-  int space2 = command_from_python.indexOf(' ', space1 + 1); // get it after the next space
-  int space3 = command_from_python.indexOf(' ', space2 + 1); // get it after the next space
-  int space4 = command_from_python.indexOf(' ', space3 + 1); // get it after the next space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space2 = command_from_python.indexOf(' ', space1 + 1); // get it after the next space
+  uint8_t space3 = command_from_python.indexOf(' ', space2 + 1); // get it after the next space
+  uint8_t space4 = command_from_python.indexOf(' ', space3 + 1); // get it after the next space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1, space2); // between space1 + 1 and space2
@@ -415,10 +419,10 @@ void control_actuator(String command_from_python){
   String number3String = command_from_python.substring(space3 + 1, space4); // between space3 + 1 and space4
   String number4String = command_from_python.substring(space4 + 1); // between space4 + 1 and the end
 
-  int Channel = number1String.toInt();
-  int EN_EFUSE = number2String.toInt();
-  int FR = number3String.toInt();
-  int PWM = number4String.toInt();
+  uint8_t Channel = number1String.toInt();
+  bool EN_EFUSE = number2String.toInt();
+  bool FR = number3String.toInt();
+  uint8_t PWM = number4String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -439,7 +443,7 @@ void control_actuator(String command_from_python){
     vals[Channel-Channel_Offset][0] = EN_EFUSE;
   }
 
-  int direction = 0;
+  int8_t direction = 0; // needs to be negative
 
   if(vals[Channel-Channel_Offset][1] != PWM || vals[Channel-Channel_Offset][2] != FR){
     if(TestArduinoScript)
@@ -484,12 +488,12 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool){
     Serial.println("Ping the ADC Motor");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -523,12 +527,12 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
     Serial.println("Get the motor diagnostic data (ping the ADC and the temp sensor)");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -577,12 +581,12 @@ void actuator_diagnostic_start(String  command_from_python, bool feeback_T_F){
       Serial.println("Ping the ADC Actuator");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -615,12 +619,12 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
     Serial.println("Get the actuator diagnostic data (ping the ADC and the temp sensor)");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -663,12 +667,12 @@ void load_cell_and_temp_diagnostics(String command_from_python){
     Serial.println("load cell and temp diagnostics");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -684,8 +688,7 @@ void load_cell_and_temp_diagnostics(String command_from_python){
 
   // do load cell and temp stuff...
   if(nau_check[Channel-Channel_Offset] == 1){
-    int32_t val = nau.read();
-    Serial.print(val); // print the actual value
+    Serial.print(nau.read()); // print the actual value
   }
   else{
     Serial.print("NA"); // print bad value
@@ -708,12 +711,12 @@ void diagnostics_motherboard(String command_from_python){
     Serial.println("Motherboard diagnostics");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
@@ -752,12 +755,12 @@ void diagnostics_IMU(String command_from_python){
     Serial.println("IMU diagnostics");
 
   // get the locations of the commands
-  int space1 = command_from_python.indexOf(' '); // get the thing after the space
+  uint8_t space1 = command_from_python.indexOf(' '); // get the thing after the space
 
   // get the strings
   String number1String = command_from_python.substring(space1 + 1); // between space1 + 1 and space2
 
-  int Channel = number1String.toInt();
+  uint8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if(Channel != Channel_Selected){ // a new channel has been selected update. update the mux
