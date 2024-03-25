@@ -7,7 +7,7 @@
 #include "VNH7070.h"
 #include "PCF8574.h"
 
-VNH7070::VNH7070(uint8_t addr_expander, int INA, int INB, int SEL0) : pcf8574(addr_expander) {
+VNH7070::VNH7070(uint8_t addr_expander, uint8_t INA, uint8_t INB, uint8_t SEL0) : pcf8574(addr_expander) {
   A = INA;
   B = INB;
   S = SEL0;
@@ -25,7 +25,7 @@ void VNH7070::begin() {
   // stateOFF = 0;
 }
 
-void VNH7070::H_bridge_change(int PWM_OUT, uint8_t PMW_value, int direction, int & stateA, int & stateB) {
+void VNH7070::H_bridge_change(uint8_t PWM_OUT, uint8_t PMW_value, int8_t direction, bool & stateA, bool & stateB) {
   // if we are at B make sure to switch PWM to max and INB and INA to 0
   // INA = 0, INB = 1, SLE0 = 1, PWM = x
   if(direction > 0) {
