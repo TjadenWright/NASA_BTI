@@ -19,6 +19,14 @@
 * Any devices with * in their name are optional as they are no longer used.
 
 ## Combined Controls Software Pinout
+### [Arduino Mega 2560](https://www.amazon.com/ARDUINO-MEGA-2560-REV3-A000067/dp/B0046AMGW0/ref=asc_df_B0046AMGW0/?tag=hyprod-20&linkCode=df0&hvadid=309743296044&hvpos=&hvnetw=g&hvrand=49053266616977050&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1025714&hvtargid=pla-516265455074&psc=1&mcid=5a8163990af63657ae8d0acd875032ba&gclid=Cj0KCQjwwYSwBhDcARIsAOyL0fihiKt0s13scxhQRWIWF-R_5dx5jALIs2MZE2kc4TPAUg5bMTdHDSsaAnjSEALw_wcB)
+* This Arduino will be used for Channels 1-8.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/arduino_mega.png" alt="arduino_mega" title="arduino_mega" />
+
+### Arduino Leonardo ([Latte Panda Sigma](https://www.dfrobot.com/product-2748.html))
+* This Arduino will be used for Channels 9-16.
+<img src="https://github.com/TjadenWright/NASA_BTI/blob/main/Media/panda.png" alt="panda" title="panda" />
+
 ### Table 1a. Motherboard Controls
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
