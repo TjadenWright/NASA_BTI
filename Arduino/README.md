@@ -20,6 +20,7 @@
 ## Arduino Setup
 * Make sure to put any custom functions from Table 1. in the arduino library folder: \Documents\Arduino\libraries\
 * Any devices with * in their name are optional as they are no longer used.
+* Check the I2C address ACKed on each of the 8 channels of the I2C mux using this [code](https://github.com/TjadenWright/NASA_BTI/blob/main/Arduino/I2CScanner/I2CScanner.ino).
 
 ## Combined Controls Software Pinout
 ### Table 1a. Motherboard Controls
