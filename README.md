@@ -50,6 +50,9 @@
 * https://github.com/PatrickBaus/Arduino-TMP1075
 * https://github.com/DocSunset/ADS1219
 * https://github.com/LizardByte/Sunshine
+* https://github.com/adafruit/Adafruit_MCP9600
+* https://github.com/adafruit/Adafruit_NAU7802
+* https://github.com/adafruit/Adafruit_BusIO
 
 # Software Architecture
 ## This is the software architecture as of 3/18/24
