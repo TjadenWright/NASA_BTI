@@ -122,7 +122,7 @@ rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 #### setup communication with the arduino ####
-rc1.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
+rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
 rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
 rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
@@ -187,7 +187,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     if Select == 1 and prev_Select == 0:
         if(mode == 0):
             mode+=1
-            rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
+            # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
             last_spotted_time = time.time()
             prev_spotted = 1
             x_prev = 0
@@ -197,11 +197,11 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             calibrate = False
         else:
             mode = 0
-            rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
+            # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
-        rc1.control_motor_OR_actutor(channel_Numb = 1, select = rc1.get_act_OR_motor()[0], verbose = False)
+        rc1.control_motor_OR_actutor(channel_Numb = 2, select = rc1.get_act_OR_motor()[1], verbose = False)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):
         #     print("Manual Mode")
@@ -264,7 +264,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             print("x: ", round(x-Center_spot,2), "y: ", round(y,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
 
             # send out data to the arduino
-            rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
+            # rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
             #print(str(rc1.Motor_PWM(Direction, Velocity)) + " Auto Mode")
             prev_spotted = spotted
             x_prev = x

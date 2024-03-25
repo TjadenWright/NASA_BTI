@@ -85,14 +85,14 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 ///////////////
 Adafruit_NAU7802 nau;
 // load cell check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
-bool nau_check[max_channels]; 
+bool nau_check[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0}; 
 
 //////////////////
 // Thermocouple //
 //////////////////
 Adafruit_MCP9601 mcp;
 // thermocouple check to see if its on the channel (hangs if you try to initialize it and its not on the channel)
-bool mcp_check[max_channels]; 
+bool mcp_check[max_channels] = {0, 0, 0, 0, 0, 0, 0, 0}; 
 
 ////////////////
 // 1. I2C IMU //
@@ -134,7 +134,7 @@ void setup() {
       ////////////////////
       // GPIO Expanders //
       ////////////////////
-      if(i != max_channels - 1 || !Arduino_or_latte){ // motor/actuator only on arduino
+      if(i != max_channels - 1 || Arduino_or_latte){ // motor/actuator only on arduino
         // Set the pinModes for left expander in schematic
         pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
         pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
@@ -215,6 +215,7 @@ void setup() {
       ////////////////
 
 
+      delay(100);
       if(TestArduinoScript)
         Serial.println(i);
     }
@@ -687,22 +688,21 @@ void load_cell_and_temp_diagnostics(String command_from_python){
   }
 
   // do load cell and temp stuff...
-  if(nau_check[Channel-Channel_Offset] == 1){
+  if(nau_check[Channel-Channel_Offset]){
     Serial.print(nau.read()); // print the actual value
   }
   else{
-    Serial.print("NA"); // print bad value
+    Serial.print("0.0"); // print bad value
   }
 
   Serial.print(" ");
 
-  if(mcp_check[Channel-Channel_Offset] == 1){
+  if(mcp_check[Channel-Channel_Offset]){
     Serial.println(mcp.readThermocouple()); // print the actual value
   }
   else{
-    Serial.println("NA"); // print bad value
+    Serial.println("0.0"); // print bad value
   }
-
 }
 
 // dMotherboard Channel#                 you get this: _, _, ...  
