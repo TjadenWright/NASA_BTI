@@ -12,11 +12,15 @@
 | VNH7070 | I2C Hbridge for the Actuator Board | [NASA_BTI/Arduino/VNH7070_code/VNH7070](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/VNH7070_code/VNH7070) |
 | DS3930* | I2C Digipot with GPIO Expander | [NASA_BTI/Arduino/DS3930_code/DS3930](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/DS3930_code/DS3930) |
 | MCP45HVX1* | I2C high voltage Digipot | [NASA_BTI/Arduino/MCP45HVX1_code/MCP45HVX1](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP45HVX1_code/MCP45HVX1) |
+| NAU7802 | I2C ADC (Load Cell) | [NASA_BTI/Arduino/NAU7802_code/NAU7802](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/NAU7802_code/Adafruit_NAU7802) |
+| MCP9601 | I2C Thermocouple | [NASA_BTI/Arduino/MCP9601_code/MCP9601](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP9601_code/Adafruit_MCP9601) and [NASA_BTI/Arduino/MCP9601_code/MCP9600](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP9601_code/Adafruit_MCP9600) | 
+| Adafruit Functions | Functions for Adafruit Devices | [NASA_BTI/Arduino/Adafruit_BusIO_Register](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_BusIO_Register), [NASA_BTI/Arduino/Adafruit_I2CDevice](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_I2CDevice), [NASA_BTI/Arduino/Adafruit_I2CRegister](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_I2CRegister), and [NASA_BTI/Arduino/Adafruit_SPIDevice](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_SPIDevice) | 
 
 
 ## Arduino Setup
 * Make sure to put any custom functions from Table 1. in the arduino library folder: \Documents\Arduino\libraries\
 * Any devices with * in their name are optional as they are no longer used.
+* Check the I2C address ACKed on each of the 8 channels of the I2C mux using this [code](https://github.com/TjadenWright/NASA_BTI/blob/main/Arduino/I2CScanner/I2CScanner.ino).
 
 ## Combined Controls Software Pinout
 ### [Arduino Mega 2560](https://www.amazon.com/ARDUINO-MEGA-2560-REV3-A000067/dp/B0046AMGW0/ref=asc_df_B0046AMGW0/?tag=hyprod-20&linkCode=df0&hvadid=309743296044&hvpos=&hvnetw=g&hvrand=49053266616977050&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1025714&hvtargid=pla-516265455074&psc=1&mcid=5a8163990af63657ae8d0acd875032ba&gclid=Cj0KCQjwwYSwBhDcARIsAOyL0fihiKt0s13scxhQRWIWF-R_5dx5jALIs2MZE2kc4TPAUg5bMTdHDSsaAnjSEALw_wcB)

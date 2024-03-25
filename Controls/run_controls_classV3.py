@@ -21,16 +21,16 @@ PC_or_PI = "Lenovo"                            # <--- PC or pi?
 rc1 = Rover_Controls(verbose=VERBOSE, verbose_control = False, timing = True, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
-rc1.Enable_Write_arduino(index = 0, arduino_name = "Uno", baud_rate = 115200)
-# rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
+rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
+rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
 rc1.set_act_OR_motor(config = np.array([0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
 # bad: 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3        ^ issue
 rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
-# rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
+rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 
 rc1.start_diagnostics_AND_controls_thread(index = 0)
-# rc1.start_diagnostics_AND_controls_thread(index = 1)
+rc1.start_diagnostics_AND_controls_thread(index = 1)
 
 while not rc1.Get_Button_From_Controller("Select"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # print("hello world")
@@ -54,7 +54,7 @@ while not rc1.Get_Button_From_Controller("Select"):            # keep getting da
     #         time.sleep(0.5)
     time.sleep(0.033)
 
-    rc1.control_motor_OR_actutor(channel_Numb = 2, select = rc1.get_act_OR_motor()[0], verbose = False) # rc1.get_act_OR_motor()[0]
+    rc1.control_motor_OR_actutor(channel_Numb = 2, select = rc1.get_act_OR_motor()[1], verbose = False) # rc1.get_act_OR_motor()[0]
 
 print(rc1.get_diagnostics_array())
 

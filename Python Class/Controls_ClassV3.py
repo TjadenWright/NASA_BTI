@@ -49,7 +49,7 @@ class Rover_Controls:
         self.controls_vals = np.zeros((16, 6), int)
 
         # diagnostics
-        self.diagnostics_vals = np.zeros((16, 6))
+        self.diagnostics_vals = np.zeros((16, 10))
         self.diagnostic_select = np.zeros(16)
         self.diagnostic_lock = [threading.Lock(), threading.Lock()]
 
@@ -432,7 +432,7 @@ class Rover_Controls:
         print(arduino_port)
         # Set up the serial connection
         self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
-        time.sleep(2)
+        time.sleep(3)
 
     def Disable_write_arduino(self, index = 0):
         # self.arduino[index].close()
@@ -535,6 +535,8 @@ class Rover_Controls:
         with self.diagnostic_lock[index]:
             self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
 
+        # dMotor Channel# -> ALARM TEMP CURRENT OC_FAULT [#, #, #, #, ?, ?, ?, ?, ?, ?]
+
     def start_motor_speed_arduino_command(self, Channel_Numb, index = 0):
         start_motor_diagnostic_speed_command = "sMotrSpeed " + str(Channel_Numb)
 
@@ -558,6 +560,8 @@ class Rover_Controls:
 
         with self.diagnostic_lock[index]:
             self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+
+        # dMotrSpeed Channel# -> SPEED [#, #, #, #, ##, ?, ?, ?, ?, ?]
 
     def start_actuator_current_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_diagnostic_current_command = "sActuatorCurrent " + str(Channel_Numb)
@@ -584,6 +588,8 @@ class Rover_Controls:
         with self.diagnostic_lock[index]:
             self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
 
+        # dActuator Channel#  -> TEMP CURRENT OC_FAULT [#, #, #, ?, ?, ?, ?, ?, ?, ?]
+
     def start_actuator_SLEWGEAR_feedback_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_feedback_command = "sActuatrFeeback " + str(Channel_Numb)
 
@@ -607,6 +613,46 @@ class Rover_Controls:
 
         with self.diagnostic_lock[index]:
             self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+        
+        # dActuatrFeeback Channel#  -> FEEDBACK [#, #, #, ?, ##, ?, ?, ?, ?, ?]
+
+    def diagnostics_load_cell_temperature_off_board(self, Channel_Numb, index = 0):
+        diagnostics_load_cell_temperature_off_board_command = "dTempAndLC " + str(Channel_Numb)
+        data = self.write_read(diagnostics_load_cell_temperature_off_board_command, index)
+
+        if(self.verbose_diagnostics):
+            print(diagnostics_load_cell_temperature_off_board_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = []
+
+        float_numb = [float(num) for num in numbers]
+        # print("temp and LC diagnostics [", Channel_Numb, "]: ", data)
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, 5] = float_numb[0]
+            self.diagnostics_vals[Channel_Numb-1, 6] = float_numb[1]
+
+        # dTempAndLC Channel# -> SPEED [#, #, #, #., ##, ###, ###, ?, ?, ?]
+            
+    # dMotherboard Channel#                 you get this: ALARM TEMP CURRENT OC_FAULT
+    def diagnostic_motherboard_arduino_command(self, Channel_Numb, index = 0):
+        motherboard_diagnostic_command = "dMotherboard " + str(Channel_Numb)
+        data = self.write_read(motherboard_diagnostic_command, index)
+
+        if(self.verbose_diagnostics):
+            print(motherboard_diagnostic_command)
+            print(data)
+
+        # turn data int variables
+        numbers = data.split()
+        float_numb = [float(num) for num in numbers]
+        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+
+        with self.diagnostic_lock[index]:
+            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
 
     def select_controls(self, index = 0):
         # print(self.controls_channel, )
@@ -637,6 +683,7 @@ class Rover_Controls:
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
                 self.diagnostic_motor_speed_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
 
         elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 1): # actuator
@@ -651,6 +698,7 @@ class Rover_Controls:
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
                 self.diagnostic_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
 
         elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 2): # slewgear
@@ -665,16 +713,25 @@ class Rover_Controls:
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 3
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
                 self.diagnostic_actuator_SLEWGEAR_feedback_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
 
         elif(self.act_OR_motor[self.diagnostics_channel[index]-1] == 3): # motherboard
             if(self.diagnostic_select[self.diagnostics_channel[index]-1] == 0):
+                self.diagnostic_motherboard_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 1
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 1):
+                self.diagnostic_motherboard_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 2
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 2):
+                self.diagnostic_motherboard_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 3    
             elif(self.diagnostic_select[self.diagnostics_channel[index]-1] == 3):
+                self.diagnostic_motherboard_arduino_command(self.diagnostics_channel[index], index)
+                self.diagnostics_load_cell_temperature_off_board(self.diagnostics_channel[index], index)
                 self.diagnostic_select[self.diagnostics_channel[index]-1] = 0
                 
         # end of debug timing

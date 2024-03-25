@@ -152,8 +152,11 @@ class Battery_class:
                 key = match.group(2)
                 key = key.replace(' ', '_')  # Replace spaces with underscores
                 value = float(match.group(3))
-                globals()[key][index] = value
-                connection[index] = 1
+                if(key in globals() and isinstance(globals()[key], list) and index < len(globals()[key])):
+                    globals()[key][index] = value
+                    connection[index] = 1
+                else:
+                    connection[index] = 0
         # # Iterate through each line in the data
         # for line in self.dataPacket.split('\n'):
         #     match = pattern.search(line)
