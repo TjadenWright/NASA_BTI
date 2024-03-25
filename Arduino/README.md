@@ -12,6 +12,9 @@
 | VNH7070 | I2C Hbridge for the Actuator Board | [NASA_BTI/Arduino/VNH7070_code/VNH7070](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/VNH7070_code/VNH7070) |
 | DS3930* | I2C Digipot with GPIO Expander | [NASA_BTI/Arduino/DS3930_code/DS3930](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/DS3930_code/DS3930) |
 | MCP45HVX1* | I2C high voltage Digipot | [NASA_BTI/Arduino/MCP45HVX1_code/MCP45HVX1](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP45HVX1_code/MCP45HVX1) |
+| NAU7802 | I2C ADC (Load Cell) | [NASA_BTI/Arduino/NAU7802_code/NAU7802](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/NAU7802_code/Adafruit_NAU7802) |
+| MCP9601 | I2C Thermocouple | [NASA_BTI/Arduino/MCP9601_code/MCP9601](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP9601_code/Adafruit_MCP9601) and [NASA_BTI/Arduino/MCP9601_code/MCP9600](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/MCP9601_code/Adafruit_MCP9600) | 
+| Adafruit Functions | Functions for Adafruit Devices | [NASA_BTI/Arduino/Adafruit_BusIO_Register](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_BusIO_Register), [NASA_BTI/Arduino/Adafruit_I2CDevice](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_I2CDevice), [NASA_BTI/Arduino/Adafruit_I2CRegister](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_I2CRegister), and [NASA_BTI/Arduino/Adafruit_SPIDevice](https://github.com/TjadenWright/NASA_BTI/tree/main/Arduino/Adafruit_SPIDevice) | 
 
 
 ## Arduino Setup
