@@ -40,7 +40,7 @@ const uint8_t max_input_outputs = 6;
 // PWM channel pins
 uint8_t Mega[max_channels] = {12, 6, 10, 11, 8, 9, 7, 13}; // 12, 13, 10, 11, 8, 9, 7, 6
 // Mega reset = 5
-uint8_t Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, -1}; // (negative one is a place holder)
+uint8_t Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, 254}; // (negative one is a place holder)
 // Panda reset = 4
 
 uint8_t PWM_Channel[max_channels];
