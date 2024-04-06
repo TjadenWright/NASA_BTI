@@ -1,5 +1,4 @@
-// need to invert alarm pin
-  // may need to invert outputs (need to test on motor/actuator board)
+// need to invert alarm pin and oc
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -748,7 +747,7 @@ void diagnostics_motherboard(String command_from_python){
   Serial.print(" ");
 
   // OC fault
-  Serial.println(pcf8574_Controls21.digitalRead(P2)); // Over current fault
+  Serial.println(pcf8574_Controls20.digitalRead(P2)); // Over current fault
 
 }
 
