@@ -1,3 +1,6 @@
+// need to invert alarm pin
+  // may need to invert outputs (need to test on motor/actuator board)
+
 #include <Arduino.h>
 #include <Wire.h>
 #include "PCF8574.h" // controlling the I2C gpio expander
@@ -9,7 +12,7 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte true // true -> arduino mega / false -> latte
+#define Arduino_or_latte false // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
@@ -203,10 +206,10 @@ void setup() {
       // Thermocouple //
       //////////////////
       if(mcp.begin(0x67)){
-        mcp.setADCresolution(MCP9600_ADCRESOLUTION_18);
+        mcp.setADCresolution(MCP9600_ADCRESOLUTION_12);
 
         mcp.setThermocoupleType(MCP9600_TYPE_K);
-        mcp.setFilterCoefficient(7);
+        mcp.setFilterCoefficient(0);
         mcp_check[i] = 1;
       }
 

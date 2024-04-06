@@ -42,10 +42,11 @@ byte start_address = 8;       // lower addresses are reserved to prevent conflic
 byte end_address = 200;       // higher addresses unlock other modes, like 10-bit addressing
 
 void setup(){
-    Wire.begin();
-
-    Serial.begin(115200);                   // Changed from 19200 to 9600 which seems to be default for Arduino serial monitor
+    Serial.begin(9600);                   // Changed from 19200 to 9600 which seems to be default for Arduino serial monitor
+    delay(2000);
     Serial.println("\nI2CScanner ready!");
+
+    Wire.begin();
 
     Serial.print("starting scanning of I2C bus from ");
     Serial.print(start_address, DEC);
@@ -57,6 +58,12 @@ void setup(){
     I2CMux.begin(Wire);             // Wire instance is passed to the library
 
     I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
+
+    // resets for either arduino mega or panda (default them to high or not reset)
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
+    digitalWrite(4, HIGH);
+    digitalWrite(5, HIGH);
 
     for(int i = 0; i < 8; i++){
       I2CMux.closeAll();
