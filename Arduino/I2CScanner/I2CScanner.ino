@@ -76,6 +76,12 @@ void setup(){
       Serial.println("---------------------------------------------------");
     }
 
+    // resets for either arduino mega or panda (default them to high or not reset)
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
+    digitalWrite(4, HIGH);
+    digitalWrite(5, HIGH);
+
 }
 
 void loop(){}
