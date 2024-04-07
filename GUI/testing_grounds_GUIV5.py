@@ -67,7 +67,7 @@ while True:
     # 3ci loop IMU #
     #################
     
-    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=0, imu_image=None)
+    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=0, imu_image=None, popup = 1)
 
     x, y, z, dist, tags_ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
     # get origin tag (tag at 0,0,0)

@@ -44,7 +44,7 @@ time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to a
 Vmax = 0.5                                 # <--- maximum velocity of the rover 0 to 1.
 
 #### Diagnotic Data Values to Change ####
-Fake_traffic = False
+Fake_traffic = True
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -63,8 +63,19 @@ prev_calib = False
 
 # toggle variables for selecting mode (manual vs auto)
 mode = 0
-Select = 0
-prev_Select = 0
+Manual_Auto = 0
+prev_Manual_Auto = 0
+max_manual_mode = 4
+
+manual_mode = 0
+Manual = 0
+prev_Manual = 0
+
+manual_mode_channel = 0
+Manual_channel_up = 0
+prev_Manual_channel_up = 0
+Manual_channel_down = 0
+prev_Manual_channel_down = 0
 
 # calibration variables
 calib = False
@@ -122,16 +133,16 @@ rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 #### setup communication with the arduino ####
-rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
-rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
+# rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
+# rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
-rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
+# rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
 
-rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
-rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
+# rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
+# rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 
-rc1.start_diagnostics_AND_controls_thread(index = 0)
-rc1.start_diagnostics_AND_controls_thread(index = 1)
+# rc1.start_diagnostics_AND_controls_thread(index = 0)
+# rc1.start_diagnostics_AND_controls_thread(index = 1)
 
 #### intialize the battery ####
 b1 = Battery_class(verbose=VERBOSE)
@@ -159,7 +170,7 @@ g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
-    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None)
+    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel)
 
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
@@ -181,10 +192,13 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
         calibrate = True
 
     # get the button to change mode
-    Select = rc1.Get_Button_From_Controller(stop_button="Select") # select button is pressed or not
+    Manual_Auto = rc1.Get_Button_From_Controller(stop_button="A_Button") # A button is pressed or not
+
+    # get the button to change the manual mode
+    Manual = rc1.Get_Button_From_Controller(stop_button="Select") # A button is pressed or not
 
     # toggle the mode
-    if Select == 1 and prev_Select == 0:
+    if Manual_Auto == 1 and prev_Manual_Auto == 0:
         if(mode == 0):
             mode+=1
             # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
@@ -199,9 +213,34 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             mode = 0
             # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
 
+    if Manual == 1 and prev_Manual == 0:
+        if(manual_mode < max_manual_mode):
+            manual_mode = manual_mode + 1
+        else:
+            manual_mode = 0
+
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
-        rc1.control_motor_OR_actutor(channel_Numb = 2, select = rc1.get_act_OR_motor()[1], verbose = False)
+        if(manual_mode == 0):
+            Manual_channel_up = rc1.Get_Button_From_Controller(stop_button="Y_Button") # Y button is pressed or not
+            # Manual_channel_down = rc1.Get_Button_From_Controller(stop_button="A_Button") # X button is pressed or not
+
+            if Manual_channel_up == 1 and prev_Manual_channel_up == 0:
+                if(manual_mode_channel < 14):
+                    manual_mode_channel = manual_mode_channel + 1
+                else:
+                    manual_mode_channel = 0
+            
+            if Manual_channel_down == 1 and prev_Manual_channel_down == 0:
+                if(manual_mode_channel > 0):
+                    manual_mode_channel = manual_mode_channel - 1
+                else:
+                    manual_mode_channel = 14
+
+            prev_Manual_channel_up = Manual_channel_up
+            prev_Manual_channel_down = Manual_channel_down
+
+            rc1.control_motor_OR_actutor(channel_Numb = manual_mode_channel+1, select = rc1.get_act_OR_motor()[manual_mode_channel], verbose = False)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):
         #     print("Manual Mode")
@@ -271,7 +310,8 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             y_prev = y
 
     # get the states for the button
-    prev_Select = Select
+    prev_Manual_Auto = Manual_Auto
+    prev_Manual = Manual
     prev_calib = calib
 
      # display the tags on the map

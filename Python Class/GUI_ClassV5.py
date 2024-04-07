@@ -125,6 +125,7 @@ class GUI:
         
         self.master = None
         self.masterIP = None
+        self.masterPOPUP = None
 
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
@@ -136,14 +137,19 @@ class GUI:
         self.lock_camCV = threading.Lock()
         self.lock_ptz = threading.Lock()
         self.lock_debounce = threading.Lock()
+        self.lock_popup_clock = threading.Lock()
 
         self.debounce_button = 0
+        self.popup_gui_key = 0
 
         # buttons for localization
         self.calibrateM = 0
         self.up_key = 0
         self.down_key = 0
         self.position_IMU = 0
+        
+        # previous popup
+        self.prev_popup = -1
 
         # Font
         self.font = pygame.font.Font(None, 36)
@@ -157,6 +163,70 @@ class GUI:
         self.calib_local = 10 # 4.5
         self.calib_imu = 2
         self.diag_keys = 9 # 8.5
+
+    def on_closing_popup(self):
+        self.masterPOPUP.destroy()
+        self.popup_gui_key = 0
+        self.masterPOPUP = None
+
+    # popups
+    def popup_gui(self):
+        print("popup before: ", self.popup_gui_key)
+        if(self.popup_gui_key == 0 or self.popup_gui_key == 2):
+            if(self.masterPOPUP): # if we loose the window
+                print("delete popup gui")
+                self.masterPOPUP.destroy()
+                self.masterPOPUP = None
+                self.popup_gui_key = 0
+
+            elif(self.masterPOPUP == None and self.popup_gui_key != 2):
+                print("startup popup gui")
+                self.masterPOPUP = Toplevel()
+                self.masterPOPUP.protocol("WM_DELETE_WINDOW", self.on_closing_popup)
+                self.masterPOPUP.geometry(f"{800}x{200}+{180}+{50}")
+                self.masterPOPUP.title("POPUP")
+                self.masterPOPUP.config(bg="#0033A0")
+
+                # Create an entry for the camera index
+                popup_label = Label(self.masterPOPUP, text="Error Code: " + str(self.popup), bg="white", fg="black")
+                popup_label.pack(ipadx=311, pady=5)
+                popup_label.config(font=self.ui_font_debug)
+                self.popup_entry = Entry(self.masterPOPUP)
+                self.popup_entry.pack(ipadx=250, ipady=20)
+                self.popup_entry.config(font=self.ui_font_debug)
+
+                button = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+                button.pack(ipadx=150, ipady=40, pady=5)
+                button.config(font=self.ui_font_debug)
+
+                self.start_popup_clock_thread()
+
+                self.popup_gui_key = 1
+            
+        print("popup after: ", self.popup_gui_key)
+
+    def popup_gui_Loop(self):
+        if(self.popup_gui_key == 1):
+            self.popup_entry.delete(0, 'end')
+            self.popup_entry.insert(0, "ME using software detected")
+            self.masterPOPUP.update()
+
+    def popup_clk(self):
+        value = 2
+        for t in range (0, 500):
+            time.sleep(0.01)
+            if(self.popup_gui_key == 0):
+                value = 0
+                break
+
+        print("times up!")
+        with self.lock_popup_clock:
+            self.popup_gui_key = value # Stoped by timmer
+
+    def start_popup_clock_thread(self):
+        self.popup_clock_thread = threading.Thread(target=self.popup_clk, name="popup clock thread")
+        self.popup_clock_thread.daemon = True
+        self.popup_clock_thread.start()
 
     # Functions for getting the cameras IPs
     def on_closing_IPs(self):
@@ -251,7 +321,7 @@ class GUI:
         if(self.masterIP == None):
             self.masterIP = Toplevel()
             self.masterIP.protocol("WM_DELETE_WINDOW", self.on_closing_IPs)
-            self.masterIP.geometry("800x500")
+            self.masterIP.geometry(f"{800}x{500}+{180}+{50}")
             self.masterIP.title("IP of Webcams")
             self.masterIP.config(bg="#0033A0")
 
@@ -771,6 +841,7 @@ class GUI:
         if(self.master == None):
             self.master = Toplevel()
             self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+            self.master.geometry(f"{1080}x{560}+{35}+{50}")
             self.master.title("Channel Selector")
             self.master.configure(bg="#0033A0")
 
@@ -1456,7 +1527,6 @@ class GUI:
         with self.lock_debounce:
             self.debounce_button = 0
 
-
     def start_debounce_thread(self):
         self.debounce = threading.Thread(target=self.debounce_buttons, name="debounce thread")
         self.debounce.daemon = True
@@ -1622,9 +1692,10 @@ class GUI:
         self.start_debugger()
 
     # loop function for main gui
-    def loop_Main_UI(self, controls, local_img, mode = 0, imu_image = None):
+    def loop_Main_UI(self, controls, local_img, mode = 0, imu_image = None, popup = 0):
         self.mode = mode
         self.controls = controls
+        self.popup = popup
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1674,6 +1745,19 @@ class GUI:
 
         # update channel select
         self.channel_select_loop()
+
+        if(self.popup != self.prev_popup or self.popup_gui_key == 2):
+            
+            if(self.popup != self.prev_popup):
+                self.popup_gui_key = 0
+                self.popup_gui()
+            
+            # setup previous
+            self.prev_popup = self.popup
+
+            # run popups
+            self.popup_gui()
+        self.popup_gui_Loop()
 
         return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key
 
