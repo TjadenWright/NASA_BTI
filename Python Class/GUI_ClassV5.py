@@ -135,6 +135,9 @@ class GUI:
         self.lock_cam = threading.Lock()
         self.lock_camCV = threading.Lock()
         self.lock_ptz = threading.Lock()
+        self.lock_debounce = threading.Lock()
+
+        self.debounce_button = 0
 
         # buttons for localization
         self.calibrateM = 0
@@ -501,38 +504,49 @@ class GUI:
         self.camera_connect_thread.start()
 
     def change_cam_add(self):
-        if(self.selected_camera < 5):
-            self.selected_camera = self.selected_camera + 1
-        else:
-            self.selected_camera = 0
+        if(self.debounce_button == 0):
+            if(self.selected_camera < 5):
+                self.selected_camera = self.selected_camera + 1
+            else:
+                self.selected_camera = 0
 
-        self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
+            self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
 
-        print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
+            print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
+
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def change_cam_sub(self):
-        if(self.selected_camera > 0):
-            self.selected_camera = self.selected_camera - 1
-        else:
-            self.selected_camera = 5
+        if(self.debounce_button == 0):
+            if(self.selected_camera > 0):
+                self.selected_camera = self.selected_camera - 1
+            else:
+                self.selected_camera = 5
 
+            self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
 
-        self.frame1.config(text="Camera Feed " + str(self.selected_camera+1))
+            print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
 
-        print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def debug(self):
-        if(self.debugger == 0):
-            self.debugger = 1
-        else:
-            self.debugger = 0
+        if(self.debounce_button == 0):
+            if(self.debugger == 0):
+                self.debugger = 1
+            else:
+                self.debugger = 0
 
-        if(self.debugger == 1):  
-            self.button2a.config(text=" Stop Debugging ")
-            self.button2a.pack(ipadx=self.video_w/self.debugging_off)
-        else:
-            self.button2a.config(text="    Debugging    ")
-            self.button2a.pack(ipadx=self.video_w/self.reg_keys)
+            if(self.debugger == 1):  
+                self.button2a.config(text=" Stop Debugging ")
+                self.button2a.pack(ipadx=self.video_w/self.debugging_off)
+            else:
+                self.button2a.config(text="    Debugging    ")
+                self.button2a.pack(ipadx=self.video_w/self.reg_keys)
+
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     # helper functions for map
     def calibrate_map_p(self):
@@ -803,64 +817,76 @@ class GUI:
 
     # battery stuff
     def change_batt_bard_add(self):
-        if(self.board_batt == 0):
-            if(self.bms_numb == 0):
-                
-                self.bms_numb = 1
+        if(self.debounce_button == 0):
+            if(self.board_batt == 0):
+                if(self.bms_numb == 0):
+                    
+                    self.bms_numb = 1
+                else:
+                    self.bms_numb = 0
+                self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+                self.first = 1
             else:
-                self.bms_numb = 0
-            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
-            self.first = 1
-        else:
-            if(self.board_channel < 16):
-                self.board_channel = self.board_channel + 1
-            else:
-                self.board_channel = 0
+                if(self.board_channel < 16):
+                    self.board_channel = self.board_channel + 1
+                else:
+                    self.board_channel = 0
 
-            if(self.board_channel == 16):
-                self.frame3.config(text="Load Cells")
-                self.first = 1
-            else:
-                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
-                self.first = 1
+                if(self.board_channel == 16):
+                    self.frame3.config(text="Load Cells")
+                    self.first = 1
+                else:
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+                    self.first = 1
+
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def change_batt_bard_sub(self):
-        if(self.board_batt == 0):
-            if(self.bms_numb == 0):
+        if(self.debounce_button == 0):
+            if(self.board_batt == 0):
+                if(self.bms_numb == 0):
+                    
+                    self.bms_numb = 1
+                else:
+                    self.bms_numb = 0
+                self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+                self.first = 1
+            else:
+                if(self.board_channel > 0):
+                    self.board_channel = self.board_channel - 1
+                else:
+                    self.board_channel = 16
                 
-                self.bms_numb = 1
-            else:
-                self.bms_numb = 0
-            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
-            self.first = 1
-        else:
-            if(self.board_channel > 0):
-                self.board_channel = self.board_channel - 1
-            else:
-                self.board_channel = 16
+                if(self.board_channel == 16):
+                    self.frame3.config(text="Load Cells")
+                    self.first = 1
+                else:
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+                    self.first = 1
             
-            if(self.board_channel == 16):
-                self.frame3.config(text="Load Cells")
-                self.first = 1
-            else:
-                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
-                self.first = 1
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def change_board_batt(self):
-        if(self.board_batt == 0):
-            self.board_batt = 1
-            self.button7a.config(text="Battery")
-            self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
-            self.button7a.config(font=self.ui_font_debug)
-            self.first = 1
-            self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
-        else:
-            self.board_batt = 0
-            self.button7a.config(text="PCB")
-            self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
-            self.button7a.config(font=self.ui_font_debug)
-            self.first = 1
-            self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+        if(self.debounce_button == 0):
+            if(self.board_batt == 0):
+                self.board_batt = 1
+                self.button7a.config(text="Battery")
+                self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
+                self.button7a.config(font=self.ui_font_debug)
+                self.first = 1
+                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+            else:
+                self.board_batt = 0
+                self.button7a.config(text="PCB")
+                self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
+                self.button7a.config(font=self.ui_font_debug)
+                self.first = 1
+                self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def init_pygame(self):
         screen = pygame.Surface((self.diag_w, self.diag_h))
@@ -1306,41 +1332,45 @@ class GUI:
 
     # positioning
     def change_right_side(self):
-        if(self.position_IMU == 0):
-            self.position_IMU = 1
-            self.frame2.config(text="IMU")
-            self.button3.destroy()
-            self.button4.destroy()
-            self.cameraC.destroy()
+        if(self.debounce_button == 0):
+            if(self.position_IMU == 0):
+                self.position_IMU = 1
+                self.frame2.config(text="IMU")
+                self.button3.destroy()
+                self.button4.destroy()
+                self.cameraC.destroy()
 
-            # calibrate IMU
-            self.cameraC = Button(self.frame2, text="Calibrate IMU", bg="#FFD100", fg="black")
-            self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_imu)
-            self.cameraC.config(font=self.ui_font)
-        else:
-            self.position_IMU = 0
-            self.cameraC.destroy()
-            self.frame2.config(text="Positioning")
-            # + and - for positioning
-            self.button4 = Button(self.frame2, text="+", bg="#FFD100", fg="black")
-            self.button4.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
-            self.button4.bind("<ButtonPress>", lambda event: self.up_p())
-            self.button4.bind("<ButtonRelease>", lambda event: self.up_r())
-            self.button4.config(font=self.ui_font)
+                # calibrate IMU
+                self.cameraC = Button(self.frame2, text="Calibrate IMU", bg="#FFD100", fg="black")
+                self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_imu)
+                self.cameraC.config(font=self.ui_font)
+            else:
+                self.position_IMU = 0
+                self.cameraC.destroy()
+                self.frame2.config(text="Positioning")
+                # + and - for positioning
+                self.button4 = Button(self.frame2, text="+", bg="#FFD100", fg="black")
+                self.button4.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
+                self.button4.bind("<ButtonPress>", lambda event: self.up_p())
+                self.button4.bind("<ButtonRelease>", lambda event: self.up_r())
+                self.button4.config(font=self.ui_font)
 
 
-            self.button3 = Button(self.frame2, text="-", bg="#FFD100", fg="black")
-            self.button3.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
-            self.button3.bind("<ButtonPress>", lambda event: self.down_p())
-            self.button3.bind("<ButtonRelease>", lambda event: self.down_r())
-            self.button3.config(font=self.ui_font)
+                self.button3 = Button(self.frame2, text="-", bg="#FFD100", fg="black")
+                self.button3.pack(side=LEFT, ipadx=self.local_w/self.reg_keys)
+                self.button3.bind("<ButtonPress>", lambda event: self.down_p())
+                self.button3.bind("<ButtonRelease>", lambda event: self.down_r())
+                self.button3.config(font=self.ui_font)
 
-            # calibrate localization
-            self.cameraC = Button(self.frame2, text="Calibrate Localization", bg="#FFD100", fg="black")
-            self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_local)
-            self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
-            self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
-            self.cameraC.config(font=self.ui_font)
+                # calibrate localization
+                self.cameraC = Button(self.frame2, text="Calibrate Localization", bg="#FFD100", fg="black")
+                self.cameraC.pack(side=LEFT, ipadx=self.local_w/self.calib_local)
+                self.cameraC.bind("<ButtonPress>", lambda event: self.calibrate_map_p())
+                self.cameraC.bind("<ButtonRelease>", lambda event: self.calibrate_map_r())
+                self.cameraC.config(font=self.ui_font)
+            
+            self.debounce_button = 1
+            self.start_debounce_thread() # debounce
 
     def set_screen(self, width = None, height = None):
         root = Tk()
@@ -1421,7 +1451,16 @@ class GUI:
 
         # print snmp on image
         
+    def debounce_buttons(self):
+        time.sleep(0.05)
+        with self.lock_debounce:
+            self.debounce_button = 0
 
+
+    def start_debounce_thread(self):
+        self.debounce = threading.Thread(target=self.debounce_buttons, name="debounce thread")
+        self.debounce.daemon = True
+        self.debounce.start()
 
     # setup for main gui
     def set_up_Main_UI(self, battery, false_traffic=False, fullscreen = True):
