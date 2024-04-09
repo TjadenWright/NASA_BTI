@@ -18,7 +18,7 @@
 * pip install pyserial
 * pip install pygame
 * python -m pip install --upgrade pip
-* pip install tkinter
+* pip install tk
 * pip install Pillow
 * pip install scipy
 * pip install onvif-zeep
@@ -43,7 +43,7 @@
 6. Upload to Github as normal through VS code.
 7. If you need to delete a commit: git reset --soft HEAD~.
 
-## GitHub Repositories Used
+## GitHub Repositories Used (Do not clone these, just the nasa repo)
 * https://github.com/RichardoMrMu/python-onvif
 * https://github.com/syssi/esphome-jbd-bms
 * https://github.com/gregsrabian/MCP41HVX1
