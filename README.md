@@ -18,7 +18,7 @@
 * pip install pyserial
 * pip install pygame
 * python -m pip install --upgrade pip
-* pip install tkinter
+* pip install tk
 * pip install Pillow
 * pip install scipy
 * pip install onvif-zeep
