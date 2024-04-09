@@ -45,6 +45,7 @@ Vmax = 0.5                                 # <--- maximum velocity of the rover 
 
 #### Diagnotic Data Values to Change ####
 Fake_traffic = True
+Fullscreen = False
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -147,7 +148,7 @@ a1.calibrated_cam_data() # add calibrated data to camera
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # main gui
-g1.set_up_Main_UI(b1, Fake_traffic)
+g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
