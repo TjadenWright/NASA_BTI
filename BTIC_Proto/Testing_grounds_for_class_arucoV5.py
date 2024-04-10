@@ -52,6 +52,9 @@ zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
 img_Localization = None # start of image at nothing (don't change)
 
+enable_arduino = True
+enable_controls = True
+
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
 Fullscreen = True
@@ -129,20 +132,21 @@ def scale_range(value, old_min, old_max, new_min, new_max):
 #######################
 
 # setup the rover controls class.
-rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI)
+rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI) 
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 #### setup communication with the arduino ####
-# rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
-# rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
+if enable_arduino:
+    rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
+    rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
-# rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
+    rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
 
-# rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
-# rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
+    rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
+    rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 
-# rc1.start_diagnostics_AND_controls_thread(index = 0)
-# rc1.start_diagnostics_AND_controls_thread(index = 1)
+    rc1.start_diagnostics_AND_controls_thread(index = 0)
+    rc1.start_diagnostics_AND_controls_thread(index = 1)
 
 #### intialize the battery ####
 b1 = Battery_class(verbose=VERBOSE)
@@ -170,7 +174,8 @@ g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
-    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel)
+                                                                                                                                                    # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
+    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=(manual_mode_channel << 5) + (manual_mode << 1) + mode)
 
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
