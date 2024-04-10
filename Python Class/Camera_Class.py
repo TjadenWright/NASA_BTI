@@ -22,41 +22,57 @@ class Amcrest_Camera:
 
             return username, password, parsed_url._replace(netloc=netloc_without_auth).geturl()
 
-        try:
-            # convert to auth password and stuff
-            auth_user, auth_passwd, url = convert_ip_to_base_user_pass(ip)
+        self.first_four_letters = ip[:4]
 
-            # send in username and pasword (digest)
-            self.passman = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-            self.passman.add_password(None, url, auth_user, auth_passwd)
-            self.authhandler = urllib.request.HTTPDigestAuthHandler(self.passman)
+        # Check if it matches "rtsp" or "http"
+        if self.first_four_letters == "rtsp":
+            self.stream = cv2.VideoCapture(ip)
+            return True
+        elif self.first_four_letters == "http":
+            try:
+                # convert to auth password and stuff
+                auth_user, auth_passwd, url = convert_ip_to_base_user_pass(ip)
 
-            self.opener = urllib.request.build_opener(self.authhandler)
-            urllib.request.install_opener(self.opener)
+                # send in username and pasword (digest)
+                self.passman = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+                self.passman.add_password(None, url, auth_user, auth_passwd)
+                self.authhandler = urllib.request.HTTPDigestAuthHandler(self.passman)
 
-            # start video
-            self.stream = urllib.request.urlopen(url, timeout=timeout)
-            self.bytes = b''
-            return True  # Connection successful
-        except Exception as e:
-            print(f"Failed to connect: {e}")
-            self.stream = None
-            return False  # Connection failed
+                self.opener = urllib.request.build_opener(self.authhandler)
+                urllib.request.install_opener(self.opener)
+
+                # start video
+                self.stream = urllib.request.urlopen(url, timeout=timeout)
+                self.bytes = b''
+                return True  # Connection successful
+            except Exception as e:
+                print(f"Failed to connect: {e}")
+                self.stream = None
+                return False  # Connection failed
         
     def read(self):
-        self.bytes += self.stream.read(1024)
-        a = self.bytes.find(b'\xff\xd8') #frame starting 
-        b = self.bytes.find(b'\xff\xd9') #frame ending
-        if a != -1 and b != -1:
-            jpg = self.bytes[a:b+2]
-            self.bytes = self.bytes[b+2:]
-            img = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+        if self.first_four_letters == "rtsp":
+            ret, img = self.stream.read()
+            return ret, img
+        elif self.first_four_letters == "http":
+            self.bytes += self.stream.read(1024)
+            a = self.bytes.find(b'\xff\xd8') #frame starting 
+            b = self.bytes.find(b'\xff\xd9') #frame ending
+            if a != -1 and b != -1:
+                jpg = self.bytes[a:b+2]
+                self.bytes = self.bytes[b+2:]
+                img = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
 
-            return True, img
-        return False, None
+                return True, img
+            return False, None
     
     def destroy(self):
-        if self.stream:
-            self.stream.close()
-            self.stream = None
+        if self.first_four_letters == "rtsp":
+            if self.stream:
+                self.stream.release()
+                self.stream = None
+        elif self.first_four_letters == "http":
+            if self.stream:
+                self.stream.close()
+                self.stream = None
             
