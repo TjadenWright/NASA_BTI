@@ -129,7 +129,10 @@ class GUI:
 
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
-        self.channel_options = ["Motor", "Actuator", "Slew Gear", "IMU and Motherboard"]
+        self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push 1 Actuator", "Battery Push 1 Actuator", "Hopper Actuator", "IMU and Motherboard"]
+        self.channel_option_to_arduino = [0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3]
+        self.channel_config_naming = np.zeros(16, int)
+                              # "Motor", "Actuator", "Slew Gear", "IMU and Motherboard"
 
         # threading
         self.lock_bat = threading.Lock()
@@ -188,11 +191,12 @@ class GUI:
                 self.masterPOPUP.config(bg="#0033A0")
 
                 # Create an entry for the camera index
-                popup_label = Label(self.masterPOPUP, text="Error Code: " + str(self.popup), bg="white", fg="black")
+                popup_label = Label(self.masterPOPUP, text="Popup Code: " + str(self.popup)# + " " + self.binary_with_underscore(self.popup)
+                                    ,bg="white", fg="black")
                 popup_label.pack(ipadx=311, pady=5)
                 popup_label.config(font=self.ui_font_debug)
                 self.popup_entry = Entry(self.masterPOPUP)
-                self.popup_entry.pack(ipadx=250, ipady=20)
+                self.popup_entry.pack(ipadx=270, ipady=20)
                 self.popup_entry.config(font=self.ui_font_debug)
 
                 button = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
@@ -208,8 +212,31 @@ class GUI:
     def popup_gui_Loop(self):
         if(self.popup_gui_key == 1):
             self.popup_entry.delete(0, 'end')
-            self.popup_entry.insert(0, "ME using software detected")
+            autonomy_manual = self.popup & 0x01
+            manual_mode = (self.popup >> 1) & 15
+            selected_channel = ((self.popup >> 5) & 15)  + 1
+            # code               MChannel (4bits)  Mmode (4bits)   A or M (1bit)
+            if(autonomy_manual == 1): # autonomy
+                self.popup_entry.insert(0, "Autonomy Mode Selected")
+            elif(autonomy_manual == 0): # manual
+                if(manual_mode == 0): # mode for maunual to select individual channels
+                    self.popup_entry.insert(0, "Manual Mode Channel Selector Selected: Channel " + str(selected_channel) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
+                elif(manual_mode == 1):
+                    self.popup_entry.insert(0, "Manual Mode Drive")
+                elif(manual_mode == 2):
+                    self.popup_entry.insert(0, "Manual Mode Excavate")
+                elif(manual_mode == 3):
+                    self.popup_entry.insert(0, "Manual Mode Battery Swap")
+                else:
+                    self.popup_entry.insert(0, "ME using software detected")
             self.masterPOPUP.update()
+
+    def binary_with_underscore(self, n):
+        binary = format(n, 'b')
+        reversed_binary = binary[::-1]
+        underscored = ''.join([reversed_binary[i] + ('_' if (i+1) % 4 == 0 else '') for i in range(len(reversed_binary))])
+        return underscored[::-1]
+
 
     def popup_clk(self):
         value = 2
@@ -793,10 +820,13 @@ class GUI:
         for i in range(1, 17):
             selected_option = self.master.grid_slaves(row=(i-1)//4, column=(i-1)%4)[0].winfo_children()[1].cget("text")
             try:
-                self.channel[i-1] = int(self.channel_options.index(selected_option))
+                self.channel[i-1] = self.channel_option_to_arduino[int(self.channel_options.index(selected_option))]
+                self.channel_config_naming[i-1] = int(self.channel_options.index(selected_option))
             except:
                 self.channel[i-1] = -1
+                self.channel_config_naming[i-1] = -1
         print(self.channel)
+        print(self.channel_config_naming)
 
         self.controls.set_act_OR_motor(config = self.channel)
         
@@ -886,6 +916,12 @@ class GUI:
             # print(np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]]))
             # controls.set_act_OR_motor(config = np.array([self.channel[0], self.channel[1], self.channel[2], self.channel[3], self.channel[4], self.channel[5], self.channel[6], self.channel[7], self.channel[8], self.channel[9], self.channel[10], self.channel[11], self.channel[12], self.channel[13], self.channel[14], self.channel[15]])) # have to do this otherwise weird stuff happens
 
+    def get_channel_names(self):
+        return self.channel_options
+    
+    def get_channel_setup_high_level(self):
+        return self.channel_config_naming
+
     # battery stuff
     def change_batt_bard_add(self):
         if(self.debounce_button == 0):
@@ -907,7 +943,7 @@ class GUI:
                     self.frame3.config(text="Load Cells")
                     self.first = 1
                 else:
-                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
                     self.first = 1
 
             self.debounce_button = 1
@@ -933,7 +969,7 @@ class GUI:
                     self.frame3.config(text="Load Cells")
                     self.first = 1
                 else:
-                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
                     self.first = 1
             
             self.debounce_button = 1
@@ -947,7 +983,7 @@ class GUI:
                 self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
                 self.button7a.config(font=self.ui_font_debug)
                 self.first = 1
-                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1))
+                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
             else:
                 self.board_batt = 0
                 self.button7a.config(text="PCB")

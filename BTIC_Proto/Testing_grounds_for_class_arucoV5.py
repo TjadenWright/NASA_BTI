@@ -52,8 +52,7 @@ zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
 img_Localization = None # start of image at nothing (don't change)
 
-enable_arduino = True
-enable_controls = True
+enable_arduino = False
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
