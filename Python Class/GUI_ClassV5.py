@@ -195,16 +195,18 @@ class GUI:
         if(self.manual_mode == 0):
             options3 = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
 
-            self.button_popup.destroy()
 
             # Create a dropdown widget
-            self.dropdown_3 = ttk.Combobox(self.masterPOPUP, values=options3, state="readonly", font=self.ui_font_debug)
-            self.dropdown_3.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
-            self.dropdown_3.bind("<<ComboboxSelected>>", self.handle_selection_select_channel)
+            if(self.dropdown_3 is None):
+                self.button_popup.destroy()
 
-            self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
-            self.button_popup.pack(ipadx=150, ipady=40, pady=5)
-            self.button_popup.config(font=self.ui_font_debug)
+                self.dropdown_3 = ttk.Combobox(self.masterPOPUP, values=options3, state="readonly", font=self.ui_font_debug)
+                self.dropdown_3.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                self.dropdown_3.bind("<<ComboboxSelected>>", self.handle_selection_select_channel)
+
+                self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+                self.button_popup.pack(ipadx=150, ipady=40, pady=5)
+                self.button_popup.config(font=self.ui_font_debug)
         else:
             if(self.dropdown_3):
                 self.dropdown_3.destroy()
@@ -216,16 +218,17 @@ class GUI:
             if(selected_item == 0): # manual mode
                 options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Place Holder"]
 
-                self.button_popup.destroy()
+                if(self.dropdown_2 is None):
+                    self.button_popup.destroy()
 
-                # Create a dropdown widget
-                self.dropdown_2 = ttk.Combobox(self.masterPOPUP, values=options2, state="readonly", font=self.ui_font_debug)
-                self.dropdown_2.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
-                self.dropdown_2.bind("<<ComboboxSelected>>", self.handle_selection_man_mode)
+                    # Create a dropdown widget
+                    self.dropdown_2 = ttk.Combobox(self.masterPOPUP, values=options2, state="readonly", font=self.ui_font_debug)
+                    self.dropdown_2.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                    self.dropdown_2.bind("<<ComboboxSelected>>", self.handle_selection_man_mode)
 
-                self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
-                self.button_popup.pack(ipadx=150, ipady=40, pady=5)
-                self.button_popup.config(font=self.ui_font_debug)
+                    self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+                    self.button_popup.pack(ipadx=150, ipady=40, pady=5)
+                    self.button_popup.config(font=self.ui_font_debug)
             else:
                 if(self.dropdown_3):
                     self.dropdown_3.destroy()
