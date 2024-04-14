@@ -1,5 +1,6 @@
 import cv2
 from tkinter import *
+from tkinter import ttk
 from PIL import Image, ImageTk
 import time
 import threading
@@ -74,6 +75,15 @@ class GUI:
 
         self.debugger = 0
         self.mode = 0
+
+        # controls
+        self.autonomy_manual = 0
+        self.manual_mode = 0
+        self.selected_channel = 0
+
+        self.autonomy_manual_lock = 0
+        self.manual_mode_lock = 0
+        self.selected_channel_lock = 0
 
         # for bms stuff
         self.total_voltage = np.array([0.0, 0.0])
@@ -162,15 +172,68 @@ class GUI:
 
         # spacing
         self.reg_keys = 17.35 # 11.371
-        self.debugging_off = 18.26 # 11.97
+        self.reg_keys_drop = 13.5 # 14
+        self.debugging_off = 19 # 18.26 # 11.97
         self.calib_local = 10 # 4.5
         self.calib_imu = 2
         self.diag_keys = 9 # 8.5
+        self.diag_drop_down = 7 # 8.5
 
     def on_closing_popup(self):
         self.masterPOPUP.destroy()
         self.popup_gui_key = 0
         self.masterPOPUP = None
+
+    def handle_selection_select_channel(self, event):
+        selected_item = self.dropdown_3.current()
+        self.selected_channel = selected_item
+
+    def handle_selection_man_mode(self, event):
+        selected_item = self.dropdown_2.current()
+        self.manual_mode = selected_item
+
+        if(self.manual_mode == 0):
+            options3 = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+
+            self.button_popup.destroy()
+
+            # Create a dropdown widget
+            self.dropdown_3 = ttk.Combobox(self.masterPOPUP, values=options3, state="readonly", font=self.ui_font_debug)
+            self.dropdown_3.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+            self.dropdown_3.bind("<<ComboboxSelected>>", self.handle_selection_select_channel)
+
+            self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+            self.button_popup.pack(ipadx=150, ipady=40, pady=5)
+            self.button_popup.config(font=self.ui_font_debug)
+        else:
+            if(self.dropdown_3):
+                self.dropdown_3.destroy()
+
+    def handle_selection_man_or_auto(self, event):
+            selected_item = self.dropdown_1.current()
+            self.autonomy_manual = selected_item
+
+            if(selected_item == 0): # manual mode
+                options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Place Holder"]
+
+                self.button_popup.destroy()
+
+                # Create a dropdown widget
+                self.dropdown_2 = ttk.Combobox(self.masterPOPUP, values=options2, state="readonly", font=self.ui_font_debug)
+                self.dropdown_2.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                self.dropdown_2.bind("<<ComboboxSelected>>", self.handle_selection_man_mode)
+
+                self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+                self.button_popup.pack(ipadx=150, ipady=40, pady=5)
+                self.button_popup.config(font=self.ui_font_debug)
+            else:
+                if(self.dropdown_3):
+                    self.dropdown_3.destroy()
+                if(self.dropdown_2):
+                    self.dropdown_2.destroy()
+
+
+            
 
     # popups
     def popup_gui(self):
@@ -186,24 +249,49 @@ class GUI:
                 print("startup popup gui")
                 self.masterPOPUP = Toplevel()
                 self.masterPOPUP.protocol("WM_DELETE_WINDOW", self.on_closing_popup)
-                self.masterPOPUP.geometry(f"{800}x{200}+{180}+{50}")
+                self.masterPOPUP.geometry(f"{800}x{300}+{180}+{50}")
                 self.masterPOPUP.title("POPUP")
                 self.masterPOPUP.config(bg="#0033A0")
 
                 # Create an entry for the camera index
-                popup_label = Label(self.masterPOPUP, text="Popup Code: " + str(self.popup)# + " " + self.binary_with_underscore(self.popup)
+                popup_label = Label(self.masterPOPUP, text="Popup Code Window" # + " " + self.binary_with_underscore(self.popup)
                                     ,bg="white", fg="black")
                 popup_label.pack(ipadx=311, pady=5)
                 popup_label.config(font=self.ui_font_debug)
-                self.popup_entry = Entry(self.masterPOPUP)
-                self.popup_entry.pack(ipadx=270, ipady=20)
-                self.popup_entry.config(font=self.ui_font_debug)
+                # self.popup_entry = Entry(self.masterPOPUP)
+                # self.popup_entry.pack(ipadx=270, ipady=20)
+                # self.popup_entry.config(font=self.ui_font_debug)
+                options1 = ["Manual Mode", "Autonomy Mode"]
 
-                button = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
-                button.pack(ipadx=150, ipady=40, pady=5)
-                button.config(font=self.ui_font_debug)
+                self.masterPOPUP.option_add("*TCombobox*Listbox*Font", self.ui_font_debug)
 
-                self.start_popup_clock_thread()
+                # Create a dropdown widget
+                self.dropdown_1 = ttk.Combobox(self.masterPOPUP, values=options1, state="readonly", font=self.ui_font_debug)
+                self.dropdown_1.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                self.dropdown_1.bind("<<ComboboxSelected>>", self.handle_selection_man_or_auto)
+
+                # options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Place Holder"]
+
+                # # Create a dropdown widget
+                # self.dropdown_2 = ttk.Combobox(self.masterPOPUP, values=options2, state="readonly", font=self.ui_font_debug)
+                # self.dropdown_2.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                # # self.dropdown_cam.bind("<<ComboboxSelected>>", self.handle_selection_cam)
+
+                # options3 = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+
+                # # Create a dropdown widget
+                # self.dropdown_3 = ttk.Combobox(self.masterPOPUP, values=options3, state="readonly", font=self.ui_font_debug)
+                # self.dropdown_3.pack(pady=6, ipadx=self.diag_w/self.reg_keys_drop)
+                # self.dropdown_cam.bind("<<ComboboxSelected>>", self.handle_selection_cam)
+                
+                # Bind left mouse button click to open_dropdown function
+                # self.dropdown_cam.bind("<Button-1>", self.open_dropdown_cam)
+
+                self.button_popup = Button(self.masterPOPUP, text="OK", bg="#FFD100", fg="black", command=self.on_closing_popup)
+                self.button_popup.pack(ipadx=150, ipady=40, pady=5)
+                self.button_popup.config(font=self.ui_font_debug)
+
+                # self.start_popup_clock_thread()
 
                 self.popup_gui_key = 1
             
@@ -211,24 +299,24 @@ class GUI:
 
     def popup_gui_Loop(self):
         if(self.popup_gui_key == 1):
-            self.popup_entry.delete(0, 'end')
-            autonomy_manual = self.popup & 0x01
-            manual_mode = (self.popup >> 1) & 15
-            selected_channel = ((self.popup >> 5) & 15)  + 1
+            # self.popup_entry.delete(0, 'end')
+            # self.autonomy_manual = self.popup & 0x01
+            # self.manual_mode = (self.popup >> 1) & 15
+            # self.selected_channel = ((self.popup >> 5) & 15)  + 1
             # code               MChannel (4bits)  Mmode (4bits)   A or M (1bit)
-            if(autonomy_manual == 1): # autonomy
-                self.popup_entry.insert(0, "Autonomy Mode Selected")
-            elif(autonomy_manual == 0): # manual
-                if(manual_mode == 0): # mode for maunual to select individual channels
-                    self.popup_entry.insert(0, "Manual Mode Channel Selector Selected: Channel " + str(selected_channel) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
-                elif(manual_mode == 1):
-                    self.popup_entry.insert(0, "Manual Mode Drive")
-                elif(manual_mode == 2):
-                    self.popup_entry.insert(0, "Manual Mode Excavate")
-                elif(manual_mode == 3):
-                    self.popup_entry.insert(0, "Manual Mode Battery Swap")
-                else:
-                    self.popup_entry.insert(0, "ME using software detected")
+            # if(autonomy_manual == 1): # autonomy
+            #     self.popup_entry.insert(0, "Autonomy Mode Selected")
+            # elif(autonomy_manual == 0): # manual
+            #     if(manual_mode == 0): # mode for maunual to select individual channels
+            #         self.popup_entry.insert(0, "Manual Mode Channel Selector Selected: Channel " + str(selected_channel) + " " + self.channel_options[self.channel_config_naming[selected_channel]])
+            #     elif(manual_mode == 1):
+            #         self.popup_entry.insert(0, "Manual Mode Drive")
+            #     elif(manual_mode == 2):
+            #         self.popup_entry.insert(0, "Manual Mode Excavate")
+            #     elif(manual_mode == 3):
+            #         self.popup_entry.insert(0, "Manual Mode Battery Swap")
+            #     else:
+            #         self.popup_entry.insert(0, "ME using software detected")
             self.masterPOPUP.update()
 
     def binary_with_underscore(self, n):
@@ -628,6 +716,19 @@ class GUI:
             self.debounce_button = 1
             self.start_debounce_thread() # debounce
 
+    def handle_selection_cam(self, event):
+            selected_item = self.dropdown_cam.current()
+            self.selected_camera = selected_item
+
+            self.frame1.config(text="Camera Feed " + str(self.selected_camera))
+
+            print("Camera Selected: ", self.selected_camera, "Camera Array: ", self.toggleCamera)
+
+            print("Selected:", selected_item)
+
+    def open_dropdown_cam(self, event=None):
+        self.dropdown_cam.tk.call(self.dropdown_cam, 'set', '')  # Open the dropdown
+
     def debug(self):
         if(self.debounce_button == 0):
             if(self.debugger == 0):
@@ -828,6 +929,13 @@ class GUI:
         print(self.channel)
         print(self.channel_config_naming)
 
+        if(self.board_batt == 1):
+            options = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+            options.append("Load Cells")
+
+            # Create a dropdown widget
+            self.dropdown.config(values=options)
+
         self.controls.set_act_OR_motor(config = self.channel)
         
     def write_select_channels(self):
@@ -975,17 +1083,49 @@ class GUI:
             self.debounce_button = 1
             self.start_debounce_thread() # debounce
 
+    def handle_selection(self, event):
+            selected_item = self.dropdown.current()
+            if(self.board_batt == 0):    # battery
+                self.bms_numb = selected_item
+                self.frame3.config(text="Battery Diagnostics BMS " + str(self.bms_numb))
+                self.first = 1
+            else:                       # pcb
+                self.board_channel = selected_item
+                
+                if(self.board_channel == 16):
+                    self.frame3.config(text="Load Cells")
+                    self.first = 1
+                else:
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
+                    self.first = 1
+            print("Selected:", selected_item)
+
+    def open_dropdown(self, event=None):
+        self.dropdown.tk.call(self.dropdown, 'set', '')  # Open the dropdown
+
     def change_board_batt(self):
         if(self.debounce_button == 0):
             if(self.board_batt == 0):
                 self.board_batt = 1
+                options = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+                options.append("Load Cells")
+                # Create a dropdown widget
+                self.dropdown.config(values=options)
+
                 self.button7a.config(text="Battery")
                 self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
                 self.button7a.config(font=self.ui_font_debug)
                 self.first = 1
-                self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel + 1) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
+                if(self.board_channel == 16):
+                    self.frame3.config(text="Load Cells")
+                else:
+                    self.frame3.config(text="PCB Diagnostics Channel " + str(self.board_channel) + " " + self.channel_options[self.channel_config_naming[self.board_channel]])
             else:
                 self.board_batt = 0
+                options = ["BMS 0 - dumptruck1", "BMS 1 - dumptruck2"]
+
+                # Create a dropdown widget
+                self.dropdown.config(values=options)
                 self.button7a.config(text="PCB")
                 self.button7a.pack(ipadx=self.diag_w/self.diag_keys)
                 self.button7a.config(font=self.ui_font_debug)
@@ -1415,20 +1555,12 @@ class GUI:
                 elif(self.channel[self.board_channel] == 3):
                     if(self.false_traffic):
                         # Motherboard Channel#                 you get this: ALARM TEMP CURRENT OC_FAULT
-                        self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Motherboard Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
-                        self.draw_thermometer(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "Motherboard Temperature", BATTERY_X + BATTERY_WIDTH + self.steps3, self.down_step - 30)
-                        self.draw_status_text(self.screenDiag, "Motherboard Alarm", BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step)
-                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step)
-                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step)
-                        self.draw_bad_status(self.screenDiag, self.connection[self.bms_numb], BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step)
+                        self.speedometer(self.screenDiag, round(self.current[self.bms_numb], 1), "A", "Motherboard Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + self.steps1/2, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "Motherboard Temperature", BATTERY_X + BATTERY_WIDTH + self.steps1, self.down_step - 30)
                     else:
                         # Motherboard Channel#                 you get this: ALARM TEMP CURRENT OC_FAULT
-                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 2], 1), "A", "Motherboard Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH, self.down_step + BATTERY_HEIGHT // 2)
-                        self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "Motherboard Temperature", BATTERY_X + BATTERY_WIDTH + self.steps3, self.down_step - 30)
-                        self.draw_status_text(self.screenDiag, "Motherboard Alarm", BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step)
-                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 0], BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step)
-                        self.draw_status_text(self.screenDiag, "Overcurrent Fault", BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step)
-                        self.draw_bad_status(self.screenDiag, diagnostics_array[self.board_channel, 3], BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step)
+                        self.speedometer(self.screenDiag, round(diagnostics_array[self.board_channel, 2], 1), "A", "Motherboard Current", 120, 100, 60, BATTERY_X + BATTERY_WIDTH + self.steps1/2, self.down_step + BATTERY_HEIGHT // 2)
+                        self.draw_thermometer(self.screenDiag, round(diagnostics_array[self.board_channel, 1], 1), "Motherboard Temperature", BATTERY_X + BATTERY_WIDTH + self.steps1, self.down_step - 30)
 
             self.last_update_time = time.time()  # Update the last update time
 
@@ -1607,14 +1739,27 @@ class GUI:
 
         self.label1['image'] = self.black_image_video_tk
 
-        # move camera left and right
-        button2 = Button(self.frame1, text="        <        ", bg="#FFD100", fg="black", command=self.change_cam_sub)
-        button2.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
-        button2.config(font=self.ui_font)
+        # # move camera left and right
+        # button2 = Button(self.frame1, text="        <        ", bg="#FFD100", fg="black", command=self.change_cam_sub)
+        # button2.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
+        # button2.config(font=self.ui_font)
 
-        button1 = Button(self.frame1, text="        >        ", bg="#FFD100", fg="black", command=self.change_cam_add)
-        button1.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
-        button1.config(font=self.ui_font)
+        # button1 = Button(self.frame1, text="        >        ", bg="#FFD100", fg="black", command=self.change_cam_add)
+        # button1.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
+        # button1.config(font=self.ui_font)
+
+        options = ["Camera 0 - Mining or Arm", "Camera 1 - Front", "Camera 2 - Back", "Camera 3 - Left", "Camera 4 - Right", "Camera 5 - Place Holder"]
+
+        self.frame1.option_add("*TCombobox*Listbox*Font", self.ui_font_debug)
+
+        # Create a dropdown widget
+        self.dropdown_cam = ttk.Combobox(self.frame1, values=options, state="readonly", font=self.ui_font_debug)
+        self.dropdown_cam.current(self.selected_camera)  # Set the default value to the first item (index 0)
+        self.dropdown_cam.pack(side=LEFT, ipady=6, ipadx=self.diag_w/self.reg_keys_drop)
+        self.dropdown_cam.bind("<<ComboboxSelected>>", self.handle_selection_cam)
+        
+        # Bind left mouse button click to open_dropdown function
+        # self.dropdown_cam.bind("<Button-1>", self.open_dropdown_cam)
 
         self.button2a = Button(self.frame1, text="    Debugging    ", bg="#FFD100", fg="black", command=self.debug)
         self.button2a.pack(side=LEFT, ipadx=self.video_w/self.reg_keys)
@@ -1676,14 +1821,42 @@ class GUI:
 
         self.label3['image'] = self.black_image_diag_tk
         
-        # change battery diagnostics
-        button8 = Button(self.frame3, text="<", bg="#FFD100", fg="black", command=self.change_batt_bard_sub)
-        button8.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
-        button8.config(font=self.ui_font_debug)
+        # # change battery diagnostics
+        # button8 = Button(self.frame3, text="<", bg="#FFD100", fg="black", command=self.change_batt_bard_sub)
+        # button8.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
+        # button8.config(font=self.ui_font_debug)
 
-        button7 = Button(self.frame3, text=">", bg="#FFD100", fg="black", command=self.change_batt_bard_add)
-        button7.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
-        button7.config(font=self.ui_font_debug)
+        # button7 = Button(self.frame3, text=">", bg="#FFD100", fg="black", command=self.change_batt_bard_add)
+        # button7.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
+        # button7.config(font=self.ui_font_debug)
+
+        # Create a list of options
+        options = ["BMS 0 - dumptruck1", "BMS 1 - dumptruck2"]
+
+        self.frame3.option_add("*TCombobox*Listbox*Font", self.ui_font_debug)
+
+        # Create a dropdown widget
+        self.dropdown = ttk.Combobox(self.frame3, values=options, state="readonly", font=self.ui_font_debug)
+        self.dropdown.current(self.bms_numb)
+        self.dropdown.pack(side=LEFT, ipady=10, ipadx=self.diag_w/self.diag_drop_down)
+        self.dropdown.bind("<<ComboboxSelected>>", self.handle_selection)
+        
+        # Bind left mouse button click to open_dropdown function
+        # self.dropdown.bind("<Button-1>", self.open_dropdown)
+
+
+        # def handle_selection(event):
+        #     selected_item = dropdown.get()
+        #     print("Selected:", selected_item)
+
+        # # Create a list of options
+        # options = ["Option 1", "Option 2", "Option 3", "Option 4"]
+
+        # # Create a dropdown widget
+        # dropdown = ttk.Combobox(self.frame3, values=options)
+        # dropdown.pack(side=LEFT, ipady=10, ipadx=self.diag_w/self.diag_drop_down)
+        # dropdown.config(font=self.ui_font_debug)
+        # dropdown.bind("<<ComboboxSelected>>", handle_selection)
 
         self.button7a = Button(self.frame3, text="PCB", bg="#FFD100", fg="black", command=self.change_board_batt)
         self.button7a.pack(side=LEFT, ipadx=self.diag_w/self.diag_keys)
@@ -1719,11 +1892,8 @@ class GUI:
         self.steps5 = int(self.diag_w/6)
         self.steps4 = int(self.diag_w/5)
         self.steps3 = int(self.diag_w/4)
+        self.steps1 = int(self.diag_w/2)
         self.down_step = int(self.diag_h/2.5)
-        print("Distance Between Each Battery Icon: ", self.steps6, "Distance From Top: ", self.down_step)
-        print("Distance Between Each Motor Icon: ", self.steps5, "Distance From Top: ", self.down_step)
-        print("Distance Between Each Actuator Icon: ", self.steps4, "Distance From Top: ", self.down_step)
-        print("Distance Between Each Actuator Icon: ", self.steps3, "Distance From Top: ", self.down_step)
 
         self.start_debugger()
 
@@ -1795,7 +1965,12 @@ class GUI:
             self.popup_gui()
         self.popup_gui_Loop()
 
-        return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key
+        if(self.popup_gui_key == 0):
+            self.manual_mode_lock = self.manual_mode
+            self.autonomy_manual_lock = self.autonomy_manual
+            self.selected_channel_lock = self.selected_channel
+
+        return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key, self.manual_mode_lock, self.autonomy_manual_lock, self.selected_channel_lock
 
     def release_main(self):
         self.cap.release()

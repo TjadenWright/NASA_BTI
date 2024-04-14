@@ -72,6 +72,7 @@ max_manual_mode = 4
 manual_mode = 0
 Manual = 0
 prev_Manual = 0
+popup = 0
 
 manual_mode_channel = 0
 Manual_channel_up = 0
@@ -174,7 +175,7 @@ g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
-    opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=(manual_mode_channel << 5) + (manual_mode << 1) + mode)
+    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=popup)
 
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
@@ -198,52 +199,16 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     # get the button to change mode
     Manual_Auto = rc1.Get_Button_From_Controller(stop_button="A_Button") # A button is pressed or not
 
-    # get the button to change the manual mode
-    Manual = rc1.Get_Button_From_Controller(stop_button="Select") # A button is pressed or not
-
     # toggle the mode
     if Manual_Auto == 1 and prev_Manual_Auto == 0:
-        if(mode == 0):
-            mode+=1
-            # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
-            last_spotted_time = time.time()
-            prev_spotted = 1
-            x_prev = 0
-            y_prev = 0
-            Velocity = 0
-            first_time = True
-            calibrate = False
+        if(popup == 0):
+            popup = 1
         else:
-            mode = 0
-            # rc1.Write_message(data=rc1.Motor_PWM(0, 0)) # set back to zero when changing state
-
-    if Manual == 1 and prev_Manual == 0:
-        if(manual_mode < max_manual_mode):
-            manual_mode = manual_mode + 1
-        else:
-            manual_mode = 0
+            popup = 0
 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
         if(manual_mode == 0):
-            Manual_channel_up = rc1.Get_Button_From_Controller(stop_button="Y_Button") # Y button is pressed or not
-            # Manual_channel_down = rc1.Get_Button_From_Controller(stop_button="A_Button") # X button is pressed or not
-
-            if Manual_channel_up == 1 and prev_Manual_channel_up == 0:
-                if(manual_mode_channel < 14):
-                    manual_mode_channel = manual_mode_channel + 1
-                else:
-                    manual_mode_channel = 0
-            
-            if Manual_channel_down == 1 and prev_Manual_channel_down == 0:
-                if(manual_mode_channel > 0):
-                    manual_mode_channel = manual_mode_channel - 1
-                else:
-                    manual_mode_channel = 14
-
-            prev_Manual_channel_up = Manual_channel_up
-            prev_Manual_channel_down = Manual_channel_down
-
             rc1.control_motor_OR_actutor(channel_Numb = manual_mode_channel+1, select = rc1.get_act_OR_motor()[manual_mode_channel], verbose = False)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):

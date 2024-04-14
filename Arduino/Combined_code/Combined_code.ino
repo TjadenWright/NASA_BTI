@@ -14,7 +14,7 @@
 #define Arduino_or_latte false // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
-#define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
+#define MAX_CURRENT 4.96 // 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
 String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "dMotherboard", "dTempAndLC", "dIMU"}; 

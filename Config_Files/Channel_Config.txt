@@ -1,8 +1,8 @@
-Channel 1: Front Left Drive Motor
+Channel 1: Rear Auger Motor
 Channel 2: Front Right Drive Motor
 Channel 3: Rear Left Drive Motor
 Channel 4: Rear Right Drive Motor
-Channel 5: Front Left Drive Motor
+Channel 5: Pivot Slew Gear
 Channel 6: Pivot Slew Gear
 Channel 7: Battery Lock 1 Actuator
 Channel 8: Battery Lock 1 Actuator
