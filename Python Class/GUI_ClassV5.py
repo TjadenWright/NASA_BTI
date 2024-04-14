@@ -137,6 +137,10 @@ class GUI:
         self.masterIP = None
         self.masterPOPUP = None
 
+        self.dropdown_2 = None
+        self.dropdown_3 = None
+
+
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
         self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push 1 Actuator", "Battery Push 1 Actuator", "Hopper Actuator", "IMU and Motherboard"]
@@ -210,6 +214,7 @@ class GUI:
         else:
             if(self.dropdown_3):
                 self.dropdown_3.destroy()
+                self.dropdown_3 = None
 
     def handle_selection_man_or_auto(self, event):
             selected_item = self.dropdown_1.current()
@@ -232,8 +237,10 @@ class GUI:
             else:
                 if(self.dropdown_3):
                     self.dropdown_3.destroy()
+                    self.dropdown_3 = None
                 if(self.dropdown_2):
                     self.dropdown_2.destroy()
+                    self.dropdown_2 = None
 
 
             
@@ -504,43 +511,32 @@ class GUI:
 
         ptzEnable = [False] * self.number_of_cams
 
-        # camera selected previous
-        prev_camera_selected = self.selected_camera
-        current_camera_selected = self.selected_camera
-
-        # first time through
-        first = True
+        prev_camera = self.selected_camera
+        current_camera = self.selected_camera
 
         while True:
-            img = self.img
-            # save previous
-            prev_camera_selected = current_camera_selected
-            # get current
-            current_camera_selected = self.selected_camera
 
-            # any time we transition we need to switch so change first to true.
-            if(prev_camera_selected != current_camera_selected):
-                first = True
+            prev_camera = current_camera
+            current_camera = self.selected_camera
+
+            if(prev_camera != current_camera):
+                ptzEnable[prev_camera] = False
+                
                 with self.lock_ptz:
                     self.ptz = None
 
-            if(img is not None and first):
-                ptzEnable[current_camera_selected] = ptz[current_camera_selected].ptz_setup(self.cam[current_camera_selected])
-                first = False
-                print("ptz setup")
+            if(ptzEnable[self.selected_camera] == False): # try to enable it
+                print("ptz setup: ", self.selected_camera)
+                ptzEnable[self.selected_camera] = ptz[self.selected_camera].ptz_setup(self.cam[self.selected_camera])
 
-                if(ptzEnable[current_camera_selected]):
+                if(ptzEnable[self.selected_camera]):
                     print("ptz enable")
                     with self.lock_ptz:
-                        self.ptz = ptz[current_camera_selected]
+                        self.ptz = ptz[self.selected_camera]
                 else:
                     print("ptz disable")
                     with self.lock_ptz:
                         self.ptz = None
-            elif(img is None and first):
-                # print("ptz disable 1")
-                with self.lock_ptz:
-                    self.ptz = None
 
             time.sleep(0.1)
 

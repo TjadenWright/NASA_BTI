@@ -1,6 +1,8 @@
 from onvif import ONVIFCamera
 from time import sleep
 from urllib.parse import urlparse
+import urllib.error
+from zeep.transports import Transport
 
 class ptzControl():
     def ptz_setup(self, ip ="http://nasabtic:nasabs123@192.168.1.49/cgi-bin/mjpg/video.cgi?channel=0&subtype=1", PORT = 80):
@@ -14,6 +16,7 @@ class ptzControl():
             # Get the IP address from the parsed URL
             ip_address = parsed_url.hostname
 
+            print("This is PTZ: ")
             print("Username:", username)
             print("Password:", password)
             print("IP Address:", ip_address)
@@ -22,65 +25,77 @@ class ptzControl():
 
         USER, PASS, IP = convert_ip_to_base_user_pass(ip)
 
-        super(ptzControl, self).__init__()
-        self.mycam = ONVIFCamera(IP,PORT,USER,PASS)
-        # create media service object
-        self.media = self.mycam.create_media_service()
-        # Get target profile
-        self.media_profile = self.media.GetProfiles()[0]
-        # Use the first profile and Profiles have at least one
-        token = self.media_profile.token
-        # PTZ controls  -------------------------------------------------------------
-        self.ptz = self.mycam.create_ptz_service()
-        # Get available PTZ services
-        request = self.ptz.create_type('GetServiceCapabilities')
-        Service_Capabilities = self.ptz.GetServiceCapabilities(request)
-        # Get PTZ status
-        status = self.ptz.GetStatus({'ProfileToken': token})
+        if(USER is None or PASS is None or IP is None):
+            return False
+        
+        self.mycam = None
 
-        # Get PTZ configuration options for getting option ranges
-        request = self.ptz.create_type('GetConfigurationOptions')
-        request.ConfigurationToken = self.media_profile.PTZConfiguration.token
-        ptz_configuration_options = self.ptz.GetConfigurationOptions(request)
+        try: 
+            super(ptzControl, self).__init__()
+            print("past super")
+            transport = Transport(operation_timeout=0.1)
+            self.mycam = ONVIFCamera(IP,PORT,USER,PASS,transport=transport)
+            print("past ONVIFCamera", self.mycam)
+            # create media service object
+            self.media = self.mycam.create_media_service()
+            # Get target profile
+            self.media_profile = self.media.GetProfiles()[0]
+            # Use the first profile and Profiles have at least one
+            token = self.media_profile.token
+            # PTZ controls  -------------------------------------------------------------
+            self.ptz = self.mycam.create_ptz_service()
+            # Get available PTZ services
+            request = self.ptz.create_type('GetServiceCapabilities')
+            Service_Capabilities = self.ptz.GetServiceCapabilities(request)
+            # Get PTZ status
+            status = self.ptz.GetStatus({'ProfileToken': token})
 
-        # get continuousMove request -- requestc
-        self.requestc = self.ptz.create_type('ContinuousMove')
-        self.requestc.ProfileToken = self.media_profile.token
-        if self.requestc.Velocity is None:
-            self.requestc.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
-            self.requestc.Velocity.PanTilt.space = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].URI
-            self.requestc.Velocity.Zoom.space = ptz_configuration_options.Spaces.ContinuousZoomVelocitySpace[0].URI
+            # Get PTZ configuration options for getting option ranges
+            request = self.ptz.create_type('GetConfigurationOptions')
+            request.ConfigurationToken = self.media_profile.PTZConfiguration.token
+            ptz_configuration_options = self.ptz.GetConfigurationOptions(request)
 
-        # get absoluteMove request -- requesta
-        self.requesta = self.ptz.create_type('AbsoluteMove')
-        self.requesta.ProfileToken = self.media_profile.token
-        if self.requesta.Position is None:
-            self.requesta.Position = self.ptz.GetStatus(
-                {'ProfileToken': self.media_profile.token}).Position
-        if self.requesta.Speed is None:
-            self.requesta.Speed = self.ptz.GetStatus(
-                {'ProfileToken': self.media_profile.token}).Position
+            # get continuousMove request -- requestc
+            self.requestc = self.ptz.create_type('ContinuousMove')
+            self.requestc.ProfileToken = self.media_profile.token
+            if self.requestc.Velocity is None:
+                self.requestc.Velocity = self.ptz.GetStatus({'ProfileToken': self.media_profile.token}).Position
+                self.requestc.Velocity.PanTilt.space = ptz_configuration_options.Spaces.ContinuousPanTiltVelocitySpace[0].URI
+                self.requestc.Velocity.Zoom.space = ptz_configuration_options.Spaces.ContinuousZoomVelocitySpace[0].URI
 
-        # get relativeMove request -- requestr
-        self.requestr = self.ptz.create_type('RelativeMove')
-        self.requestr.ProfileToken = self.media_profile.token
-        if self.requestr.Translation is None:
-            self.requestr.Translation = self.ptz.GetStatus(
-                {'ProfileToken': self.media_profile.token}).Position
-            self.requestr.Translation.PanTilt.space = ptz_configuration_options.Spaces.RelativePanTiltTranslationSpace[0].URI
-            self.requestr.Translation.Zoom.space = ptz_configuration_options.Spaces.RelativeZoomTranslationSpace[0].URI
-        if self.requestr.Speed is None:
-            self.requestr.Speed = self.ptz.GetStatus(
-                {'ProfileToken': self.media_profile.token}).Position
+            # get absoluteMove request -- requesta
+            self.requesta = self.ptz.create_type('AbsoluteMove')
+            self.requesta.ProfileToken = self.media_profile.token
+            if self.requesta.Position is None:
+                self.requesta.Position = self.ptz.GetStatus(
+                    {'ProfileToken': self.media_profile.token}).Position
+            if self.requesta.Speed is None:
+                self.requesta.Speed = self.ptz.GetStatus(
+                    {'ProfileToken': self.media_profile.token}).Position
 
-        self.requests = self.ptz.create_type('Stop')
-        self.requests.ProfileToken = self.media_profile.token
-        self.requestp = self.ptz.create_type('SetPreset')
-        self.requestp.ProfileToken = self.media_profile.token
-        self.requestg = self.ptz.create_type('GotoPreset')
-        self.requestg.ProfileToken = self.media_profile.token
-        self.stop()
+            # get relativeMove request -- requestr
+            self.requestr = self.ptz.create_type('RelativeMove')
+            self.requestr.ProfileToken = self.media_profile.token
+            if self.requestr.Translation is None:
+                self.requestr.Translation = self.ptz.GetStatus(
+                    {'ProfileToken': self.media_profile.token}).Position
+                self.requestr.Translation.PanTilt.space = ptz_configuration_options.Spaces.RelativePanTiltTranslationSpace[0].URI
+                self.requestr.Translation.Zoom.space = ptz_configuration_options.Spaces.RelativeZoomTranslationSpace[0].URI
+            if self.requestr.Speed is None:
+                self.requestr.Speed = self.ptz.GetStatus(
+                    {'ProfileToken': self.media_profile.token}).Position
 
+            self.requests = self.ptz.create_type('Stop')
+            self.requests.ProfileToken = self.media_profile.token
+            self.requestp = self.ptz.create_type('SetPreset')
+            self.requestp.ProfileToken = self.media_profile.token
+            self.requestg = self.ptz.create_type('GotoPreset')
+            self.requestg.ProfileToken = self.media_profile.token
+            self.stop()
+        except Exception as e:
+            print("Error: ", e)
+            return False
+        
         return True
 
     # Stop pan, tilt and zoom
