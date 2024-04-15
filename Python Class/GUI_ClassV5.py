@@ -183,6 +183,83 @@ class GUI:
         self.diag_keys = 9 # 8.5
         self.diag_drop_down = 7 # 8.5
 
+    def auto_load_channels(self):
+        # read from file
+        channel_values = {}
+        i = 0
+        with open(file_path_Channel, 'r') as file:
+            for line in file:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    channel_name = parts[0].strip()
+                    value = parts[1].strip()
+                    channel_values[i] = value
+                    i = i + 1
+
+        print("-----------------------")
+        # # Assign values to variables
+        for i in range(1, 17):
+            print(i-1, ": ", channel_values[i-1])
+        print("-----------------------")
+
+        for i in range(1, 17):
+            selected_option = channel_values[i-1]
+            try:
+                self.channel[i-1] = self.channel_option_to_arduino[int(self.channel_options.index(selected_option))]
+                self.channel_config_naming[i-1] = int(self.channel_options.index(selected_option))
+            except:
+                self.channel[i-1] = -1
+                self.channel_config_naming[i-1] = -1
+        print(self.channel)
+        print(self.channel_config_naming)
+
+        if(self.board_batt == 1):
+            options = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+            options.append("Load Cells")
+
+            # Create a dropdown widget
+            self.dropdown.config(values=options)
+
+        self.controls.set_act_OR_motor(config = self.channel)
+
+    def auto_load_cameras(self):
+        # read from file
+        cam = [None] * 6
+        camera_values = {}
+        with open(file_path_IP, 'r') as file:
+            for line in file:
+                print(line)
+                parts = line.split(": ")
+                if len(parts) == 2:
+                    camera_name = parts[0].strip()
+                    value = parts[1].strip()
+                    camera_values[camera_name] = value
+
+        # Assign values to variables
+        cam[0] = camera_values.get("Camera 1")
+        cam[1] = camera_values.get("Camera 2")
+        cam[2] = camera_values.get("Camera 3")
+        cam[3] = camera_values.get("Camera 4")
+        cam[4] = camera_values.get("Camera 5")
+        cam[5] = camera_values.get("Camera 6")
+
+        # Print values
+        print("Cam1:", cam[0])
+        print("Cam2:", cam[1])
+        print("Cam3:", cam[2])
+        print("Cam4:", cam[3])
+        print("Cam5:", cam[4])
+        print("Cam6:", cam[5])
+
+        self.cam[0] = cam[0]
+        self.cam[1] = cam[1]
+        self.cam[2] = cam[2]
+        self.cam[3] = cam[3]
+        self.cam[4] = cam[4]
+        self.cam[5] = cam[5]
+        print("Camera 1: ", self.cam[0], "Camera 2: ", self.cam[1], "Camera 3: ", self.cam[2], "Camera 4: ", self.cam[3], "Camera 5: ", self.cam[4], "Camera 6: ", self.cam[5])
+        self.configured_camera_IPs = True
+
     def on_closing_popup(self):
         self.masterPOPUP.destroy()
         self.popup_gui_key = 0
@@ -241,9 +318,6 @@ class GUI:
                 if(self.dropdown_2):
                     self.dropdown_2.destroy()
                     self.dropdown_2 = None
-
-
-            
 
     # popups
     def popup_gui(self):
@@ -526,15 +600,15 @@ class GUI:
                     self.ptz = None
 
             if(ptzEnable[self.selected_camera] == False): # try to enable it
-                print("ptz setup: ", self.selected_camera)
+                # print("ptz setup: ", self.selected_camera)
                 ptzEnable[self.selected_camera] = ptz[self.selected_camera].ptz_setup(self.cam[self.selected_camera])
 
                 if(ptzEnable[self.selected_camera]):
-                    print("ptz enable")
+                    # print("ptz enable")
                     with self.lock_ptz:
                         self.ptz = ptz[self.selected_camera]
                 else:
-                    print("ptz disable")
+                    # print("ptz disable")
                     with self.lock_ptz:
                         self.ptz = None
 
@@ -1700,9 +1774,13 @@ class GUI:
         self.debounce.start()
 
     # setup for main gui
-    def set_up_Main_UI(self, battery, false_traffic=False, fullscreen = True):
+    def set_up_Main_UI(self, battery, controls, false_traffic=False, fullscreen = True):
+        self.controls = controls
         self.false_traffic = false_traffic
         self.battery = battery
+
+        self.auto_load_channels()
+        self.auto_load_cameras()
 
         self.root = Tk()
         if fullscreen:
@@ -1897,9 +1975,7 @@ class GUI:
         self.start_debugger()
 
     # loop function for main gui
-    def loop_Main_UI(self, controls, local_img, mode = 0, imu_image = None, popup = 0):
-        self.mode = mode
-        self.controls = controls
+    def loop_Main_UI(self, local_img, imu_image = None, popup = 0):
         self.popup = popup
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1923,7 +1999,7 @@ class GUI:
             self.label1['image'] = self.black_image_video_tk
 
         # Check if one second has passed since the last call to update_battery_diagnostics()
-        self.diagnostics_data_pygames(controls.get_diagnostics_array())
+        self.diagnostics_data_pygames(self.controls.get_diagnostics_array())
 
         # update diagnostics UI
         img_3 = self.update_pygames_screen(self.screenDiag)
@@ -1940,7 +2016,7 @@ class GUI:
                 self.label2['image'] = imu_image
 
         # check controls
-        self.update_ptz(controls.Get_Button_From_Controller("Dpad_Right"), controls.Get_Button_From_Controller("Dpad_Left"), controls.Get_Button_From_Controller("Dpad_Up"), controls.Get_Button_From_Controller("Dpad_Down"), controls.Get_Button_From_Controller("R1_Button"), controls.Get_Button_From_Controller("L1_Button"))
+        self.update_ptz(self.controls.Get_Button_From_Controller("Dpad_Right"), self.controls.Get_Button_From_Controller("Dpad_Left"), self.controls.Get_Button_From_Controller("Dpad_Up"), self.controls.Get_Button_From_Controller("Dpad_Down"), self.controls.Get_Button_From_Controller("R1_Button"), self.controls.Get_Button_From_Controller("L1_Button"))
 
         # update UI
         self.root.update()
@@ -1969,7 +2045,9 @@ class GUI:
             self.autonomy_manual_lock = self.autonomy_manual
             self.selected_channel_lock = self.selected_channel
 
-        return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key, self.manual_mode_lock, self.autonomy_manual_lock, self.selected_channel_lock
+        channel_names = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
+
+        return self.imgCV, self.position_IMU, self.calibrateM, self.up_key, self.down_key, self.autonomy_manual_lock, self.manual_mode_lock, self.selected_channel_lock, channel_names
 
     def release_main(self):
         self.cap.release()

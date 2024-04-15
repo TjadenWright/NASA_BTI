@@ -866,3 +866,83 @@ class Rover_Controls:
 
     def get_controls_array(self):
         return self.controls_vals
+    
+    def drive_controls(self, channel_names):
+        driveFR = None
+        driveFL = None
+        driveRR = None
+        driveRL = None
+
+        # get the channel number 
+        for i, name in enumerate(channel_names):
+            if "Front Left Drive Motor" in name:
+                driveFL = i
+            elif "Front Right Drive Motor" in name:
+                driveFR = i
+            elif "Rear Left Drive Motor" in name:
+                driveRL = i
+            elif "Rear Right Drive Motor" in name:
+                driveRR = i
+
+        print(channel_names)
+
+        print("driveFL: ", driveFL)
+        print("driveFR: ", driveFR)
+        print("driveRL: ", driveRL)
+        print("driveRR: ", driveRR)
+
+        # Controls_Names = ['Left_Joystick_X', 'Left_Joystick_Y', 'Right_Joystick_X', 'Right_Joystick_Y',
+        #                   'Dpad_Up', 'Dpad_Down', 'Dpad_Left', 'Dpad_Right', 'L2_Trigger', 'R2_Trigger',
+        #                   'A_Button', 'B_Button', 'Y_Button', 'X_Button', 'L1_Button', 'R1_Button',
+        #                   'Menu', 'Select', 'Left_Stick_In', 'Right_Stick_In']
+
+        right_x = self.Get_Button_From_Controller('Right_Joystick_X')
+        right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+        left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+
+        if(right_t > left_t):
+            direction = 1 # go forward
+        else:
+            direction = 0 # go back
+
+        trigger = max(right_t, left_t)
+
+        right_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+        left_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+
+        # Motor:
+        # self.controls_vals[0] = Motor Enable
+        # self.controls_vals[1] = ENable EFUSE
+        # self.controls_vals[2] = PWM
+        # self.controls_vals[3] = FR
+        # self.controls_vals[4] = BRAKE
+
+        # right
+        # front
+        self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveFR][2] = right_side_motors
+        self.controls_vals[driveFR][3] = direction
+        self.controls_vals[driveFR][4] = self.Get_Button_From_Controller('B_Button')
+
+        # rear
+        self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveRR][2] = right_side_motors
+        self.controls_vals[driveRR][3] = direction
+        self.controls_vals[driveRR][4] = self.Get_Button_From_Controller('B_Button')
+
+        # left
+        # front
+        self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveFL][2] = left_side_motors
+        self.controls_vals[driveFL][3] = direction
+        self.controls_vals[driveFL][4] = self.Get_Button_From_Controller('B_Button')
+
+        # rear
+        self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
+        self.controls_vals[driveRL][2] = left_side_motors
+        self.controls_vals[driveRL][3] = direction
+        self.controls_vals[driveRL][4] = self.Get_Button_From_Controller('B_Button')

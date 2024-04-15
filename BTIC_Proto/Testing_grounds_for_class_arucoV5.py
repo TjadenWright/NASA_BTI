@@ -169,14 +169,15 @@ a1.calibrated_cam_data() # add calibrated data to camera
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
 # main gui
-g1.set_up_Main_UI(b1, Fake_traffic, Fullscreen)
+g1.set_up_Main_UI(b1, rc1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
-    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel = g1.loop_Main_UI(controls=rc1, local_img=img_Localization, mode=mode, imu_image=None, popup=popup)
+    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=None, popup=popup)
 
+    print(mode, manual_mode, manual_mode_channel)
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
 
@@ -208,8 +209,11 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 
     # different modes (manual vs auto)
     if(mode == 0): # manual mode
+        # print("manual mode!")
         if(manual_mode == 0):
             rc1.control_motor_OR_actutor(channel_Numb = manual_mode_channel+1, select = rc1.get_act_OR_motor()[manual_mode_channel], verbose = False)
+        elif(manual_mode == 1):
+            rc1.drive_controls(channel_names)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):
         #     print("Manual Mode")

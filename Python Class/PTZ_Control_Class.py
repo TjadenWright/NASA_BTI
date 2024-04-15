@@ -16,10 +16,10 @@ class ptzControl():
             # Get the IP address from the parsed URL
             ip_address = parsed_url.hostname
 
-            print("This is PTZ: ")
-            print("Username:", username)
-            print("Password:", password)
-            print("IP Address:", ip_address)
+            # print("This is PTZ: ")
+            # print("Username:", username)
+            # print("Password:", password)
+            # print("IP Address:", ip_address)
 
             return username, password, ip_address
 
