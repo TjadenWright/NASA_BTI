@@ -39,7 +39,7 @@ void scanFunc( byte addr, byte result ) {
 
 
 byte start_address = 8;       // lower addresses are reserved to prevent conflicts with other protocols
-byte end_address = 200;       // higher addresses unlock other modes, like 10-bit addressing
+byte end_address = 128;       // higher addresses unlock other modes, like 10-bit addressing
 
 void setup(){
     Serial.begin(9600);                   // Changed from 19200 to 9600 which seems to be default for Arduino serial monitor
