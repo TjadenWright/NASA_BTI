@@ -55,7 +55,7 @@
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
 | Motor Enable | PCF8574_0 (P1) | OUT |Channels 0-14 | Channels 1-15 |
-| EFUSE_EN | PCF8574_1 (P0) | OUT | Channels 0-14 | Channels 1-15 |
+| EFUSE_EN | PCF8574_1 (P1) | OUT | Channels 0-14 | Channels 1-15 |
 | PWM | Arduin Pin | OUT | Channels 0-14 | Channels 1-15 | 
 | FR | PCF8574_0 (P0) | OUT	| Channels 0-14	| Channels 1-15 |
 | BREAK	| PCF8574_1 (P2) | OUT | Channels 0-14	| Channels 1-15 |
@@ -63,17 +63,17 @@
 ### Table 2b. Motor Board Diagnostics
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
-| ALARM	| PCF8574_0 (P4) | IN |	Channels 0-14 | Channels 1-15 |
+| ALARM	| PCF8574_0 (P3) | IN |	Channels 0-14 | Channels 1-15 |
 | BOARD TEMP | TMP1075DR | IN | Channels 0-14 | Channels 1-15 |
 | CURRENT | ADS1219 (Channel 2)	| IN | Channels 0-14 | Channels 1-15 |
-| OC FAULT	| PCF8574_1 (P1) | IN | Channels 0-14 | Channels 1-15 |
+| OC FAULT	| PCF8574_1 (P2) | IN | Channels 0-14 | Channels 1-15 |
 | SPEED	| ADS1219 (Channel 1) | IN | Channels 0-14 | Channels 1-15 |
 
 
 ### Table 3a. Actuator Board Controls
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
-| EFUSE_EN | PCF8574_1 (P0) | OUT | Channels 0-14 | Channels 1-15 |
+| EFUSE_EN | PCF8574_1 (P1) | OUT | Channels 0-14 | Channels 1-15 |
 | PWM | Arduin Pin | OUT | Channels 0-14 | Channels 1-15 | 
 | FR | PCF8574_0 (P6, P5, and P7) | OUT	| Channels 0-14	| Channels 1-15 |
 
@@ -82,14 +82,14 @@
 | ----------| ------ |-----------| ------------------- | ---------------- |
 | BOARD TEMP | TMP1075DR | IN | Channels 0-14 | Channels 1-15 |
 | CURRENT | ADS1219 (Channel 2)	| IN | Channels 0-14 | Channels 1-15 |
-| OC FAULT	| PCF8574_1 (P1) | IN | Channels 0-14 | Channels 1-15 |
+| OC FAULT	| PCF8574_1 (P2) | IN | Channels 0-14 | Channels 1-15 |
 | FEEDBACK	| ADS1219 (Channel 0) | IN | Channels 0-14 | Channels 1-15 |
 
 ### Table 4a. Slew Gear Board Controls
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
 | Motor Enable | PCF8574_0 (P1) | OUT |Channels 0-14 | Channels 1-15 |
-| EFUSE_EN | PCF8574_1 (P0) | OUT | Channels 0-14 | Channels 1-15 |
+| EFUSE_EN | PCF8574_1 (P1) | OUT | Channels 0-14 | Channels 1-15 |
 | PWM | Arduin Pin | OUT | Channels 0-14 | Channels 1-15 | 
 | FR | PCF8574_0 (P0) | OUT	| Channels 0-14	| Channels 1-15 |
 | BREAK	| PCF8574_1 (P2) | OUT | Channels 0-14	| Channels 1-15 |
@@ -97,9 +97,9 @@
 ### Table 4b. Slew Gear Board Diagnostics
 | ICs Data  | Device | IN or OUT | Motherboard Channel | Software Channel |
 | ----------| ------ |-----------| ------------------- | ---------------- |
-| ALARM	| PCF8574_0 (P4) | IN |	Channels 0-14 | Channels 1-15 |
+| ALARM	| PCF8574_0 (P3) | IN |	Channels 0-14 | Channels 1-15 |
 | BOARD TEMP | TMP1075DR | IN | Channels 0-14 | Channels 1-15 |
 | CURRENT | ADS1219 (Channel 2)	| IN | Channels 0-14 | Channels 1-15 |
-| OC FAULT	| PCF8574_1 (P1) | IN | Channels 0-14 | Channels 1-15 |
+| OC FAULT	| PCF8574_1 (P2) | IN | Channels 0-14 | Channels 1-15 |
 | FEEDBACK	| ADS1219 (Channel 0) | IN | Channels 0-14 | Channels 1-15 |
 
