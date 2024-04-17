@@ -177,7 +177,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
     opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=None, popup=popup)
 
-    print(mode, manual_mode, manual_mode_channel)
+    # print(mode, manual_mode, manual_mode_channel)
     # # get location from opencv
     x_calc, y_calc, z_calc, dist, ids, rVx, rVy, rVz = a1.aruco_tags(pic_out=False, Frame=opencv_img) # <--- if you want a picture to be dispayed.
 

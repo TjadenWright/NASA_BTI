@@ -166,7 +166,7 @@ class GUI:
         self.position_IMU = 0
         
         # previous popup
-        self.prev_popup = -1
+        self.prev_popup = 0
 
         # Font
         self.font = pygame.font.Font(None, 36)
@@ -599,20 +599,20 @@ class GUI:
                 with self.lock_ptz:
                     self.ptz = None
 
-            if(ptzEnable[self.selected_camera] == False): # try to enable it
-                # print("ptz setup: ", self.selected_camera)
-                ptzEnable[self.selected_camera] = ptz[self.selected_camera].ptz_setup(self.cam[self.selected_camera])
+            if(ptzEnable[current_camera] == False): # try to enable it
+                print("ptz setup: ", current_camera)
+                ptzEnable[current_camera] = ptz[current_camera].ptz_setup(self.cam[current_camera])
 
-                if(ptzEnable[self.selected_camera]):
-                    # print("ptz enable")
+                if(ptzEnable[current_camera]):
+                    print("ptz enable")
                     with self.lock_ptz:
-                        self.ptz = ptz[self.selected_camera]
+                        self.ptz = ptz[current_camera]
                 else:
-                    # print("ptz disable")
+                    print("ptz disable")
                     with self.lock_ptz:
                         self.ptz = None
 
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def start_ptz_thread(self):
         self.ptz_thread = threading.Thread(target=self.ptz_controls, name="ptz_controller thread")
@@ -2044,6 +2044,8 @@ class GUI:
             self.manual_mode_lock = self.manual_mode
             self.autonomy_manual_lock = self.autonomy_manual
             self.selected_channel_lock = self.selected_channel
+
+        self.mode = self.autonomy_manual # old autonomy feed code
 
         channel_names = ["Channel " + str(i) + " - " + self.channel_options[self.channel_config_naming[i]] for i in range(16)]
 
