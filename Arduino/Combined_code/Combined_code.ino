@@ -11,7 +11,7 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte true // true -> arduino mega / false -> latte
+#define Arduino_or_latte false // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
 #define MAX_CURRENT 5.08 // 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
@@ -76,6 +76,7 @@ VNH7070 vnh(0x38);
 // I2C ADC //
 /////////////
 ADS1219 ads(P4);
+ADS1219 ads_mother(P3);
 
 /////////////
 // I2C MUX //
@@ -136,30 +137,38 @@ void setup() {
       ////////////////////
       // GPIO Expanders //
       ////////////////////
-      if(i != max_channels - 1 || Arduino_or_latte){ // motor/actuator only on arduino
+      if(i != max_channels - 1 || Arduino_or_latte){ // motor/actuator
         // Set the pinModes for left expander in schematic
         pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
         pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
         pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
         pcf8574_Controls20.pinMode(P3, INPUT); // Alarm from Motor 
-        // PIN3 is being used in ADC for DRDY (already setup in the function) // alarm
+        pcf8574_Controls20.begin();
+        // PIN4 is being used in ADC for DRDY (already setup in the function) // alarm
         // drdy
         // PIN5-7 are already used in the VNH7070 function
+        
+        // Set the pinModes for right expander in schematic
+        pcf8574_Controls21.pinMode(P0, INPUT); // Over "Temperature" Alert 
+        pcf8574_Controls21.pinMode(P1, OUTPUT); // Enable Efuse
+        pcf8574_Controls21.pinMode(P2, INPUT); // Over current fault
+        pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
+        // Reset of the pins are not used
+        pcf8574_Controls21.begin();
+
+        pcf8574_Controls21.digitalWrite(P6, HIGH);
+        pcf8574_Controls21.digitalWrite(P1, LOW); // default efuse disable
       }
       else{ //motherboard
         pcf8574_Controls20.pinMode(P0, INPUT); // Over Temperature alert
-        pcf8574_Controls20.pinMode(P1, OUTPUT); // EFUSE_EN (not going to use since it will turn off the computer)
+        // pcf8574_Controls20.pinMode(P1, OUTPUT); // EFUSE_EN (not going to use since it will turn off the computer)
         pcf8574_Controls20.pinMode(P2, INPUT); // OC Fault
-      }
-      pcf8574_Controls20.begin();
+        // PIN3 is being used in ADC for DRDY (already setup in the function) // alarm
+        pcf8574_Controls20.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
+        pcf8574_Controls20.begin();
 
-      // Set the pinModes for right expander in schematic
-      pcf8574_Controls21.pinMode(P0, INPUT); // Over "Temperature" Alert 
-      pcf8574_Controls21.pinMode(P1, OUTPUT); // Enable Efuse
-      pcf8574_Controls21.pinMode(P2, INPUT); // Over current fault
-      pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
-      // Reset of the pins are not used
-      pcf8574_Controls21.begin();
+        pcf8574_Controls20.digitalWrite(P6, HIGH); // on the motherboard
+      }
 
       ////////////////////////////
       // I2C temperature sensor //
@@ -170,17 +179,26 @@ void setup() {
       //////////////
       // H-bridge //
       //////////////
-      vnh.begin();
+      if(i != max_channels - 1 || Arduino_or_latte){
+        vnh.begin();
+      }
 
       /////////////
       // I2C ADC //
       /////////////
-      ads.begin();
-      // Set some stuff for ADC
-      ads.setVoltageReference(REF_EXTERNAL);
-      ads.setConversionMode(CONTINUOUS);
-      if(i == max_channels - 1){ // motherboard
-        ads.readSingleEnded(3, 1); // start the conversion of 3 since it will always convert (never need to change)
+      if(i != max_channels - 1 || Arduino_or_latte){ // motor/actuator
+        ads.begin();
+        // Set some stuff for ADC
+        ads.setVoltageReference(REF_EXTERNAL);
+        ads.setConversionMode(CONTINUOUS);
+      }
+      else{ // motherboard
+        ads_mother.begin();
+        // Set some stuff for ADC
+        ads_mother.setVoltageReference(REF_EXTERNAL);
+        ads_mother.setConversionMode(CONTINUOUS);
+        
+        ads_mother.readSingleEnded(3, 1); // start the conversion of 3 since it will always convert (never need to change)
       }
       // A1 feedback, A2 SPEED, A3 Current
 
@@ -735,7 +753,7 @@ void diagnostics_motherboard(String command_from_python){
 
   // diagnostics for motherboard .. 
   // alarm print
-  Serial.print(pcf8574_Controls20.digitalRead(P3)); // Alarm from Motor
+  Serial.print(pcf8574_Controls20.digitalRead(P0)); // Alarm from Motor
   Serial.print(" ");
 
   // temp
@@ -744,7 +762,7 @@ void diagnostics_motherboard(String command_from_python){
   Serial.print(" ");
 
   // current
-  Serial.print(ads.readSingleEnded(3, 0)*MAX_CURRENT/pow(2,23),5);
+  Serial.print(ads_mother.readSingleEnded(3, 0)*MAX_CURRENT/pow(2,23),5);
   Serial.print(" ");
 
   // OC fault

@@ -44,7 +44,7 @@ time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to a
 Vmax = 0.5                                 # <--- maximum velocity of the rover 0 to 1.
 
 #### Diagnotic Data Values to Change ####
-Fake_traffic = True
+Fake_traffic = False
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -52,7 +52,7 @@ zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
 img_Localization = None # start of image at nothing (don't change)
 
-enable_arduino = False
+enable_arduino = True
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
@@ -137,7 +137,7 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 
 #### setup communication with the arduino ####
 if enable_arduino:
-    rc1.Enable_Write_arduino(index = 0, arduino_name = "USB-SERIAL CH340", baud_rate = 115200)
+    rc1.Enable_Write_arduino(index = 0, arduino_name = "Mega", baud_rate = 115200)
     rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
     rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3

@@ -1,4 +1,4 @@
-Channel 1: Rear Auger Motor
+Channel 1: Battery Push 1 Actuator
 Channel 2: Front Right Drive Motor
 Channel 3: Rear Left Drive Motor
 Channel 4: Rear Right Drive Motor
