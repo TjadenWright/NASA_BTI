@@ -265,7 +265,7 @@ class Rover_Controls:
 
         left_side_motors = self.maximum_voltage*speed*(1.0-max(Direction, 0))
         right_side_motors = self.maximum_voltage*speed*(1.0+min(Direction, 0))
-
+        
         return [int(left_side_motors), int(right_side_motors), direction]
 
     def Controller_To_PWM_and_DIR(self):

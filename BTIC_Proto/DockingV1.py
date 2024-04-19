@@ -54,6 +54,7 @@ img_Localization = None # start of image at nothing (don't change)
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
+Fullscreen = False
 
 #### Values to not Change ####
 # Initialize your variables
@@ -61,7 +62,7 @@ move = 0
 prev_calib = False
 
 # toggle variables for selecting mode (manual vs auto)
-mode = 0
+mode = 1
 Select = 0
 prev_Select = 0
 
@@ -70,9 +71,10 @@ calib = False
 calibrate = False
 
 # Autonomous Docking Variables
-Tstep = 0.05 # How far in front of the rover you'd like to target. Smaller will be smoother and slower. Default 0.05
-DockingTag = 100 #The ID of the tag that we are using to dock 
-
+Tstep = 0.1 # How far in front of the rover you'd like to target. Smaller will be smoother and slower. Default 0.05
+DockingTag = 7 #The ID of the tag that we are using to dock 
+Docking = False # need to have this as a global variable, init as false
+last_spotted_time = 0 #??
 # Pre-calc Bernstein Polynomial Coefficients, defined by math, don't change
 Bstein0 = -(Tstep**3) + 3*(Tstep**2) -3*Tstep +1
 Bstein1 = 3*(Tstep**3) -6*(Tstep**2) +3*Tstep
@@ -159,6 +161,9 @@ a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go
 g1.set_up_Main_UI(b1, Fake_traffic)
 
 # run the code for manual and automatic.
+def new_func(Center_spot, ids, Velocity, x, y, angle, Direction):
+    print("x: ", round(x-Center_spot,2), "y: ", round(y,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
+
 while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
     opencv_img, local_enable, calibrateM, up_key, down_key = g1.loop_Main_UI(rc1, img_Localization, mode)
@@ -226,26 +231,22 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                     DockingIndex = tag_to_move_to
                     DockX = x_calc[tag_to_move_to]
                     DockY = y_calc[tag_to_move_to]
-                    DockD = dist[DockingIndex]
+                    DockRz = rVz[tag_to_move_to]
             else:
                 tag_to_move_to = -1
                 spotted = False
-            if(tag_to_move_to != -1 & Docking == True):
-                #Assuming global Coordinates
-                # Assuming Distance is from Camera to Tag
-                P3x = 0
-                P3y = 0
-                # Changing docking Tag to (0,0)
-                DockingTheta = math.atan2(DockY/DockX) # get theta
-                P0x = DockD*math.cos(DockingTheta) - DockX
-                P0y = DockD*math.cos(DockingTheta) - DockY
+
+            if(tag_to_move_to != -1 and Docking == True):
+                P0x = 0
+                P0y = 0
                 P1x = math.cos(DockingTheta)/3 + P0x
                 P1y = math.sin(DockingTheta)/3 + P0y
                 P2x = P0x/10
                 P2y = P0y - 5*(P0y/abs(P0y))
                 x_new = P0x*Bstein0+P1x*Bstein1+P2x*Bstein2 + DockX
                 y_new = P0y*Bstein0+P1y*Bstein1+P2y*Bstein2 + DockY
-                 
+
+
             elif(tag_to_move_to != -1):
                 x_new = x_calc[tag_to_move_to]
                 y_new = y_calc[tag_to_move_to]
@@ -271,22 +272,33 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                 x = 0
                 y = 0
                 Velocity = 0
-
+            
             # Calculate the angle to the target (in radians)
-            angle = math.atan2(y, x-Center_spot) # find the angle
+            if(Docking == 0):
+                angle = math.atan2(y, x-Center_spot) # find the angle
+            else:
+                angle = 3.14 + math.atan2(y, x) # find the angle
             # 1.18 to 1.96
-
+            if(Docking == 1):
+                print("Premod Angle: ", round(angle,2))
             # max and min of angles
-            if(angle > 1.96):
-                angle = 1.96
-            elif(angle < 1.18):
-                angle = 1.18
+            if(Docking == 0):
+                if(angle > 1.96):
+                    angle = 1.96
+                elif(angle < 1.18):
+                    angle = 1.18
+                unit = scale_range(angle, 1.18, 1.96, -1, 1)
+            else:
+                if(angle > 3*3.14/4):
+                    angle = 3*3.14/4
+                elif(angle < 3.14/4):
+                    angle = 3.14/4
+                unit = scale_range(angle, 3.14/4, 3*3.14/4, -1, 1)
 
-            unit = scale_range(angle, 1.18, 1.96, -1, 1)
-
+            
             Direction = unit
 
-            print("x: ", round(x-Center_spot,2), "y: ", round(y,2), "angle: ", round(angle,2), "dir: ", round(Direction,2), "vel", round(Velocity,2), "ids: ", ids)
+            new_func(Center_spot, ids, Velocity, x, y, angle, Direction)
 
             # send out data to the arduino
             rc1.Write_message(data=rc1.Motor_PWM(Direction, Velocity)) # send PWM data to the arduino
