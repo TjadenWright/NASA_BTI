@@ -198,7 +198,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
         calibrate = True
 
     # get the button to change mode
-    Manual_Auto = rc1.Get_Button_From_Controller(stop_button="A_Button") # A button is pressed or not
+    Manual_Auto = rc1.Get_Button_From_Controller(stop_button="Select") # A button is pressed or not
 
     # toggle the mode
     if Manual_Auto == 1 and prev_Manual_Auto == 0:
