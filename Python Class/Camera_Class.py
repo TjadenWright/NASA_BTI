@@ -16,9 +16,10 @@ class Amcrest_Camera:
             # Remove the username and password from the netloc
             netloc_without_auth = parsed_url.netloc.replace(f"{username}:{password}@", "", 1)
 
-            print("Username:", username)
-            print("Password:", password)
-            print("Remaining URL:", parsed_url._replace(netloc=netloc_without_auth).geturl())
+            # print("This is Camera: ")
+            # print("Username:", username)
+            # print("Password:", password)
+            # print("Remaining URL:", parsed_url._replace(netloc=netloc_without_auth).geturl())
 
             return username, password, parsed_url._replace(netloc=netloc_without_auth).geturl()
 

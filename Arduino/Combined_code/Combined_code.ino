@@ -11,10 +11,10 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte false // true -> arduino mega / false -> latte
+#define Arduino_or_latte true // true -> arduino mega / false -> latte
 
 #define MAX_SPEED 4.96
-#define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
+#define MAX_CURRENT 5.08 // 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
 String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "dMotherboard", "dTempAndLC", "dIMU"}; 
@@ -40,7 +40,7 @@ const uint8_t max_channels = 8; // for commands channel# doesn't count
 const uint8_t max_input_outputs = 6;
 
 // PWM channel pins
-uint8_t Mega[max_channels] = {12, 6, 10, 11, 8, 9, 7, 13}; // 12, 13, 10, 11, 8, 9, 7, 6
+uint8_t Mega[max_channels] = {12, 13, 10, 11, 8, 9, 7, 6}; // 12, 13, 10, 11, 8, 9, 7, 6
 // Mega reset = 5
 uint8_t Panda[max_channels] = {13, 12, 11, 10, 9, 8, 7, 254}; // (negative one is a place holder)
 // Panda reset = 4
@@ -58,8 +58,8 @@ int16_t vals[max_channels][6];
 ////////////////////
 // GPIO Expanders //
 ////////////////////
-PCF8574 pcf8574_Controls20(0x20);
-PCF8574 pcf8574_Controls21(0x21);
+PCF8574 pcf8574_Controls20(0x38);
+PCF8574 pcf8574_Controls21(0x39);
 
 ////////////////////////////
 // I2C temperature sensor //
@@ -70,12 +70,12 @@ TMP1075::TMP1075 tmp1075 = TMP1075::TMP1075(wire);    // The library uses the na
 //////////////
 // H-bridge //
 //////////////
-VNH7070 vnh(0x20);
+VNH7070 vnh(0x38);
 
 /////////////
 // I2C ADC //
 /////////////
-ADS1219 ads(P3);
+ADS1219 ads(P4);
 
 /////////////
 // I2C MUX //
@@ -141,8 +141,9 @@ void setup() {
         pcf8574_Controls20.pinMode(P0, OUTPUT); // Forward/Reverse
         pcf8574_Controls20.pinMode(P1, OUTPUT); // Motor Enable
         pcf8574_Controls20.pinMode(P2, OUTPUT); // Brake
-        // PIN3 is being used in ADC for DRDY (already setup in the function)
-        pcf8574_Controls20.pinMode(P4, INPUT); // Alarm from Motor
+        pcf8574_Controls20.pinMode(P3, INPUT); // Alarm from Motor 
+        // PIN3 is being used in ADC for DRDY (already setup in the function) // alarm
+        // drdy
         // PIN5-7 are already used in the VNH7070 function
       }
       else{ //motherboard
@@ -153,9 +154,9 @@ void setup() {
       pcf8574_Controls20.begin();
 
       // Set the pinModes for right expander in schematic
-      pcf8574_Controls21.pinMode(P0, OUTPUT); // Enable Efuse
-      pcf8574_Controls21.pinMode(P1, INPUT); // Over current fault
-      pcf8574_Controls21.pinMode(P2, INPUT); // Over "Temperature" Alert 
+      pcf8574_Controls21.pinMode(P0, INPUT); // Over "Temperature" Alert 
+      pcf8574_Controls21.pinMode(P1, OUTPUT); // Enable Efuse
+      pcf8574_Controls21.pinMode(P2, INPUT); // Over current fault
       pcf8574_Controls21.pinMode(P6, OUTPUT); // RESET ADC (just tie high use)
       // Reset of the pins are not used
       pcf8574_Controls21.begin();
@@ -354,7 +355,7 @@ void control_motor(String command_from_python){
   if(vals[Channel-Channel_Offset][1] != EN_EFUSE){
     if(TestArduinoScript)
       Serial.println("EN_EFUSE");
-    pcf8574_Controls21.digitalWrite(P0, EN_EFUSE); // Enable Efuse
+    pcf8574_Controls21.digitalWrite(P1, EN_EFUSE); // Enable Efuse
     vals[Channel-Channel_Offset][1] = EN_EFUSE;
   }
 
@@ -442,7 +443,7 @@ void control_actuator(String command_from_python){
   if(vals[Channel-Channel_Offset][0] != EN_EFUSE){
     if(TestArduinoScript)
       Serial.println("EN_EFUSE");
-    pcf8574_Controls21.digitalWrite(P0, EN_EFUSE); // Enable Efuse
+    pcf8574_Controls21.digitalWrite(P1, EN_EFUSE); // Enable Efuse
     vals[Channel-Channel_Offset][0] = EN_EFUSE;
   }
 
@@ -555,7 +556,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
 
   if(Speed_bool == false){
     // alarm print
-    Serial.print(pcf8574_Controls20.digitalRead(P4)); // Alarm from Motor
+    Serial.print(pcf8574_Controls20.digitalRead(P3)); // Alarm from Motor
     Serial.print(" ");
 
     // temp
@@ -568,7 +569,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool){
     Serial.print(" ");
 
     // OC fault
-    Serial.println(pcf8574_Controls21.digitalRead(P1)); // Over current fault
+    Serial.println(pcf8574_Controls21.digitalRead(P2)); // Over current fault
   }
   else{
     // speed
@@ -655,7 +656,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F){
     Serial.print(" ");
 
     // OC fault
-    Serial.println(pcf8574_Controls21.digitalRead(P1)); // Over current fault
+    Serial.println(pcf8574_Controls21.digitalRead(P2)); // Over current fault
   }
   else{
     // feedback
@@ -734,7 +735,7 @@ void diagnostics_motherboard(String command_from_python){
 
   // diagnostics for motherboard .. 
   // alarm print
-  Serial.print(pcf8574_Controls20.digitalRead(P0)); // Alarm from Motor
+  Serial.print(pcf8574_Controls20.digitalRead(P3)); // Alarm from Motor
   Serial.print(" ");
 
   // temp
