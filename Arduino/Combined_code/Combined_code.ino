@@ -134,6 +134,13 @@ void setup() {
     for(uint8_t i = 0; i < max_channels; i++){
       I2CMux.closeAll();              // Set a base state which we know (also the default state on power on)
       I2CMux.openChannel(i);
+      //////////////
+      // H-bridge //
+      //////////////
+      if(i != max_channels - 1 || Arduino_or_latte){
+        vnh.begin();
+      }
+
       ////////////////////
       // GPIO Expanders //
       ////////////////////
@@ -175,13 +182,6 @@ void setup() {
       ////////////////////////////
       wire.begin(0x48);  // See definition of wire above
       tmp1075.begin();  // Syncs the config register
-
-      //////////////
-      // H-bridge //
-      //////////////
-      if(i != max_channels - 1 || Arduino_or_latte){
-        vnh.begin();
-      }
 
       /////////////
       // I2C ADC //
