@@ -172,7 +172,7 @@ a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go
 g1.set_up_Main_UI(b1, rc1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
-while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while (not rc1.Get_Button_From_Controller("Menu")) and (not rc1.Get_Button_From_Controller("Select")):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
     opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=None, popup=popup)
