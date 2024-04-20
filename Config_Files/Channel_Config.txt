@@ -1,16 +1,16 @@
-Channel 1: Battery Push 1 Actuator
-Channel 2: Front Right Drive Motor
-Channel 3: Rear Left Drive Motor
-Channel 4: Rear Right Drive Motor
-Channel 5: Pivot Slew Gear
-Channel 6: Pivot Slew Gear
-Channel 7: Battery Lock 1 Actuator
-Channel 8: Battery Lock 1 Actuator
-Channel 9: Front Left Drive Motor
-Channel 10: Bucketwheel Motor
+Channel 1: Front Left Drive Motor
+Channel 2: Front Left Drive Motor
+Channel 3: Front Left Drive Motor
+Channel 4: Front Left Drive Motor
+Channel 5: Front Left Drive Motor
+Channel 6: Front Left Drive Motor
+Channel 7: Front Left Drive Motor
+Channel 8: Front Left Drive Motor
+Channel 9: Front Right Drive Motor
+Channel 10: Rear Left Drive Motor
 Channel 11: Rear Right Drive Motor
-Channel 12: Battery Lock 2 Actuator
-Channel 13: Front Auger Motor
-Channel 14: Pivot Slew Gear
-Channel 15: Battery Push 1 Actuator
-Channel 16: IMU and Motherboard
+Channel 12: Bucketwheel Motor
+Channel 13: Front Left Drive Motor
+Channel 14: Front Left Drive Motor
+Channel 15: Front Left Drive Motor
+Channel 16: Front Left Drive Motor

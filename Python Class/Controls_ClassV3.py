@@ -8,6 +8,7 @@ from pygame.locals import *
 import sys
 import numpy as np
 import threading
+from PIL import Image, ImageTk
 
 class Rover_Controls:
     def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
@@ -789,6 +790,33 @@ class Rover_Controls:
     def stop_thread(self):
         self.run_thread = False
 
+    def init_pygame(self, Output_Res=(1280, 720)):
+        self.Output_Res = Output_Res
+        self.screen = pygame.Surface(self.Output_Res)
+        self.font = pygame.font.Font(None, 36)
+
+        # Initialize Pygame screen
+        self.screen.fill((0, 0, 0))
+
+        self.clock = pygame.time.Clock()
+
+    def update_pygames_screen(self):
+        # Update Pygame screen
+        # pygame.display.flip()
+        """Convert Pygame surface to PIL image."""
+        image_str = pygame.image.tostring(self.screen, 'RGB')
+        width, height = self.screen.get_size()
+        img = Image.frombytes('RGB', (width, height), image_str)
+        img_tk = ImageTk.PhotoImage(image=img)
+
+        self.clock.tick(60)
+        # end program 
+        return img_tk
+    
+    def handler(self): 
+        # clear pygame screen
+        self.screen.fill((0, 0, 0))
+
     def control_motor_OR_actutor(self, channel_Numb, select, verbose = False):
         # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
         # def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
@@ -818,13 +846,13 @@ class Rover_Controls:
 
         motor_speed = self.maximum_voltage*trigger
 
-        if(select == 0):
+        if(select == 0 or select == 2):
             if(self.controller): # if the controller is connected
                 self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[channel_Numb-1][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[channel_Numb-1][2] = motor_speed
                 self.controls_vals[channel_Numb-1][3] = direction
-                self.controls_vals[channel_Numb-1][4] = self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[channel_Numb-1][4] = not self.Get_Button_From_Controller('B_Button')
             else:
                 self.controls_vals[channel_Numb-1][0] = 0
                 self.controls_vals[channel_Numb-1][1] = 0
@@ -840,6 +868,25 @@ class Rover_Controls:
                 print("FR: ", self.controls_vals[channel_Numb-1][3])
                 print("BRAKE: ", self.controls_vals[channel_Numb-1][4])
                 print("-----------------------------")
+
+            signals = ['CHANNEL', 'EN', 'EN_EFUSE', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2], self.controls_vals[channel_Numb-1][3], self.controls_vals[channel_Numb-1][4]]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.font.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.font.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 50
 
         # Actuator:
         # self.controls_vals[0] = ENable EFUSE
@@ -863,6 +910,25 @@ class Rover_Controls:
                 print("PWM: ", self.controls_vals[channel_Numb-1][1])
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
                 print("-----------------------------")
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR']
+            signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2]]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.font.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.font.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 50
 
     def get_controls_array(self):
         return self.controls_vals

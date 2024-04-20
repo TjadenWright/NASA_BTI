@@ -44,7 +44,8 @@ time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to a
 Vmax = 0.5                                 # <--- maximum velocity of the rover 0 to 1.
 
 #### Diagnotic Data Values to Change ####
-Fake_traffic = False
+Fake_traffic = True
+img_diangostics = None
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -52,7 +53,7 @@ zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
 img_Localization = None # start of image at nothing (don't change)
 
-enable_arduino = True
+enable_arduino = False
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
@@ -159,6 +160,9 @@ if(not Fake_traffic):
 g1 = GUI()
 vid_w, vid_h, local_w, local_h = g1.set_screen() #1350, 780
 
+#### setup pygames controls ####
+rc1.init_pygame(Output_Res=(local_w, local_h))
+
 #### intialize localization ####
 l1 = localization(scaling_factor=scaling_factor, zoom_factor=zoom_factor, zoom_step=zoom_step, Output_Res=(local_w, local_h))
 l1.init_pygame()
@@ -172,10 +176,10 @@ a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go
 g1.set_up_Main_UI(b1, rc1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
-while (not rc1.Get_Button_From_Controller("Menu")) and (not rc1.Get_Button_From_Controller("Select")):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while (not rc1.Get_Button_From_Controller("Menu")):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
-    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=None, popup=popup)
+    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=img_diangostics, popup=popup)
 
     # print(mode, manual_mode, manual_mode_channel)
     # # get location from opencv
@@ -189,6 +193,7 @@ while (not rc1.Get_Button_From_Controller("Menu")) and (not rc1.Get_Button_From_
 
     # handels different key presses
     l1.handler()
+    rc1.handler()
 
     # handler for controller disconnection
     connected = rc1.handle_events()
@@ -296,6 +301,7 @@ while (not rc1.Get_Button_From_Controller("Menu")) and (not rc1.Get_Button_From_
     l1.legend()
 
     end, img_Localization = l1.update_pygames_screen()
+    img_diangostics = rc1.update_pygames_screen()
 
     # quit the program
     if a1.wait_key("q") or end:
