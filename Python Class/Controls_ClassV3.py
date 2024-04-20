@@ -57,6 +57,8 @@ class Rover_Controls:
         # more diagnostics
         self.start = [0] * 2
 
+        self.last_flip_time = 0  # Track the time of the last flip
+
     
     def setup_USB_Controller(self, controller_numb = 0):
         if(self.controller == False):
@@ -817,6 +819,10 @@ class Rover_Controls:
         # clear pygame screen
         self.screen.fill((0, 0, 0))
 
+    def can_flip(self):
+        # Check if at least 100 milliseconds have passed since the last flip
+        return pygame.time.get_ticks() - self.last_flip_time >= 500
+
     def control_motor_OR_actutor(self, channel_Numb, select, verbose = False):
         # def control_motor_arduino_command(self, Channel_Numb, EN, EN_EFUSE, PWM, FR, BRAKE, index):
         # def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
@@ -848,8 +854,11 @@ class Rover_Controls:
 
         if(select == 0 or select == 2):
             if(self.controller): # if the controller is connected
-                self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
-                self.controls_vals[channel_Numb-1][1] = not self.Get_Button_From_Controller('X_Button')
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('X_Button')):
+                        self.controls_vals[channel_Numb-1][0] = not self.controls_vals[channel_Numb-1][0]
+                        self.controls_vals[channel_Numb-1][1] = not self.controls_vals[channel_Numb-1][1]
+                        self.last_flip_time = pygame.time.get_ticks()
                 self.controls_vals[channel_Numb-1][2] = motor_speed
                 self.controls_vals[channel_Numb-1][3] = direction
                 self.controls_vals[channel_Numb-1][4] = not self.Get_Button_From_Controller('B_Button')
@@ -896,7 +905,10 @@ class Rover_Controls:
                 
         elif(select == 1):
             if(self.controller): # if the controller is connected
-                self.controls_vals[channel_Numb-1][0] = not self.Get_Button_From_Controller('X_Button')
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('X_Button')):
+                        self.controls_vals[channel_Numb-1][0] = not self.controls_vals[channel_Numb-1][0]
+                        self.last_flip_time = pygame.time.get_ticks()
                 self.controls_vals[channel_Numb-1][1] = motor_speed
                 self.controls_vals[channel_Numb-1][2] = direction
             else:
