@@ -11,7 +11,7 @@ import threading
 from PIL import Image, ImageTk
 
 class Rover_Controls:
-    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = False, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
+    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
         # print out stuff
         self.verbose = verbose                       # debuggin purposes.
         self.verbose_control = verbose_control
@@ -435,27 +435,33 @@ class Rover_Controls:
         print(arduino_port)
         # Set up the serial connection
         self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
-        time.sleep(3)
+        self.arduino[index].timeout = 0.1
+        time.sleep(10)
 
-    def Disable_write_arduino(self, index = 0):
-        # self.arduino[index].close()
-        # self.arduino[index].send_break(duration=1)
-        data = "reset"
-        self.arduino[index].write(bytes(data + "\n", 'utf-8'))
-        time.sleep(1)
-        self.arduino[index].flushInput()
-        # self.arduino[index].setDTR(False)
-        self.arduino[index].close()
-        self.arduino[index] = None
+    # def Disable_write_arduino(self, index = 0):
+    #     # self.arduino[index].close()
+    #     # self.arduino[index].send_break(duration=1)
+    #     data = "reset"
+    #     self.arduino[index].write(bytes(data + "\n", 'utf-8'))
+    #     time.sleep(1)
+    #     self.arduino[index].flushInput()
+    #     # self.arduino[index].setDTR(False)
+    #     self.arduino[index].close()
+    #     self.arduino[index] = None
  
 
     def write_read(self, data, index = 0):
         # send a command with a \n at the end
         self.arduino[index].write(bytes(data + "\n", 'utf-8'))
         
-        # Read from the serial port until data is received
-        data = self.arduino[index].readline().decode('utf-8').strip()
-        return str(data)
+        # Read from the serial port
+        data_get = self.arduino[index].readline().decode('utf-8').strip()
+
+        if not data_get:
+            print("Got Stuck on: " + str(index) + ": " + data)
+            with open("error_log.txt", "a") as error_file:
+                error_file.write("Got Stuck on: " + str(index) + ": " + data + "\n")
+        return str(data_get)
     
     def set_act_OR_motor(self, config=np.zeros(16)):
         self.act_OR_motor = config
@@ -526,17 +532,20 @@ class Rover_Controls:
         motor_diagnostic_command = "dMotor " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_command, index)
 
-        if(self.verbose_diagnostics):
-            print(motor_diagnostic_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(motor_diagnostic_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
-        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+            left = min(len(float_numb), self.diagnostics_vals.shape[1])
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+        except Exception as e:
+            print("Error: ", e)
 
         # dMotor Channel# -> ALARM TEMP CURRENT OC_FAULT [#, #, #, #, ?, ?, ?, ?, ?, ?]
 
@@ -553,16 +562,19 @@ class Rover_Controls:
         motor_diagnostic_speed_command = "dMotrSpeed " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_speed_command, index)
 
-        if(self.verbose_diagnostics):
-            print(motor_diagnostic_speed_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(motor_diagnostic_speed_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+        except Exception as e:
+            print("Error: ", e)
 
         # dMotrSpeed Channel# -> SPEED [#, #, #, #, ##, ?, ?, ?, ?, ?]
 
@@ -579,17 +591,20 @@ class Rover_Controls:
         actuator_diagnostic_command = "dActuator " + str(Channel_Numb)
         data = self.write_read(actuator_diagnostic_command, index)
 
-        if(self.verbose_diagnostics):
-            print(actuator_diagnostic_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(actuator_diagnostic_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
-        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+            left = min(len(float_numb), self.diagnostics_vals.shape[1])
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+        except Exception as e:
+            print("Error: ", e)
 
         # dActuator Channel#  -> TEMP CURRENT OC_FAULT [#, #, #, ?, ?, ?, ?, ?, ?, ?]
 
@@ -606,16 +621,20 @@ class Rover_Controls:
         actuator_feedback_command = "dActuatrFeeback " + str(Channel_Numb)
         data = self.write_read(actuator_feedback_command, index)
 
-        if(self.verbose_diagnostics):
-            print(actuator_feedback_command)
-            print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
+        try:
+            if(self.verbose_diagnostics):
+                print(actuator_feedback_command)
+                print(data)
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+        except Exception as e:
+            print("Error: ", e)
         
         # dActuatrFeeback Channel#  -> FEEDBACK [#, #, #, ?, ##, ?, ?, ?, ?, ?]
 
@@ -627,16 +646,19 @@ class Rover_Controls:
             print(diagnostics_load_cell_temperature_off_board_command)
             print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = []
+        try:
+            # turn data int variables
+            numbers = data.split()
+            float_numb = []
 
-        float_numb = [float(num) for num in numbers]
-        # print("temp and LC diagnostics [", Channel_Numb, "]: ", data)
+            float_numb = [float(num) for num in numbers]
+            # print("temp and LC diagnostics [", Channel_Numb, "]: ", data)
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, 5] = float_numb[0]
-            self.diagnostics_vals[Channel_Numb-1, 6] = float_numb[1]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, 5] = float_numb[0]
+                self.diagnostics_vals[Channel_Numb-1, 6] = float_numb[1]
+        except Exception as e:
+            print("Error: ", e)
 
         # dTempAndLC Channel# -> SPEED [#, #, #, #., ##, ###, ###, ?, ?, ?]
             
@@ -649,13 +671,16 @@ class Rover_Controls:
             print(motherboard_diagnostic_command)
             print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
-        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+        try:
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+            left = min(len(float_numb), self.diagnostics_vals.shape[1])
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+        except Exception as e:
+            print("Error: ", e)
 
     def select_controls(self, index = 0):
         # print(self.controls_channel, )
@@ -856,12 +881,12 @@ class Rover_Controls:
             if(self.controller): # if the controller is connected
                 if self.can_flip():
                     if(self.Get_Button_From_Controller('X_Button')):
-                        self.controls_vals[channel_Numb-1][0] = not self.controls_vals[channel_Numb-1][0]
                         self.controls_vals[channel_Numb-1][1] = not self.controls_vals[channel_Numb-1][1]
                         self.last_flip_time = pygame.time.get_ticks()
                 self.controls_vals[channel_Numb-1][2] = motor_speed
                 self.controls_vals[channel_Numb-1][3] = direction
                 self.controls_vals[channel_Numb-1][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[channel_Numb-1][0] = not self.controls_vals[channel_Numb-1][3]
             else:
                 self.controls_vals[channel_Numb-1][0] = 0
                 self.controls_vals[channel_Numb-1][1] = 0

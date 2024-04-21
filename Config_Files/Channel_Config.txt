@@ -13,4 +13,4 @@ Channel 12: Bucketwheel Motor
 Channel 13: Front Left Drive Motor
 Channel 14: Front Left Drive Motor
 Channel 15: Front Left Drive Motor
-Channel 16: Front Left Drive Motor
+Channel 16: IMU and Motherboard
