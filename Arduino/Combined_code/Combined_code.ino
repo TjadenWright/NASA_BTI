@@ -12,7 +12,7 @@
 
 #define TestArduinoScript false
 #define Arduino_or_latte true  // true -> arduino mega / false -> latte
-#define testbench true         // test board uses different addresses for the GPIO expander
+#define testbench false         // test board uses different addresses for the GPIO expander
 
 #define MAX_SPEED 4.96
 #define MAX_CURRENT 5.08  // 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV
@@ -116,7 +116,7 @@ void setup() {
   if (Arduino_or_latte) {
     Serial.begin(115200);
   } else {
-    Serial.begin(115200);
+    Serial.begin(9600);
   }
 
   // wait for Serial.print to start
