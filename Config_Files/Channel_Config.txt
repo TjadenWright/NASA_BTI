@@ -1,4 +1,4 @@
-Channel 1: Front Left Drive Motor
+Channel 1: Battery Lock 2 Actuator
 Channel 2: Front Left Drive Motor
 Channel 3: Front Left Drive Motor
 Channel 4: Front Left Drive Motor
@@ -6,8 +6,8 @@ Channel 5: Front Left Drive Motor
 Channel 6: Front Left Drive Motor
 Channel 7: Front Left Drive Motor
 Channel 8: Front Left Drive Motor
-Channel 9: Front Right Drive Motor
-Channel 10: Rear Left Drive Motor
+Channel 9: Battery Lock 2 Actuator
+Channel 10: Battery Push 1 Actuator
 Channel 11: Rear Right Drive Motor
 Channel 12: Bucketwheel Motor
 Channel 13: Front Left Drive Motor

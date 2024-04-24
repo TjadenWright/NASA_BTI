@@ -168,7 +168,7 @@ l1 = localization(scaling_factor=scaling_factor, zoom_factor=zoom_factor, zoom_s
 l1.init_pygame()
 
 # setup camera parameters
-a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, Input_Res=Input_Res, Output_Res=(vid_w, vid_h), fps_vid=FPS_video, calib_file=calib_file) # <--- sets up the class
+a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=VERBOSE, Input_Res=Input_Res, Output_Res=(vid_w, vid_h), fps_vid=FPS_video, calib_file=calib_file) # <--- sets up the class
 a1.calibrated_cam_data() # add calibrated data to camera
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 

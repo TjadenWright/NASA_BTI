@@ -436,7 +436,7 @@ class Rover_Controls:
         # Set up the serial connection
         self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
         self.arduino[index].timeout = 0.1
-        time.sleep(10)
+        time.sleep(4)
 
     # def Disable_write_arduino(self, index = 0):
     #     # self.arduino[index].close()
@@ -453,14 +453,16 @@ class Rover_Controls:
     def write_read(self, data, index = 0):
         # send a command with a \n at the end
         self.arduino[index].write(bytes(data + "\n", 'utf-8'))
-        
-        # Read from the serial port
-        data_get = self.arduino[index].readline().decode('utf-8').strip()
 
-        if not data_get:
-            print("Got Stuck on: " + str(index) + ": " + data)
-            with open("error_log.txt", "a") as error_file:
-                error_file.write("Got Stuck on: " + str(index) + ": " + data + "\n")
+        data_get = None
+
+        # Read from the serial port
+        while not data_get:
+            data_get = self.arduino[index].readline().decode('utf-8').strip()
+            if(not data_get):
+                print("Got Stuck on: " + str(index) + ": " + data)
+                with open("error_log.txt", "a") as error_file:
+                    error_file.write("Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
         return str(data_get)
     
     def set_act_OR_motor(self, config=np.zeros(16)):
@@ -545,7 +547,7 @@ class Rover_Controls:
             with self.diagnostic_lock[index]:
                 self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + motor_diagnostic_command + ": " + str(e))
 
         # dMotor Channel# -> ALARM TEMP CURRENT OC_FAULT [#, #, #, #, ?, ?, ?, ?, ?, ?]
 
@@ -574,7 +576,7 @@ class Rover_Controls:
             with self.diagnostic_lock[index]:
                 self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + motor_diagnostic_speed_command + ": " + str(e))
 
         # dMotrSpeed Channel# -> SPEED [#, #, #, #, ##, ?, ?, ?, ?, ?]
 
@@ -604,7 +606,7 @@ class Rover_Controls:
             with self.diagnostic_lock[index]:
                 self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + actuator_diagnostic_command + ": " + str(e))
 
         # dActuator Channel#  -> TEMP CURRENT OC_FAULT [#, #, #, ?, ?, ?, ?, ?, ?, ?]
 
@@ -634,7 +636,7 @@ class Rover_Controls:
             with self.diagnostic_lock[index]:
                 self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + actuator_feedback_command + ": " + str(e))
         
         # dActuatrFeeback Channel#  -> FEEDBACK [#, #, #, ?, ##, ?, ?, ?, ?, ?]
 
@@ -658,7 +660,7 @@ class Rover_Controls:
                 self.diagnostics_vals[Channel_Numb-1, 5] = float_numb[0]
                 self.diagnostics_vals[Channel_Numb-1, 6] = float_numb[1]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + diagnostics_load_cell_temperature_off_board_command + ": " + str(e))
 
         # dTempAndLC Channel# -> SPEED [#, #, #, #., ##, ###, ###, ?, ?, ?]
             
@@ -680,7 +682,7 @@ class Rover_Controls:
             with self.diagnostic_lock[index]:
                 self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
         except Exception as e:
-            print("Error: ", e)
+            print("Error: " + motherboard_diagnostic_command + ": " + str(e))
 
     def select_controls(self, index = 0):
         # print(self.controls_channel, )

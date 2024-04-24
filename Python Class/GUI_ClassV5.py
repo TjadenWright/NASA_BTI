@@ -843,7 +843,7 @@ class GUI:
         while True:
             self.battery.read_esp32()
             total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage, connection = self.battery.parse_data()
-            
+
             with self.lock_bat:
                 self.total_voltage = total_voltage
                 self.current = current
@@ -1946,7 +1946,9 @@ class GUI:
         if(not false_traffic):
             # start battery thread
             self.start_bat_thread()
+            print("Running battery thread ---------------------------")
         else:
+            print("Faking battery thread ---------------------------")
             self.start_false_battery_thread()
 
         # start camera thread
