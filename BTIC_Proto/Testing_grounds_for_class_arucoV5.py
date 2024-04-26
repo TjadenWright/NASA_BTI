@@ -219,6 +219,8 @@ while not (rc1.Get_Button_From_Controller("Menu") and rc1.Get_Button_From_Contro
             rc1.control_motor_OR_actutor(channel_Numb = manual_mode_channel+1, select = rc1.get_act_OR_motor()[manual_mode_channel], verbose = False)
         elif(manual_mode == 1):
             rc1.drive_controls(channel_names)
+        elif(manual_mode == 2):
+            rc1.mine_controls(channel_names)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):
         #     print("Manual Mode")

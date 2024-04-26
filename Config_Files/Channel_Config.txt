@@ -1,16 +1,16 @@
-Channel 1: Battery Lock 2 Actuator
-Channel 2: Front Left Drive Motor
-Channel 3: Front Left Drive Motor
-Channel 4: Front Left Drive Motor
-Channel 5: Front Left Drive Motor
-Channel 6: Front Left Drive Motor
-Channel 7: Front Left Drive Motor
-Channel 8: Front Left Drive Motor
-Channel 9: Battery Lock 2 Actuator
-Channel 10: Battery Push 1 Actuator
-Channel 11: Rear Right Drive Motor
-Channel 12: Bucketwheel Motor
-Channel 13: Front Left Drive Motor
-Channel 14: Front Left Drive Motor
-Channel 15: Front Left Drive Motor
+Channel 1: Front Auger Motor
+Channel 2: Bucketwheel Motor
+Channel 3: Excavation Arm Lift Actuator
+Channel 4: Not Connected
+Channel 5: Not Connected
+Channel 6: Not Connected
+Channel 7: Not Connected
+Channel 8: Not Connected
+Channel 9: Not Connected
+Channel 10: Not Connected
+Channel 11: Not Connected
+Channel 12: Not Connected
+Channel 13: Not Connected
+Channel 14: Not Connected
+Channel 15: Not Connected
 Channel 16: IMU and Motherboard

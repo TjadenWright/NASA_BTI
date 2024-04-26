@@ -823,6 +823,7 @@ class Rover_Controls:
         self.Output_Res = Output_Res
         self.screen = pygame.Surface(self.Output_Res)
         self.font = pygame.font.Font(None, 36)
+        self.small = pygame.font.Font(None, 26)
 
         # Initialize Pygame screen
         self.screen.fill((0, 0, 0))
@@ -877,13 +878,13 @@ class Rover_Controls:
 
         trigger = max(right_t, left_t)
 
-        augur = 1
+        bucket_wheel = 1
 
         motor_speed = self.maximum_voltage*trigger
 
         if(select == 0 or select == 2):
             if(self.controller): # if the controller is connected
-                if(augur):
+                if(bucket_wheel):
                     if self.can_flip():
                         if(self.Get_Button_From_Controller('X_Button')):
                             self.controls_vals[channel_Numb-1][1] = not self.controls_vals[channel_Numb-1][1]
@@ -966,7 +967,7 @@ class Rover_Controls:
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
                 print("-----------------------------")
 
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR']
+            signals = ['CHANNEL', 'EN_EFUSE', 'PWM', 'FR']
             signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2]]  # Example states, modify as needed
 
             y = 100
@@ -1067,3 +1068,144 @@ class Rover_Controls:
         self.controls_vals[driveRL][2] = left_side_motors
         self.controls_vals[driveRL][3] = direction
         self.controls_vals[driveRL][4] = self.Get_Button_From_Controller('B_Button')
+
+    def mine_controls(self, channel_names):
+        bucket_wheel = None
+        front_auger = None
+        arm_lift = None
+
+        # get the channel number 
+        for i, name in enumerate(channel_names):
+            if "Front Auger Motor" in name:
+                front_auger = i
+            elif "Bucketwheel Motor" in name:
+                bucket_wheel = i
+            elif "Excavation Arm Lift Actuator" in name:
+                arm_lift = i
+
+        # print(channel_names)
+
+        # print("bucket_wheel: ", bucket_wheel)
+        # print("front_auger: ", front_auger)
+        # print("arm_lift: ", arm_lift)
+
+        right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+        left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+
+        if(right_t > left_t):
+            direction = 1 # go forward
+        elif(right_t < left_t):
+            direction = 0 # go back
+        else:
+            direction = 1
+        
+
+        trigger = max(right_t, left_t)
+
+        motor_speed = self.maximum_voltage*trigger
+
+        if(self.controller):
+            # control bucketwheel
+            if self.can_flip():
+                if(self.Get_Button_From_Controller('X_Button')):
+                    self.controls_vals[bucket_wheel][1] = not self.controls_vals[bucket_wheel][1]
+                    self.controls_vals[bucket_wheel][0] = not self.controls_vals[bucket_wheel][1]
+                    self.last_flip_time = pygame.time.get_ticks()
+            if(self.Get_Button_From_Controller('Y_Button')):
+                self.controls_vals[bucket_wheel][2] = motor_speed
+                self.controls_vals[bucket_wheel][3] = direction
+            self.controls_vals[bucket_wheel][4] = self.Get_Button_From_Controller('B_Button')
+            if(self.controls_vals[bucket_wheel][4]):
+                self.controls_vals[bucket_wheel][2] = 0
+
+            # mirror bucketwheel to auger
+            self.controls_vals[front_auger][0] = self.controls_vals[bucket_wheel][0]
+            self.controls_vals[front_auger][1] = self.controls_vals[bucket_wheel][1]
+            self.controls_vals[front_auger][2] = self.controls_vals[bucket_wheel][2]
+            self.controls_vals[front_auger][3] = self.controls_vals[bucket_wheel][3]
+            self.controls_vals[front_auger][4] = self.controls_vals[bucket_wheel][4] 
+
+            # control of lift actuator
+            self.controls_vals[arm_lift][0] = self.controls_vals[bucket_wheel][1]
+            if(self.Get_Button_From_Controller('A_Button')):
+                self.controls_vals[arm_lift][1] = motor_speed
+                self.controls_vals[arm_lift][2] = direction
+
+        else:
+            # turn off bucketwheel
+            self.controls_vals[bucket_wheel][0] = 0
+            self.controls_vals[bucket_wheel][1] = 1
+            self.controls_vals[bucket_wheel][2] = 0
+            self.controls_vals[bucket_wheel][3] = 1
+            self.controls_vals[bucket_wheel][4] = 1
+
+            # mirror auger
+            self.controls_vals[front_auger][0] = 0
+            self.controls_vals[front_auger][1] = 1
+            self.controls_vals[front_auger][2] = 0
+            self.controls_vals[front_auger][3] = 1
+            self.controls_vals[front_auger][4] = 1 
+        
+            # turn off acutator
+            self.controls_vals[arm_lift][0] = 0
+            self.controls_vals[arm_lift][1] = 0
+            self.controls_vals[arm_lift][2] = 0
+
+        # bucketwheel
+        signals = ['CHANNEL', 'EN', 'EN_EFUSE', 'PWM', 'FR', 'BREAK']
+        signal_states = [channel_names[bucket_wheel], self.controls_vals[bucket_wheel][0], self.controls_vals[bucket_wheel][1], self.controls_vals[bucket_wheel][2], self.controls_vals[bucket_wheel][3], self.controls_vals[bucket_wheel][4]]  # Example states, modify as needed
+
+        y = 100
+
+        for signal, state in zip(signals, signal_states):
+            # Render text
+            if signal == 'PWM' or signal == 'CHANNEL':
+                text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+            else:
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                else:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+            text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+            self.screen.blit(text, text_rect)
+            y += 30
+
+        signals = ['CHANNEL', 'EN', 'EN_EFUSE', 'PWM', 'FR', 'BREAK']
+        signal_states = [channel_names[front_auger], self.controls_vals[front_auger][0], self.controls_vals[front_auger][1], self.controls_vals[front_auger][2], self.controls_vals[front_auger][3], self.controls_vals[front_auger][4]]  # Example states, modify as needed
+
+        y = 310
+
+        for signal, state in zip(signals, signal_states):
+            # Render text
+            if signal == 'PWM' or signal == 'CHANNEL':
+                text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+            else:
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                else:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+            text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+            self.screen.blit(text, text_rect)
+            y += 30
+
+        #  actuator
+        signals = ['CHANNEL', 'EN_EFUSE', 'PWM', 'FR']
+        signal_states = [channel_names[arm_lift], self.controls_vals[arm_lift][0], self.controls_vals[arm_lift][1], self.controls_vals[arm_lift][2]]  # Example states, modify as needed
+
+        y = 520
+
+        for signal, state in zip(signals, signal_states):
+            # Render text
+            if signal == 'PWM' or signal == 'CHANNEL':
+                text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+            else:
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                else:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+            text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+            self.screen.blit(text, text_rect)
+            y += 30
