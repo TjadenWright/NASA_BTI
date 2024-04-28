@@ -143,8 +143,8 @@ class GUI:
 
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
-        self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push 1 Actuator", "Battery Push 1 Actuator", "Hopper Actuator", "IMU and Motherboard"]
-        self.channel_option_to_arduino = [0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3]
+        self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push Actuator", "Battery Align Actuator", "Hopper Tip 1 Actuator", "Hopper Tip 2 Actuator", "IMU and Motherboard", "Not Connected"]
+        self.channel_option_to_arduino = [0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0]
         self.channel_config_naming = np.zeros(16, int)
                               # "Motor", "Actuator", "Slew Gear", "IMU and Motherboard"
 
@@ -843,7 +843,7 @@ class GUI:
         while True:
             self.battery.read_esp32()
             total_voltage, current, power, charging_power, discharging_power, capacity_remaining, nominal_capacity, charging_cycles, balancer_status_bitmask, errors_bitmask, software_version, state_of_charge, operation_status_bitmask, battery_strings, temperature_1, temperature_2, temperature_3, cell_voltage_1, cell_voltage_2, cell_voltage_3, cell_voltage_4, cell_voltage_5, cell_voltage_6, cell_voltage_7, cell_voltage_8, cell_voltage_9, cell_voltage_10, cell_voltage_11, cell_voltage_12, cell_voltage_13, cell_voltage_14, cell_voltage_15, cell_voltage_16, min_cell_voltage, max_cell_voltage, max_voltage_cell, min_voltage_cell, delta_cell_voltage, average_cell_voltage, connection = self.battery.parse_data()
-            
+
             with self.lock_bat:
                 self.total_voltage = total_voltage
                 self.current = current
@@ -1062,7 +1062,7 @@ class GUI:
                 frame = Frame(self.master, borderwidth=2, relief="groove", width=300, height=300)
                 frame.grid(row=(i-1)//4, column=(i-1)%4, padx=10, pady=10)
 
-                label = Label(frame, text="Channel {}".format(i), width=15, height=6)
+                label = Label(frame, text="Channel {}".format(i-1), width=15, height=6)
                 label.grid(row=0, column=0)
 
                 option_menu = OptionMenu(frame, self.selected_options[i-1], *self.channel_options)
@@ -1946,7 +1946,9 @@ class GUI:
         if(not false_traffic):
             # start battery thread
             self.start_bat_thread()
+            print("Running battery thread ---------------------------")
         else:
+            print("Faking battery thread ---------------------------")
             self.start_false_battery_thread()
 
         # start camera thread

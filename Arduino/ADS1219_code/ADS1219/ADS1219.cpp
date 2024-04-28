@@ -28,15 +28,15 @@ static void i2cWrite(uint8_t x) {
 
 ADS1219::ADS1219(int drdy, uint8_t addr_expander, uint8_t addr) : pcf8574(addr_expander){
   data_ready = drdy;
-  pcf8574.pinMode(drdy, INPUT);
   address = addr;
   config = 0x00;
   singleShot = true;
 }
 
 void ADS1219::begin() {
-  Wire.begin();
+  pcf8574.pinMode(data_ready, INPUT);
   pcf8574.begin();
+  Wire.begin();
 }
 
 void ADS1219::start(){

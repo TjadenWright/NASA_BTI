@@ -45,6 +45,7 @@ Vmax = 0.5                                 # <--- maximum velocity of the rover 
 
 #### Diagnotic Data Values to Change ####
 Fake_traffic = False
+img_diangostics = None
 
 #### Localization Values to Change ####
 scaling_factor = 1                         # <--- You can change this to adjust the scaling
@@ -56,7 +57,7 @@ enable_arduino = True
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
-Fullscreen = True
+Fullscreen = False
 
 #### Values to not Change ####
 # Initialize your variables
@@ -159,12 +160,15 @@ if(not Fake_traffic):
 g1 = GUI()
 vid_w, vid_h, local_w, local_h = g1.set_screen() #1350, 780
 
+#### setup pygames controls ####
+rc1.init_pygame(Output_Res=(local_w, local_h))
+
 #### intialize localization ####
 l1 = localization(scaling_factor=scaling_factor, zoom_factor=zoom_factor, zoom_step=zoom_step, Output_Res=(local_w, local_h))
 l1.init_pygame()
 
 # setup camera parameters
-a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=False, Input_Res=Input_Res, Output_Res=(vid_w, vid_h), fps_vid=FPS_video, calib_file=calib_file) # <--- sets up the class
+a1 = aruco_detect(calib_data_path=calib_data_path, MARKER_SIZE=MARKER_SIZE, verbose=VERBOSE, Input_Res=Input_Res, Output_Res=(vid_w, vid_h), fps_vid=FPS_video, calib_file=calib_file) # <--- sets up the class
 a1.calibrated_cam_data() # add calibrated data to camera
 a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go into class and change dictionary if you want, default is 4x4 100)
 
@@ -172,10 +176,10 @@ a1.aruco_marker_dict(DICT_MXM_L=DICT_MXM_L) # makes the aruco dictionary (can go
 g1.set_up_Main_UI(b1, rc1, Fake_traffic, Fullscreen)
 
 # run the code for manual and automatic.
-while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
+while not (rc1.Get_Button_From_Controller("Menu") and rc1.Get_Button_From_Controller("Select")):            # keep getting data till the manual control button has been pressed (defaults to PS Home Button).
     # start gui to get opencv_img and fun stuff
                                                                                                                                                     # mode*(max_manual_mode+1)*13 + manual_mode*13 + manual_mode_channel
-    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=None, popup=popup)
+    opencv_img, local_enable, calibrateM, up_key, down_key, mode, manual_mode, manual_mode_channel, channel_names = g1.loop_Main_UI(local_img=img_Localization, imu_image=img_diangostics, popup=popup)
 
     # print(mode, manual_mode, manual_mode_channel)
     # # get location from opencv
@@ -189,6 +193,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
 
     # handels different key presses
     l1.handler()
+    rc1.handler()
 
     # handler for controller disconnection
     connected = rc1.handle_events()
@@ -198,7 +203,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
         calibrate = True
 
     # get the button to change mode
-    Manual_Auto = rc1.Get_Button_From_Controller(stop_button="A_Button") # A button is pressed or not
+    Manual_Auto = rc1.Get_Button_From_Controller(stop_button="Select") # A button is pressed or not
 
     # toggle the mode
     if Manual_Auto == 1 and prev_Manual_Auto == 0:
@@ -214,6 +219,8 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
             rc1.control_motor_OR_actutor(channel_Numb = manual_mode_channel+1, select = rc1.get_act_OR_motor()[manual_mode_channel], verbose = False)
         elif(manual_mode == 1):
             rc1.drive_controls(channel_names)
+        elif(manual_mode == 2):
+            rc1.mine_controls(channel_names)
         # print(rc1.get_act_OR_motor()[0])
         # if(connected):
         #     print("Manual Mode")
@@ -296,6 +303,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
     l1.legend()
 
     end, img_Localization = l1.update_pygames_screen()
+    img_diangostics = rc1.update_pygames_screen()
 
     # quit the program
     if a1.wait_key("q") or end:
