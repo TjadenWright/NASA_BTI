@@ -1,16 +1,16 @@
 Channel 1: Front Auger Motor
 Channel 2: Bucketwheel Motor
 Channel 3: Excavation Arm Lift Actuator
-Channel 4: Not Connected
-Channel 5: Not Connected
-Channel 6: Not Connected
-Channel 7: Not Connected
-Channel 8: Not Connected
-Channel 9: Not Connected
-Channel 10: Not Connected
-Channel 11: Not Connected
-Channel 12: Not Connected
-Channel 13: Not Connected
-Channel 14: Not Connected
-Channel 15: Not Connected
+Channel 4: Battery Lock 1 Actuator
+Channel 5: Battery Lock 2 Actuator
+Channel 6: Ramps Actuator
+Channel 7: Battery Push Actuator
+Channel 8: Hopper Tip 2 Actuator
+Channel 9: Ramps Actuator
+Channel 10: Ramps Actuator
+Channel 11: Ramps Actuator
+Channel 12: Ramps Actuator
+Channel 13: Battery Lock 2 Actuator
+Channel 14: Ramps Actuator
+Channel 15: Ramps Actuator
 Channel 16: IMU and Motherboard

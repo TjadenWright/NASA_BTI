@@ -37,18 +37,18 @@ String commands[] = { "startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor
 // dIMU Channel#                         you get this: _, _, ...
 
 // check values
-const uint8_t max_channels = 8;  // for commands channel# doesn't count
-const uint8_t max_input_outputs = 6;
+#define max_channels 8  // for commands channel# doesn't count
+#define max_input_outputs 6
 
 // PWM channel pins
 uint8_t Mega[max_channels] = { 12, 13, 10, 11, 8, 9, 7, 6 };  // 12, 13, 10, 11, 8, 9, 7, 6
 // Mega reset = 5
-uint8_t Panda[max_channels] = { 13, 12, 11, 10, 9, 8, 7, 254 };  // (negative one is a place holder)
+uint8_t Panda[max_channels] = { 13, 5, 11, 10, 9, 6, 254, 254 };  // (negative one is a place holder)
 // Panda reset = 4
 
 uint8_t PWM_Channel[max_channels];
 uint8_t Channel_Offset = 1;    // either 1 for 1-8 or 9 for 9-16
-int8_t Channel_Selected = -1;  // start with a channel we can't be in
+uint8_t Channel_Selected = -1;  // start with a channel we can't be in
 
 bool stateA[max_channels] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 bool stateB[max_channels] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -120,7 +120,7 @@ void setup() {
   }
 
   // wait for Serial.print to start
-  delay(2000);
+  delay(4000);
 
   // setup vals array
   for (uint8_t i = 0; i < max_channels; i++)
@@ -217,16 +217,20 @@ void setup() {
     // A1 feedback, A2 SPEED, A3 Current
 
     // resets for either arduino mega or panda (default them to high or not reset)
-    pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
-    digitalWrite(4, HIGH);
-    digitalWrite(5, HIGH);
+//    if (Arduino_or_latte) {
+//      pinMode(5, OUTPUT);
+//      digitalWrite(5, HIGH);
+//    }
+//    else {
+//      pinMode(4, OUTPUT);
+//      digitalWrite(4, HIGH);
+//    }
 
     ///////////////
     // LOAD CELL //
     ///////////////
     if (nau.begin()) {  // meed to check if it can begin otherwise it will hang the program
-      nau.setLDO(NAU7802_3V0);
+      nau.setLDO(NAU7802_EXTERNAL);
       nau.setGain(NAU7802_GAIN_128);
       nau.setRate(NAU7802_RATE_10SPS);
       nau.calibrate(NAU7802_CALMOD_INTERNAL);
@@ -252,8 +256,14 @@ void setup() {
 
     delay(100);
   }
-  if (TestArduinoScript)
+  if (TestArduinoScript){
     Serial.println("done!");
+    for(uint8_t i = 0; i < 8; i++){
+      Serial.print(nau_check[i]);
+      Serial.print(" ");
+    }
+    Serial.println("");
+  }
 }
 
 void command_finder(uint8_t index, String command_from_python) {
@@ -319,13 +329,15 @@ void startup_command(String command_from_python) {
     Channel_Offset = 9;
     for (uint8_t i = 0; i < max_channels; i++) {
       PWM_Channel[i] = Panda[i];
-      pinMode(PWM_Channel[i], OUTPUT);
+      if(PWM_Channel[i] != 254)
+        pinMode(PWM_Channel[i], OUTPUT);
     }
   } else {
     Channel_Offset = 1;
     for (uint8_t i = 0; i < max_channels; i++) {
       PWM_Channel[i] = Mega[i];
-      pinMode(PWM_Channel[i], OUTPUT);
+      if(PWM_Channel[i] != 254)
+        pinMode(PWM_Channel[i], OUTPUT);
     }
   }
 
@@ -391,7 +403,8 @@ void control_motor(String command_from_python) {
   if (vals[Channel - Channel_Offset][2] != PWM) {
     if (TestArduinoScript)
       Serial.println("PWM ");
-    analogWrite(PWM_Channel[Channel - Channel_Offset], PWM);
+    if(PWM_Channel[Channel - Channel_Offset] != 254)
+      analogWrite(PWM_Channel[Channel - Channel_Offset], PWM);
     vals[Channel - Channel_Offset][2] = PWM;
   }
 
@@ -463,7 +476,7 @@ void control_actuator(String command_from_python) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
@@ -486,7 +499,8 @@ void control_actuator(String command_from_python) {
       direction = 1;
     } else
       direction = -1;
-    vnh.H_bridge_change(PWM_Channel[Channel - Channel_Offset], PWM, direction, stateA[Channel - Channel_Offset], stateB[Channel - Channel_Offset]);
+    if(PWM_Channel[Channel - Channel_Offset] != 254)
+      vnh.H_bridge_change(PWM_Channel[Channel - Channel_Offset], PWM, direction, stateA[Channel - Channel_Offset], stateB[Channel - Channel_Offset]);
     vals[Channel - Channel_Offset][1] = PWM;
     vals[Channel - Channel_Offset][2] = FR;
   }
@@ -622,7 +636,7 @@ void actuator_diagnostic_start(String command_from_python, bool feeback_T_F) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
@@ -659,7 +673,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
@@ -704,8 +718,9 @@ void load_cell_and_temp_diagnostics(String command_from_python) {
     if (TestArduinoScript) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
+      Serial.println(Channel - Channel_Offset);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
@@ -713,7 +728,7 @@ void load_cell_and_temp_diagnostics(String command_from_python) {
 
   // do load cell and temp stuff...
   if (nau_check[Channel - Channel_Offset]) {
-    Serial.print(nau.read());  // print the actual value
+    Serial.print(nau.read()*(100)/4294620.0);  // print the actual value
   } else {
     Serial.print("0.0");  // print bad value
   }
@@ -746,7 +761,7 @@ void diagnostics_motherboard(String command_from_python) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
@@ -789,7 +804,7 @@ void diagnostics_IMU(String command_from_python) {
       Serial.print("Moved over to Channel ");
       Serial.println(Channel);
     }
-
+    I2CMux.closeAll();
     I2CMux.openChannel(Channel - Channel_Offset);
     // store this channel now
     Channel_Selected = Channel;
