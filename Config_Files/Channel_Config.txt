@@ -1,7 +1,7 @@
 Channel 1: Front Auger Motor
-Channel 2: Bucketwheel Motor
-Channel 3: Excavation Arm Lift Actuator
-Channel 4: Battery Lock 1 Actuator
+Channel 2: Battery Align Actuator
+Channel 3: Bucketwheel Motor
+Channel 4: Bucketwheel Motor
 Channel 5: Battery Lock 2 Actuator
 Channel 6: Ramps Actuator
 Channel 7: Battery Push Actuator

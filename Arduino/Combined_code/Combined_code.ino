@@ -503,6 +503,12 @@ void control_actuator(String command_from_python) {
       vnh.H_bridge_change(PWM_Channel[Channel - Channel_Offset], PWM, direction, stateA[Channel - Channel_Offset], stateB[Channel - Channel_Offset]);
     vals[Channel - Channel_Offset][1] = PWM;
     vals[Channel - Channel_Offset][2] = FR;
+
+    if (TestArduinoScript){
+      Serial.print("StateA: "); Serial.println(stateA[Channel - Channel_Offset]);
+      Serial.print("StateB: "); Serial.println(stateB[Channel - Channel_Offset]);
+    }
+      
   }
 
   if (TestArduinoScript) {
