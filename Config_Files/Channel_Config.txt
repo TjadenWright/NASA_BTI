@@ -1,16 +1,16 @@
 Channel 1: Front Auger Motor
-Channel 2: Battery Align Actuator
+Channel 2: Front Auger Motor
 Channel 3: Bucketwheel Motor
 Channel 4: Bucketwheel Motor
-Channel 5: Battery Lock 2 Actuator
-Channel 6: Ramps Actuator
+Channel 5: Bucketwheel Motor
+Channel 6: Battery Align Actuator
 Channel 7: Battery Push Actuator
-Channel 8: Hopper Tip 2 Actuator
-Channel 9: Ramps Actuator
-Channel 10: Ramps Actuator
-Channel 11: Ramps Actuator
-Channel 12: Ramps Actuator
-Channel 13: Battery Lock 2 Actuator
-Channel 14: Ramps Actuator
-Channel 15: Ramps Actuator
+Channel 8: Battery Align Actuator
+Channel 9: Bucketwheel Motor
+Channel 10: Hopper Tip 1 Actuator
+Channel 11: Battery Align Actuator
+Channel 12: Battery Push Actuator
+Channel 13: Battery Align Actuator
+Channel 14: Battery Align Actuator
+Channel 15: Bucketwheel Motor
 Channel 16: IMU and Motherboard

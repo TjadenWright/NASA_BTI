@@ -48,7 +48,7 @@ uint8_t Panda[max_channels] = { 13, 5, 11, 10, 9, 6, 254, 254 };  // (negative o
 
 uint8_t PWM_Channel[max_channels];
 uint8_t Channel_Offset = 1;    // either 1 for 1-8 or 9 for 9-16
-uint8_t Channel_Selected = -1;  // start with a channel we can't be in
+int8_t Channel_Selected = -1;  // start with a channel we can't be in
 
 bool stateA[max_channels] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 bool stateB[max_channels] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -69,6 +69,7 @@ int16_t vals[max_channels][6];
 ////////////////////
 PCF8574 pcf8574_Controls20(lower_GPIO);
 PCF8574 pcf8574_Controls21(upper_GPIO);
+PCF8574 pcf8574_Controls20_mobo(lower_GPIO);
 
 ////////////////////////////
 // I2C temperature sensor //
@@ -149,9 +150,9 @@ void setup() {
     //////////////
     // H-bridge //
     //////////////
-    if (i != max_channels - 1 || Arduino_or_latte) {
+    // if (i != max_channels - 1 || Arduino_or_latte) {
       vnh.begin();
-    }
+    // }
 
     ////////////////////
     // GPIO Expanders //
@@ -179,15 +180,16 @@ void setup() {
       pcf8574_Controls21.digitalWrite(P1, LOW);  // default efuse disable
       if (TestArduinoScript)
         Serial.println("actuator/motor board!");
-    } else {                                  //motherboard
-      pcf8574_Controls20.pinMode(P0, INPUT);  // Over Temperature alert
+    } 
+    else {                                  //motherboard
+      pcf8574_Controls20_mobo.pinMode(P0, INPUT);  // Over Temperature alert
       // pcf8574_Controls20.pinMode(P1, OUTPUT); // EFUSE_EN (not going to use since it will turn off the computer)
-      pcf8574_Controls20.pinMode(P2, INPUT);  // OC Fault
+      pcf8574_Controls20_mobo.pinMode(P2, INPUT);  // OC Fault
       // PIN3 is being used in ADC for DRDY (already setup in the function) // alarm
-      pcf8574_Controls20.pinMode(P6, OUTPUT);  // RESET ADC (just tie high use)
-      pcf8574_Controls20.begin();
+      pcf8574_Controls20_mobo.pinMode(P6, OUTPUT);  // RESET ADC (just tie high use)
+      pcf8574_Controls20_mobo.begin();
 
-      pcf8574_Controls20.digitalWrite(P6, HIGH);  // on the motherboard
+      pcf8574_Controls20_mobo.digitalWrite(P6, HIGH);  // on the motherboard
       if (TestArduinoScript)
         Serial.println("motherboard!");
     }
@@ -206,7 +208,8 @@ void setup() {
       // Set some stuff for ADC
       ads.setVoltageReference(REF_EXTERNAL);
       ads.setConversionMode(CONTINUOUS);
-    } else {  // motherboard
+    } 
+    else {  // motherboard
       ads_mother.begin();
       // Set some stuff for ADC
       ads_mother.setVoltageReference(REF_EXTERNAL);
@@ -217,14 +220,14 @@ void setup() {
     // A1 feedback, A2 SPEED, A3 Current
 
     // resets for either arduino mega or panda (default them to high or not reset)
-//    if (Arduino_or_latte) {
-//      pinMode(5, OUTPUT);
-//      digitalWrite(5, HIGH);
-//    }
-//    else {
-//      pinMode(4, OUTPUT);
-//      digitalWrite(4, HIGH);
-//    }
+    if (Arduino_or_latte) {
+      pinMode(5, OUTPUT);
+      digitalWrite(5, HIGH);
+    }
+    else {
+      pinMode(4, OUTPUT);
+      digitalWrite(4, HIGH);
+    }
 
     ///////////////
     // LOAD CELL //
@@ -366,7 +369,7 @@ void control_motor(String command_from_python) {
   String number5String = command_from_python.substring(space5 + 1, space6);  // between space5 + 1 and space6
   String number6String = command_from_python.substring(space6 + 1);          // between space6 + 1 and the end
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
   bool EN = number2String.toInt();
   bool EN_EFUSE = number3String.toInt();
   uint8_t PWM = number4String.toInt();
@@ -465,7 +468,7 @@ void control_actuator(String command_from_python) {
   String number3String = command_from_python.substring(space3 + 1, space4);  // between space3 + 1 and space4
   String number4String = command_from_python.substring(space4 + 1);          // between space4 + 1 and the end
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
   bool EN_EFUSE = number2String.toInt();
   bool FR = number3String.toInt();
   uint8_t PWM = number4String.toInt();
@@ -545,7 +548,7 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -582,7 +585,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -611,7 +614,7 @@ void motor_diagnostic(String command_from_python, bool Speed_bool) {
     Serial.print(" ");
 
     // current
-    Serial.print(ads.readSingleEnded(2, 0) * MAX_CURRENT / pow(2, 23), 5);
+    Serial.print(((ads.readSingleEnded(2, 0) * MAX_CURRENT / pow(2, 23)) * (-45.0) + 112.5), 5);
     Serial.print(" ");
 
     // OC fault
@@ -634,7 +637,7 @@ void actuator_diagnostic_start(String command_from_python, bool feeback_T_F) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -671,7 +674,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -695,7 +698,7 @@ void actuator_diagnostic(String command_from_python, bool feeback_T_F) {
     Serial.print(" ");
 
     // current
-    Serial.print(ads.readSingleEnded(2, 0) * MAX_CURRENT / pow(2, 23), 5);
+    Serial.print(((ads.readSingleEnded(2, 0) * MAX_CURRENT / pow(2, 23)) * (-45.0) + 112.5), 5);
     Serial.print(" ");
 
     // OC fault
@@ -717,7 +720,7 @@ void load_cell_and_temp_diagnostics(String command_from_python) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -759,7 +762,7 @@ void diagnostics_motherboard(String command_from_python) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux
@@ -775,7 +778,7 @@ void diagnostics_motherboard(String command_from_python) {
 
   // diagnostics for motherboard ..
   // alarm print
-  Serial.print(pcf8574_Controls20.digitalRead(P0));  // Alarm from Motor
+  Serial.print(pcf8574_Controls20_mobo.digitalRead(P0));  // Alarm from Motor
   Serial.print(" ");
 
   // temp
@@ -784,11 +787,12 @@ void diagnostics_motherboard(String command_from_python) {
   Serial.print(" ");
 
   // current
-  Serial.print(ads_mother.readSingleEnded(3, 0) * MAX_CURRENT / pow(2, 23), 5);
+  Serial.print(((ads_mother.readSingleEnded(3, 0) * MAX_CURRENT / pow(2, 23)) * (-45.0) + 112.5), 5);
+  // Serial.print(ads_mother.readSingleEnded(3, 0) * MAX_CURRENT / pow(2, 23), 5);
   Serial.print(" ");
 
   // OC fault
-  Serial.println(pcf8574_Controls20.digitalRead(P2));  // Over current fault
+  Serial.println(pcf8574_Controls20_mobo.digitalRead(P2));  // Over current fault
 }
 
 // dIMU Channel#                 you get this: _, _, ...
@@ -802,7 +806,7 @@ void diagnostics_IMU(String command_from_python) {
   // get the strings
   String number1String = command_from_python.substring(space1 + 1);  // between space1 + 1 and space2
 
-  uint8_t Channel = number1String.toInt();
+  int8_t Channel = number1String.toInt();
 
   // <------------------------------------------------------------------------------------------------------------------------------------------ (channel selector code needs to be written)
   if (Channel != Channel_Selected) {  // a new channel has been selected update. update the mux

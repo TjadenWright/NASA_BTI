@@ -63,5 +63,7 @@ void VNH7070::H_bridge_change(uint8_t PWM_OUT, uint8_t PMW_value, int8_t directi
     pcf8574.digitalWrite(S, HIGH);
     // set analog value
     analogWrite(PWM_OUT, PMW_value);
+    stateA = 0;
+    stateB = 0;
   }
 }

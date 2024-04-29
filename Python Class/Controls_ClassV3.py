@@ -48,6 +48,10 @@ class Rover_Controls:
 
         # controls
         self.controls_vals = np.zeros((16, 6), int)
+        self.timing_flag = np.zeros(16, int)
+        self.timing_count = np.zeros(16, int)
+        self.PWM_numb = np.zeros(16, int)
+        self.dir_numb = np.zeros(16, int)
 
         # diagnostics
         self.diagnostics_vals = np.zeros((16, 10))
@@ -512,7 +516,9 @@ class Rover_Controls:
         else:
             self.write_read(motor_control_command, index)
 
-    def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, index = 0):
+    def control_actuator_arduino_command(self, Channel_Numb, EN_EFUSE, PWM, FR, disable, index = 0):
+        if(disable):
+            PWM = 0
         actuator_control_command = "cActuator " + str(Channel_Numb) + " " + str(EN_EFUSE) + " " + str(FR) + " " + str(PWM)
 
         if(self.verbose_control):
@@ -684,12 +690,36 @@ class Rover_Controls:
         except Exception as e:
             print("Error: " + motherboard_diagnostic_command + ": " + str(e))
 
+    def timing_actuator(self, index = 0):
+        if(index == 0):
+            low = 0
+            high = 7
+        elif(index == 1):
+            low = 8
+            high = 15
+
+        for i in range(low, high):
+            if(self.timing_flag[i] == 0):
+                self.timing_count[i] = pygame.time.get_ticks()
+            elif(self.timing_flag[i] == 1):
+                if(pygame.time.get_ticks() - self.timing_count[i] >= 1000):
+                    self.timing_flag[i] = 0
+
+
     def select_controls(self, index = 0):
         # print(self.controls_channel, )
         if(self.act_OR_motor[self.controls_channel[index]-1] == 0 or self.act_OR_motor[self.controls_channel[index]-1] == 2): # motor or slewgear
             self.control_motor_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], self.controls_vals[self.controls_channel[index]-1][3], self.controls_vals[self.controls_channel[index]-1][4], index)
         elif(self.act_OR_motor[self.controls_channel[index]-1] == 1): # actuator
-            self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], index)
+            if(self.PWM_numb[self.controls_channel[index]-1] != self.controls_vals[self.controls_channel[index]-1][1] and self.controls_vals[self.controls_channel[index]-1][1] == 0):
+                self.timing_flag[self.controls_channel[index]-1] = 1 # start timer
+            elif(self.PWM_numb[self.controls_channel[index]-1] != self.controls_vals[self.controls_channel[index]-1][1] and self.controls_vals[self.controls_channel[index]-1][1] != 0 and self.dir_numb[self.controls_channel[index]-1] == self.controls_vals[self.controls_channel[index]-1][2]):
+                self.timing_flag[self.controls_channel[index]-1] = 0 # start timer
+            self.control_actuator_arduino_command(self.controls_channel[index], self.controls_vals[self.controls_channel[index]-1][0], self.controls_vals[self.controls_channel[index]-1][1], self.controls_vals[self.controls_channel[index]-1][2], self.timing_flag[self.controls_channel[index]-1], index)
+            self.PWM_numb[self.controls_channel[index]-1] = self.controls_vals[self.controls_channel[index]-1][1]
+            self.dir_numb[self.controls_channel[index]-1] = self.controls_vals[self.controls_channel[index]-1][2]
+
+            self.timing_actuator(index)
         # elif(self.act_OR_motor[self.controls_channel-1] == 3): # motherboard
             
     def select_diagnostic(self, index = 0):
@@ -967,8 +997,8 @@ class Rover_Controls:
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
                 print("-----------------------------")
 
-            signals = ['CHANNEL', 'EN_EFUSE', 'PWM', 'FR']
-            signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'EN_EFUSE', 'PWM', 'FR', 'STOP']
+            signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2], self.timing_flag[channel_Numb-1]]  # Example states, modify as needed
 
             y = 100
 
