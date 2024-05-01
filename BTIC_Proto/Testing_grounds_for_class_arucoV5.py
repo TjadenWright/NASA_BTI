@@ -57,7 +57,7 @@ enable_arduino = True
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
-Fullscreen = True
+Fullscreen = False
 
 #### Values to not Change ####
 # Initialize your variables
