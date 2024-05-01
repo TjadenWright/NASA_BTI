@@ -3,6 +3,7 @@ import sys
 import math
 import time 
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 # Navigate up one directory level to access the class folder
 current_file_path = os.path.dirname(os.path.abspath(__file__))          # get the data path of this file
@@ -230,15 +231,20 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                     #If see docking tag, activate Le Dock
                     Docking = True
                     DockingIndex = tag_to_move_to
+                    Dock_rvec = [rVx[DockingIndex],rVy[DockingIndex],rVz[DockingIndex]]
+                    rotation = R.from_rotvec(Dock_rvec)
+                    Dock_Euler = rotation.as_euler('zyx')
+                    DockRz = Dock_Euler[0]
                     DockX = x_calc[tag_to_move_to]
                     DockY = y_calc[tag_to_move_to]
-                    DockRz = rVy[tag_to_move_to]
                     DockD = dist[tag_to_move_to]
             else:
                 tag_to_move_to = -1
                 spotted = False
 
             if(tag_to_move_to != -1 and Docking == True):
+                # Take 2 revisited
+
                 '''
                 P0x = 0
                 P0y = 0
@@ -257,18 +263,21 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                 x_new = P0x*Bstein0+P1x*Bstein1+P2x*Bstein2 + DockX
                 y_new = P0y*Bstein0+P1y*Bstein1+P2y*Bstein2 + DockY
                 '''
-                print("angle: ", round(DockRz,2))
-                print("Rz: " )
-                print("DockX: ", DockX)
-                print("DockY: ", DockY)
 
                 
-                x_new = ((Tstep**3)-(2*(Tstep**2)+Tstep))*math.cos(math.pi/2)+(-2*(Tstep**3)+3*(Tstep**2))*DockX + (Tstep**3 - Tstep**2)*math.cos(DockRz-math.pi/2)
-                y_new = ((Tstep**3)-(2*(Tstep**2)+Tstep))*math.sin(math.pi/2)+(-2*(Tstep**3)+3*(Tstep**2))*DockY + (Tstep**3 - Tstep**2)*math.sin(DockRz-math.pi/2)
+                print("angle: ", round(DockRz,2))
+                print("DockX: ", DockX)
+                print("DockY: ", DockY)
+                print("DockD: ", DockD)
+
+                s = 2*DockD
+                x_new = ((Tstep**3)-(2*(Tstep**2)+Tstep))*math.cos(math.pi/2)+(-2*(Tstep**3)+3*(Tstep**2))*DockX + (Tstep**3 - Tstep**2)*s*math.cos(-DockRz+math.pi/2)
+                y_new = ((Tstep**3)-(2*(Tstep**2)+Tstep))*math.sin(math.pi/2)+(-2*(Tstep**3)+3*(Tstep**2))*DockY + (Tstep**3 - Tstep**2)*s*math.sin(-DockRz+math.pi/2)
                 #x_new = (math.cos(3.14/2)*x_new1+math.sin(3.14/2)*y_new1)
                 #y_new = (-math.sin(3.14/2)*x_new1+math.cos(3.14/2)*y_new1)
                 print("x_new: ", x_new)
                 print("y_new: ", y_new)
+                
 
 
             elif(tag_to_move_to != -1):
@@ -328,13 +337,7 @@ while not rc1.Get_Button_From_Controller("Menu"):            # keep getting data
                 unit = scale_range(angle,3.14/4,3*3.14/4,-1,1)
             '''
 
-
-            if(Backup == False):
-                Direction = unit
-            else:
-                print("Backing Up")
-                Direction = 0
-                Velocity = -1
+            Direction = unit
 
             new_func(Center_spot, ids, Velocity, x, y, angle, Direction)
             
