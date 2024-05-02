@@ -11,7 +11,7 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte false  // true -> arduino mega / false -> latte
+#define Arduino_or_latte true  // true -> arduino mega / false -> latte
 #define testbench false         // test board uses different addresses for the GPIO expander
 
 #define MAX_SPEED 4.96
@@ -150,9 +150,9 @@ void setup() {
     //////////////
     // H-bridge //
     //////////////
-    // if (i != max_channels - 1 || Arduino_or_latte) {
+    if (i != max_channels - 1 || Arduino_or_latte) {
       vnh.begin();
-    // }
+    }
 
     ////////////////////
     // GPIO Expanders //
@@ -317,6 +317,53 @@ void command_finder(uint8_t index, String command_from_python) {
       break;
       // Add cases for additional words as needed
   }
+}
+
+void reset_board(){
+    //////////////
+    // H-bridge //
+    //////////////
+    vnh.begin();
+
+    ////////////////////
+    // GPIO Expanders //
+    ////////////////////
+    // Set the pinModes for left expander in schematic
+    pcf8574_Controls20.pinMode(P0, OUTPUT);        // Forward/Reverse
+    pcf8574_Controls20.pinMode(P1, OUTPUT, HIGH);  // Motor Enable
+    pcf8574_Controls20.pinMode(P2, OUTPUT);        // Brake
+    pcf8574_Controls20.pinMode(P3, INPUT);         // Alarm from Motor
+    pcf8574_Controls20.begin();
+    // PIN4 is being used in ADC for DRDY (already setup in the function) // alarm
+    // drdy
+    // PIN5-7 are already used in the VNH7070 function
+
+    // Set the pinModes for right expander in schematic
+    pcf8574_Controls21.pinMode(P0, INPUT);   // Over "Temperature" Alert
+    pcf8574_Controls21.pinMode(P1, OUTPUT);  // Enable Efuse
+    pcf8574_Controls21.pinMode(P2, INPUT);   // Over current fault
+    pcf8574_Controls21.pinMode(P6, OUTPUT);  // RESET ADC (just tie high use)
+    // Reset of the pins are not used
+    pcf8574_Controls21.begin();
+
+    pcf8574_Controls21.digitalWrite(P6, HIGH);
+    pcf8574_Controls21.digitalWrite(P1, LOW);  // default efuse disable
+    if (TestArduinoScript)
+      Serial.println("actuator/motor board!");
+
+    /////////////
+    // I2C ADC //
+    /////////////
+    ads.begin();
+    // Set some stuff for ADC
+    ads.setVoltageReference(REF_EXTERNAL);
+    ads.setConversionMode(CONTINUOUS);
+
+    ////////////////////////////
+    // I2C temperature sensor //
+    ////////////////////////////
+    wire.begin(0x48);  // See definition of wire above
+    tmp1075.begin();   // Syncs the config register
 }
 
 // startup to select between arduinos

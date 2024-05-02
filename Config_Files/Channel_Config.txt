@@ -1,16 +1,16 @@
-Channel 1: Front Auger Motor
-Channel 2: Front Auger Motor
-Channel 3: Bucketwheel Motor
-Channel 4: Bucketwheel Motor
-Channel 5: Bucketwheel Motor
-Channel 6: Battery Align Actuator
-Channel 7: Battery Push Actuator
-Channel 8: Battery Align Actuator
-Channel 9: Bucketwheel Motor
-Channel 10: Hopper Tip 1 Actuator
-Channel 11: Battery Align Actuator
-Channel 12: Battery Push Actuator
-Channel 13: Battery Align Actuator
-Channel 14: Battery Align Actuator
-Channel 15: Bucketwheel Motor
-Channel 16: IMU and Motherboard
+Channel 1: Not Connected
+Channel 2: Pivot Slew Gear
+Channel 3: Not Connected
+Channel 4: Excavation Arm Lift Actuator
+Channel 5: Battery Lock 1 Actuator
+Channel 6: Not Connected
+Channel 7: Not Connected
+Channel 8: Not Connected
+Channel 9: Not Connected
+Channel 10: Not Connected
+Channel 11: Not Connected
+Channel 12: Not Connected
+Channel 13: Not Connected
+Channel 14: Not Connected
+Channel 15: Not Connected
+Channel 16: Not Connected
