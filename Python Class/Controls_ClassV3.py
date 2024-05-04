@@ -912,17 +912,17 @@ class Rover_Controls:
 
         bucket_wheel = 1
 
-        for i, name in enumerate(channel_names):
-            if "Drive Motor" in name:
-                if(i == channel_Numb - 1):
-                    bucket_wheel = 0
-                    break
+        #for i, name in enumerate(channel_names):
+        #    if "Drive Motor" in name:
+        #        if(i == channel_Numb - 1):
+        #            bucket_wheel = 0
+        #            break
 
-        for i, name in enumerate(channel_names):
-            if "Left Drive Motor" in name:
-                if(i == channel_Numb - 1):
-                    left = 1
-                    break
+        #for i, name in enumerate(channel_names):
+       #     if "Left Drive Motor" in name:
+        #        if(i == channel_Numb - 1):
+        #            left = 1
+        #            break
 
         motor_speed = self.maximum_voltage*trigger
 
@@ -1016,8 +1016,8 @@ class Rover_Controls:
                 print("FR: ", self.controls_vals[channel_Numb-1][2])
                 print("-----------------------------")
 
-            signals = ['MODE', 'CHANNEL', 'PWM', 'FR', 'STOP']
-            signal_states = [0, channel_Numb - 1, self.controls_vals[channel_Numb-1][0], self.controls_vals[channel_Numb-1][2], self.timing_flag[channel_Numb-1]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'PWM', 'FR', 'STOP']
+            signal_states = [channel_Numb - 1, self.controls_vals[channel_Numb-1][1], self.controls_vals[channel_Numb-1][2], self.timing_flag[channel_Numb-1]]  # Example states, modify as needed
 
             y = 100
 
