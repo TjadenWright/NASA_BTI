@@ -1112,7 +1112,7 @@ class Rover_Controls:
             # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
             # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
             self.controls_vals[driveFL][2] = left_side_motors
-            self.controls_vals[driveFL][3] = direction
+            self.controls_vals[driveFL][3] = not direction
             self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
             if(self.controls_vals[driveFL][4] == 0):
                 self.controls_vals[driveFL][2] = 0
@@ -1122,7 +1122,7 @@ class Rover_Controls:
             # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
             # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
             self.controls_vals[driveRL][2] = left_side_motors
-            self.controls_vals[driveRL][3] = direction
+            self.controls_vals[driveRL][3] = not direction
             self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
             if(self.controls_vals[driveRL][4] == 0):
                 self.controls_vals[driveRL][2] = 0
