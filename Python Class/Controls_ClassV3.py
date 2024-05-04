@@ -908,19 +908,19 @@ class Rover_Controls:
 
         trigger = max(right_t, left_t)
 
-        left = 0
+        # left = 0
 
         bucket_wheel = 1
 
         for i, name in enumerate(channel_names):
-            if "Drive Motor" in name:
+            if "Drive" in name:
                 bucket_wheel = 0
                 break
 
-        for i, name in enumerate(channel_names):
-            if "Left Drive Motor" in name:
-                left = 1
-                break
+        # for i, name in enumerate(channel_names):
+        #     if "Left Drive Motor" in name:
+        #         left = 1
+        #         break
 
         motor_speed = self.maximum_voltage*trigger
 
@@ -945,10 +945,10 @@ class Rover_Controls:
                     #         self.controls_vals[channel_Numb-1][1] = not self.controls_vals[channel_Numb-1][1]
                     #         self.last_flip_time = pygame.time.get_ticks()
                     self.controls_vals[channel_Numb-1][2] = motor_speed
-                    if(left == 0):
-                        self.controls_vals[channel_Numb-1][3] = direction
-                    else:
-                        self.controls_vals[channel_Numb-1][3] = not direction
+                    #if(left == 0):
+                    self.controls_vals[channel_Numb-1][3] = direction
+                    # else:
+                    #     self.controls_vals[channel_Numb-1][3] = not direction
                     self.controls_vals[channel_Numb-1][4] = not self.Get_Button_From_Controller('B_Button')
                     if(self.controls_vals[channel_Numb-1][4] == 0):
                         self.controls_vals[channel_Numb-1][2] = 0
