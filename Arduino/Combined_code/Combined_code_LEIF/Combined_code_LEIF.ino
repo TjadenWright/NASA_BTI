@@ -60,7 +60,7 @@ TMP1075::TMP1075 tmp1075 = TMP1075::TMP1075(wire);    // The library uses the na
 //////////////
 // H-bridge //
 //////////////
-VNH7070 vnh(6);
+// VNH7070 vnh(6);
 
 /////////////
 // I2C ADC //
@@ -125,7 +125,7 @@ void setup() {
     //////////////
     // H-bridge //
     //////////////
-    vnh.begin();
+    // vnh.begin();
 
     /////////////
     // I2C ADC //
@@ -366,7 +366,7 @@ void control_actuator(String command_from_python){
   }
   else
     direction = -1;
-  //vnh.H_bridge_change(PWM, direction);
+  // vnh.H_bridge_change(PWM, direction);
 
 
   if(TestArduinoScript){
