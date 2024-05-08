@@ -5,6 +5,7 @@
 #include "VNH7070.h" // controlling H-Bridge
 #include <ADS1219.h>
 #include "TCA9548A.h"
+#include <Adafruit_ISM330DHCX.h>
 
 #define TestArduinoScript false
 #define Arduino_or_latte true // true -> arduino mega / false -> latte
@@ -13,7 +14,7 @@
 #define MAX_CURRENT 5000*(1/22.2) // 22.2 mV/A or 0.045 A/mV 
 #define MAX_FEEDBACK 4.96
 
-String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor", "sMotrSpeed", "dMotrSpeed", "sActuatorCurrent", "dActuator", "sActuatrFeeback", "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU"}; 
+String commands[] = {"startup"/, "cMotor"/, "cActuator"/, "sMotorCurrent"/, "dMotor", "sMotrSpeed"/, "dMotrSpeed", "sActuatorCurrent"/, "dActuator", "sActuatrFeeback"/, "dActuatrFeeback", "cMotherboard", "dMotherboard", "dIMU"}; 
 
 // Commands
 // startup LOW_HIGH
@@ -29,7 +30,7 @@ String commands[] = {"startup", "cMotor", "cActuator", "sMotorCurrent", "dMotor"
 // dActuatrFeeback Channel# FEEBACK      you get this: FEEDBACK
 // cMotherboard Channel# _, _, ...     
 // dMotherboard Channel#                 you get this: _, _, ...
-// dIMU Channel#                         you get this: _, _, ...
+// dIMU Channel#                         you get this: ROLL PITCH
 
 // check values
 const int max_channels = 8; // for commands channel# doesn't count
@@ -74,7 +75,9 @@ TCA9548A I2CMux;                  // Address can be passed into the constructor
 /////////////////
 // 1a. I2C IMU //
 /////////////////
-
+Adafruit_ISM330DHCX ism330dhcx;
+float zero_roll = 0.0;
+float zero_pitch = 0.0;
 
 void setup() {
     // put your setup code here, to run once:
@@ -148,6 +151,20 @@ void setup() {
     /////////////////
     // 1b. I2C IMU //
     /////////////////
+    while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until serial console opens
+
+    Serial.println("Adafruit ISM330DHCX test!");
+
+    // Initialize the sensor
+    if (!ism330dhcx.begin_I2C()) {
+      Serial.println("Failed to find ISM330DHCX chip");
+      while (1) {
+        delay(10);
+     }
+      }
+
+    Serial.println("ISM330DHCX Found!");
 }
 
 void command_finder(int index, String command_from_python){
@@ -226,7 +243,7 @@ void startup_command(String command_from_python){
 
   // else low keep the same
   // Serial.println(Channel_Offset);
-  Serial.println("done!");
+  Serial.println("done!4");
 }
 
 // control motor
@@ -300,7 +317,7 @@ void control_motor(String command_from_python){
     Serial.println(BREAK);
   }
 
-  Serial.println("done!");
+  Serial.println("done!3");
 }
 // control actuator
 // cActutor Channel# EN_EFUSE FR PWM
@@ -349,7 +366,7 @@ void control_actuator(String command_from_python){
   }
   else
     direction = -1;
-  vnh.H_bridge_change(PWM, direction);
+  //vnh.H_bridge_change(PWM, direction);
 
 
   if(TestArduinoScript){
@@ -359,7 +376,7 @@ void control_actuator(String command_from_python){
     Serial.println(PWM);
   }
 
-  Serial.println("done!");
+  Serial.println("done!2");
 }
 
 // sMotorCurrent Channel# (starts the current conversion)
@@ -396,7 +413,7 @@ void motor_diagnostic_start(String command_from_python, bool Speed_bool){
     ads.readSingleEnded(1, 1);
   }
 
-  Serial.println("done!");
+  Serial.println("done!1");
 
 }
 
@@ -489,7 +506,7 @@ void actuator_diagnostic_start(String  command_from_python, bool feeback_T_F){
     ads.readSingleEnded(0, 1);
   }
 
-  Serial.println("done!");
+  Serial.println("done!5");
 }
 
 // get actuator diagnostic data
@@ -617,7 +634,49 @@ void diagnostics_IMU(String command_from_python){
   /////////////////
   // 1c. I2C IMU //
   /////////////////
+  // Variables to hold averaged accelerometer data
+  float averaged_accX = 0.0;
+  float averaged_accY = 0.0;
+  float averaged_accZ = 0.0;
 
+  // Take readings and average over 500ms
+  unsigned long startTime = millis();
+  unsigned int readingsCount = 0;
+
+  while (millis() - startTime < 500) { // Continue until 500ms elapsed
+    sensors_event_t accel;
+    sensors_event_t gyro;
+    sensors_event_t temp;
+    ism330dhcx.getEvent(&accel, &gyro, &temp);
+    averaged_accX += accel.acceleration.x;
+    averaged_accY += accel.acceleration.y;
+    averaged_accZ += accel.acceleration.z;
+    readingsCount++;
+    delay(10); // Delay to ensure readings are not taken too frequently
+  }
+
+    // Calculate the average values
+    averaged_accX /= readingsCount;
+    averaged_accY /= readingsCount;
+    averaged_accZ /= readingsCount;
+
+    // Normalize accelerometer data
+    float accX = averaged_accX;
+    float accY = averaged_accY;
+    float accZ = averaged_accZ;
+  
+    // Calculate roll and pitch angles
+    float ROLL = atan2(-accY, accZ) * 180.0 / PI - zero_roll;
+    float PITCH = atan2(accX, sqrt(accY * accY + accZ * accZ)) * 180.0 / PI - zero_pitch;
+
+    // Print roll and pitch
+  // Prints Roll then Pitch ex: Roll Pitch
+    Serial.print(ROLL);
+    Serial.print(" ");
+    Serial.println(PITCH);
+
+
+    delay(500); // Update every 500ms
 }
 
 void loop() {

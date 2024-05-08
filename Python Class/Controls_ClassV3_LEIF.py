@@ -506,17 +506,22 @@ class Rover_Controls:
         motor_diagnostic_command = "dMotor " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_command, index)
 
-        if(self.verbose):
-            print(motor_diagnostic_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(motor_diagnostic_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
-        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+            left = min(len(float_numb), self.diagnostics_vals.shape[1])
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+        except Exception as e:
+            print("Error: " + motor_diagnostic_command + ": " + str(e))
+
+        # dMotor Channel# -> ALARM TEMP CURRENT OC_FAULT [#, #, #, #, ?, ?, ?, ?, ?, ?]
 
     def start_motor_speed_arduino_command(self, Channel_Numb, index = 0):
         start_motor_diagnostic_speed_command = "sMotrSpeed " + str(Channel_Numb)
@@ -531,16 +536,21 @@ class Rover_Controls:
         motor_diagnostic_speed_command = "dMotrSpeed " + str(Channel_Numb)
         data = self.write_read(motor_diagnostic_speed_command, index)
 
-        if(self.verbose):
-            print(motor_diagnostic_speed_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(motor_diagnostic_speed_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+        except Exception as e:
+            print("Error: " + motor_diagnostic_speed_command + ": " + str(e))
+
+        # dMotrSpeed Channel# -> SPEED [#, #, #, #, ##, ?, ?, ?, ?, ?]
 
     def start_actuator_current_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_diagnostic_current_command = "sActuatorCurrent " + str(Channel_Numb)
@@ -555,17 +565,22 @@ class Rover_Controls:
         actuator_diagnostic_command = "dActuator " + str(Channel_Numb)
         data = self.write_read(actuator_diagnostic_command, index)
 
-        if(self.verbose):
-            print(actuator_diagnostic_command)
-            print(data)
+        try:
+            if(self.verbose_diagnostics):
+                print(actuator_diagnostic_command)
+                print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
-        left = min(len(float_numb), self.diagnostics_vals.shape[1])
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+            left = min(len(float_numb), self.diagnostics_vals.shape[1])
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, :left] = float_numb[:left]
+        except Exception as e:
+            print("Error: " + actuator_diagnostic_command + ": " + str(e))
+
+        # dActuator Channel#  -> TEMP CURRENT OC_FAULT [#, #, #, ?, ?, ?, ?, ?, ?, ?]
 
     def start_actuator_SLEWGEAR_feedback_arduino_command(self, Channel_Numb, index = 0):
         start_actuator_feedback_command = "sActuatrFeeback " + str(Channel_Numb)
@@ -580,16 +595,22 @@ class Rover_Controls:
         actuator_feedback_command = "dActuatrFeeback " + str(Channel_Numb)
         data = self.write_read(actuator_feedback_command, index)
 
-        if(self.verbose):
-            print(actuator_feedback_command)
-            print(data)
 
-        # turn data int variables
-        numbers = data.split()
-        float_numb = [float(num) for num in numbers]
+        try:
+            if(self.verbose_diagnostics):
+                print(actuator_feedback_command)
+                print(data)
 
-        with self.diagnostic_lock[index]:
-            self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+            # turn data int variables
+            numbers = data.split()
+            float_numb = [float(num) for num in numbers]
+
+            with self.diagnostic_lock[index]:
+                self.diagnostics_vals[Channel_Numb-1, 4] = float_numb[0]
+        except Exception as e:
+            print("Error: " + actuator_feedback_command + ": " + str(e))
+        
+        # dActuatrFeeback Channel#  -> FEEDBACK [#, #, #, ?, ##, ?, ?, ?, ?, ?]
 
     def diagnostic_IMU_arduino_command(self, Channel_Numb, index = 0):
         imu_command = "dIMU" + str(Channel_Numb)
