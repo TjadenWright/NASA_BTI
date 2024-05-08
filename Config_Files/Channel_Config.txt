@@ -7,9 +7,9 @@ Channel 6: Rear Right Drive Motor
 Channel 7: Front Left Drive Motor
 Channel 8: Front Right Drive Motor
 Channel 9: Excavation Arm Lift Actuator
-Channel 10: Not Connected
-Channel 11: Not Connected
-Channel 12: Not Connected
+Channel 10: Ramps Actuator
+Channel 11: Battery Lock 2 Actuator
+Channel 12: Battery Lock 1 Actuator
 Channel 13: Not Connected
 Channel 14: Not Connected
 Channel 15: Not Connected
