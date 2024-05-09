@@ -1,9 +1,9 @@
-Channel 1: Rear Left Drive Motor
+Channel 1: Rear Right Drive Motor
 Channel 2: Pivot Slew Gear
 Channel 3: Not Connected
 Channel 4: Front Auger Motor
 Channel 5: Bucketwheel Motor
-Channel 6: Rear Right Drive Motor
+Channel 6: Rear Left Drive Motor
 Channel 7: Front Left Drive Motor
 Channel 8: Front Right Drive Motor
 Channel 9: Excavation Arm Lift Actuator
