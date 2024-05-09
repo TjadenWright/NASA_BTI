@@ -221,11 +221,10 @@ while not (rc1.Get_Button_From_Controller("Menu") and rc1.Get_Button_From_Contro
             rc1.drive_controls(channel_names)
         elif(manual_mode == 2):
             rc1.mine_controls(channel_names)
-        # print(rc1.get_act_OR_motor()[0])
-        # if(connected):
-        #     print("Manual Mode")
-        # else:
-        #     print("Connection Lost")
+        elif(manual_mode == 3):
+            rc1.docking_excavator(channel_names)
+        elif(manual_mode == 4):
+            rc1.docking_dumptruck(channel_names)
 
     elif(mode == 1): # auto mode
         

@@ -264,6 +264,7 @@ class GUI:
         self.masterPOPUP.destroy()
         self.popup_gui_key = 0
         self.masterPOPUP = None
+        self.controls.reset_controls_array()
 
     def handle_selection_select_channel(self, event):
         selected_item = self.dropdown_3.current()
@@ -298,7 +299,7 @@ class GUI:
             self.autonomy_manual = selected_item
 
             if(selected_item == 0): # manual mode
-                options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Place Holder"]
+                options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Docking Mode (Excavator)", "Docking Mode (Dumptruck)"]
 
                 if(self.dropdown_2 is None):
                     self.button_popup.destroy()
