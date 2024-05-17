@@ -266,6 +266,16 @@ class GUI:
         self.masterPOPUP = None
         self.controls.reset_controls_array()
 
+        if(self.dropdown_1):
+            self.dropdown_1.destroy()
+        if(self.dropdown_2):
+            self.dropdown_2.destroy()
+        if(self.dropdown_3):
+            self.dropdown_3.destroy()
+        self.dropdown_1 = None
+        self.dropdown_2 = None
+        self.dropdown_3 = None
+
     def handle_selection_select_channel(self, event):
         selected_item = self.dropdown_3.current()
         self.selected_channel = selected_item
@@ -329,6 +339,16 @@ class GUI:
                 self.masterPOPUP.destroy()
                 self.masterPOPUP = None
                 self.popup_gui_key = 0
+
+                if(self.dropdown_1):
+                    self.dropdown_1.destroy()
+                if(self.dropdown_2):
+                    self.dropdown_2.destroy()
+                if(self.dropdown_3):
+                    self.dropdown_3.destroy()
+                self.dropdown_1 = None
+                self.dropdown_2 = None
+                self.dropdown_3 = None
 
             elif(self.masterPOPUP == None and self.popup_gui_key != 2):
                 print("startup popup gui")
