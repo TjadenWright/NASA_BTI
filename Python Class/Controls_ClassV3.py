@@ -1090,15 +1090,15 @@ class Rover_Controls:
 
             trigger = max(0, (abs(left_y)-self.dead_zone)*(1/(1-self.dead_zone)))
 
-            right_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
-            left_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            left_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            right_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
 
             if(right_side_motors > left_side_motors): # moving direction
-                if(right_side_motors/2 > left_side_motors):
-                    left_side_motors = right_side_motors/2
+                if(right_side_motors/3 > left_side_motors):
+                    left_side_motors = right_side_motors/3
             elif(right_side_motors < left_side_motors):
-                if(right_side_motors < left_side_motors/2):
-                    right_side_motors = left_side_motors/2
+                if(right_side_motors < left_side_motors/3):
+                    right_side_motors = left_side_motors/3
 
 
             # Motor:

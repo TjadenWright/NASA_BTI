@@ -44,7 +44,7 @@ time_delay_not_seeing_tag = 0.5            # <--- how much time do you want to a
 Vmax = 0.5                                 # <--- maximum velocity of the rover 0 to 1.
 
 #### Diagnotic Data Values to Change ####
-Fake_traffic = False
+Fake_traffic = True
 img_diangostics = None
 
 #### Localization Values to Change ####
@@ -53,7 +53,7 @@ zoom_factor = 1.0
 zoom_step = 0.1  # You can adjust the step size as needed.
 img_Localization = None # start of image at nothing (don't change)
 
-enable_arduino = True
+enable_arduino = False
 
 #### General Values to Change ####
 VERBOSE = False                            # <--- do you want diagnostic data?
