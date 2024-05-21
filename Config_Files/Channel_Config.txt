@@ -13,4 +13,4 @@ Channel 12: Battery Lock 1 Actuator
 Channel 13: Not Connected
 Channel 14: Not Connected
 Channel 15: Not Connected
-Channel 16: Not Connected
+Channel 16: IMU and Motherboard

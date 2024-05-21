@@ -1071,6 +1071,16 @@ class Rover_Controls:
 
         if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
 
+            if(self.first_time_setup):
+                # set mode to 0
+                self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
+                self.first_time_setup = 0 
+
+            if self.can_flip():
+                if(self.Get_Button_From_Controller('X_Button')):
+                    self.controls_vals[driveFL][5] = not self.controls_vals[driveFL][5]
+                    self.last_flip_time = pygame.time.get_ticks()
+
             # Controls_Names = ['Left_Joystick_X', 'Left_Joystick_Y', 'Right_Joystick_X', 'Right_Joystick_Y',
             #                   'Dpad_Up', 'Dpad_Down', 'Dpad_Left', 'Dpad_Right', 'L2_Trigger', 'R2_Trigger',
             #                   'A_Button', 'B_Button', 'Y_Button', 'X_Button', 'L1_Button', 'R1_Button',
@@ -1083,6 +1093,7 @@ class Rover_Controls:
 
             print(left_y)
 
+
             if(left_y > 0):
                 direction = 1 # go forward
             else:
@@ -1090,8 +1101,12 @@ class Rover_Controls:
 
             trigger = max(0, (abs(left_y)-self.dead_zone)*(1/(1-self.dead_zone)))
 
-            left_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
-            right_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            if(self.controls_vals[driveFL][5]):
+                left_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                right_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            else:
+                left_side_motors = 150*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                right_side_motors = 150*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
 
             if(right_side_motors > left_side_motors): # moving direction
                 if(right_side_motors/3 > left_side_motors):
@@ -1151,8 +1166,8 @@ class Rover_Controls:
             self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
 
             # bucketwheel
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[driveFR], self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFR], self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
 
             y = 100
 
@@ -1170,8 +1185,8 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[driveRR], self.controls_vals[driveRR][0], self.controls_vals[driveRR][2], self.controls_vals[driveRR][3], self.controls_vals[driveRR][4]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRR], self.controls_vals[driveRR][0], self.controls_vals[driveRR][2], self.controls_vals[driveRR][3], self.controls_vals[driveRR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
 
             y = 240
 
@@ -1189,8 +1204,8 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[driveFL], self.controls_vals[driveFL][0], self.controls_vals[driveFL][2], self.controls_vals[driveFL][3], self.controls_vals[driveFL][4]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFL], self.controls_vals[driveFL][0], self.controls_vals[driveFL][2], self.controls_vals[driveFL][3], self.controls_vals[driveFL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
 
             y = 380
 
@@ -1208,8 +1223,8 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[driveRL], self.controls_vals[driveRL][0], self.controls_vals[driveRL][2], self.controls_vals[driveRL][3], self.controls_vals[driveRL][4]]  # Example states, modify as needed
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRL], self.controls_vals[driveRL][0], self.controls_vals[driveRL][2], self.controls_vals[driveRL][3], self.controls_vals[driveRL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
 
             y = 520
 
@@ -1515,6 +1530,7 @@ class Rover_Controls:
                 y += 20
     
     def docking_excavator(self, channel_names):
+        rear_auger = None
         lower_ramp_act = None
         batter_locking_act_1 = None
         batter_locking_act_2 = None
@@ -1527,8 +1543,17 @@ class Rover_Controls:
                 batter_locking_act_1 = i
             elif "Battery Lock 2 Actuator" in name:
                 batter_locking_act_2 = i
+            elif "Rear Auger Motor" in name:
+                rear_auger = i
 
-        if(lower_ramp_act is not None and batter_locking_act_1 is not None and batter_locking_act_2 is not None):
+        if(lower_ramp_act is not None and batter_locking_act_1 is not None and batter_locking_act_2 is not None and rear_auger is not None):
+
+            if(self.first_time_setup):
+                self.controls_vals[rear_auger][2] = 30
+                self.controls_vals[rear_auger][3] = 1 # forward
+                self.controls_vals[rear_auger][0] = 1 # disable motor
+                self.first_time_setup = 0 
+
             # ramp actuator
             left_y = self.Get_Button_From_Controller('Left_Joystick_Y')
             # print("RIGHT_Y", right_y)
@@ -1552,7 +1577,31 @@ class Rover_Controls:
             trigger_act_lock = self.maximum_voltage*max(0, (abs(right_x)-self.dead_zone)*(1/(1-self.dead_zone)))
 
 
-            if(self.controller):
+            if(self.controller): 
+                # control bucketwheel
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('X_Button')):
+                        self.controls_vals[rear_auger][1] = not self.controls_vals[rear_auger][1]
+                        self.controls_vals[rear_auger][0] = not self.controls_vals[rear_auger][1]
+                        self.last_flip_time = pygame.time.get_ticks()
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('Y_Button')):
+                        if(self.controls_vals[rear_auger][2] < 255):
+                            self.controls_vals[rear_auger][2] = self.controls_vals[rear_auger][2] + 5
+                            self.last_flip_time = pygame.time.get_ticks()
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('B_Button')):
+                        if(self.controls_vals[rear_auger][2] == 0):
+                            self.controls_vals[rear_auger][3] = not self.controls_vals[rear_auger][3]
+                            self.last_flip_time = pygame.time.get_ticks()
+                if self.can_flip():
+                    if(self.Get_Button_From_Controller('A_Button')):
+                        if(self.controls_vals[rear_auger][2] > 0):
+                            self.controls_vals[rear_auger][2] = self.controls_vals[rear_auger][2] - 5
+                            self.last_flip_time = pygame.time.get_ticks()
+                        
+                self.controls_vals[rear_auger][4] = 0 # active high break?
+
                 # ramp act
                 self.controls_vals[lower_ramp_act][0] = 0
                 self.controls_vals[lower_ramp_act][1] = trigger_act_ramp
@@ -1568,6 +1617,13 @@ class Rover_Controls:
                 self.controls_vals[batter_locking_act_2][1] = trigger_act_lock
                 self.controls_vals[batter_locking_act_2][2] = direction_act_lock
             else:
+                # mirror auger
+                self.controls_vals[rear_auger][0] = 0
+                self.controls_vals[rear_auger][1] = 1
+                self.controls_vals[rear_auger][2] = 0
+                self.controls_vals[rear_auger][3] = 1
+                self.controls_vals[rear_auger][4] = 1 
+
                 # turn off acutator
                 self.controls_vals[lower_ramp_act][0] = 0
                 self.controls_vals[lower_ramp_act][1] = 0
@@ -1641,10 +1697,29 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 30
 
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[rear_auger], self.controls_vals[rear_auger][0], self.controls_vals[rear_auger][2], self.controls_vals[rear_auger][3], self.controls_vals[rear_auger][4]]  # Example states, modify as needed
+
+            y =730
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 30
+
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
-            signals = ['lower_ramp_act', 'batter_locking_act_1', 'batter_locking_act_2']
-            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, batter_locking_act_2 is not None]  # Example states, modify as needed
+            signals = ['lower_ramp_act', 'batter_locking_act_1', 'batter_locking_act_2', 'rear_auger']
+            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, batter_locking_act_2 is not None, rear_auger is not None]  # Example states, modify as needed
 
             y = 100
 
@@ -1682,6 +1757,7 @@ class Rover_Controls:
             # print("trigger_act", trigger_act)
 
             if(self.controller):
+
                 #hopper 1
                 self.controls_vals[hopper_act_1][0] = 0
                 self.controls_vals[hopper_act_1][1] = trigger_act_hopper
@@ -1693,6 +1769,7 @@ class Rover_Controls:
                 self.controls_vals[hopper_act_2][2] = direction_act_hopper
 
             else:
+
                 # turn off acutator
                 self.controls_vals[hopper_act_1][0] = 0
                 self.controls_vals[hopper_act_1][1] = 0
