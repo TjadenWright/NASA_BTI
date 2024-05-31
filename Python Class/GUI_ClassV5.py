@@ -309,7 +309,7 @@ class GUI:
             self.autonomy_manual = selected_item
 
             if(selected_item == 0): # manual mode
-                options2 = ["Individual Control", "Drive Mode", "Excavate Mode", "Docking Mode (Excavator)", "Docking Mode (Dumptruck)"]
+                options2 = ["Individual Control", "Forward Drive Mode", "Reverse Drive Mode", "Tank Steer Mode", "Excavate Mode", "Docking Mode (Excavator)", "Docking Mode (Dumptruck)"]
 
                 if(self.dropdown_2 is None):
                     self.button_popup.destroy()
@@ -1501,7 +1501,7 @@ class GUI:
         fill_rect = pygame.Rect(x + 1, y + THERMOMETER_HEIGHT - fill_height, THERMOMETER_WIDTH - 1, fill_height)
         pygame.draw.rect(screen, color, fill_rect)
 
-    def draw_load(self, screen, value, units = "kg", text = "Battery Temperature", x = THERMOMETER_X, y = THERMOMETER_Y):
+    def draw_load(self, screen, value, max_val, units = "kg", text = "Battery Temperature", x = THERMOMETER_X, y = THERMOMETER_Y):
         # def draw_thermometer(self, screen, value, text = "Battery Temperature", x = THERMOMETER_X, y = THERMOMETER_Y):
         # text
         txt = self.font_small.render(text, True, WHITE)
@@ -1515,11 +1515,11 @@ class GUI:
         pygame.draw.rect(screen, WHITE, (x, y, THERMOMETER_WIDTH, THERMOMETER_HEIGHT), 2)
 
         # Calculate fill height based on value
-        fill_height = THERMOMETER_HEIGHT * (value / 100)
+        fill_height = THERMOMETER_HEIGHT * (value / max_val)
 
-        if(value <= 0.5*100):
+        if(value <= 0.5*max_val):
             color = GREEN
-        elif(value <= 0.7*100 and value > 0.5*100):
+        elif(value <= 0.7*max_val and value > 0.5*max_val):
             color = YELLOW
         else:
             color = RED
@@ -1578,16 +1578,18 @@ class GUI:
                         # 15, 14, 13, 12
                         # ALARM TEMP CURRENT OC_FAULT FEEDBACK, LOADCELL, OUT_TEMP
                         # dTempAndLC Channel# -> SPEED [#, #, #, #., ##, ###, ###, ?, ?, ?]
-                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps3, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), 200, "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), 200, "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), 200, "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1), 200, "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1) * 4, 800, "kg", "Load Cell Total", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step - 30)
                     else:
                         # diagnostics_array[self.board_channel, 2]
-                        self.draw_load(self.screenDiag, round(diagnostics_array[12, 5], 1), "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[13, 5], 1), "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps3, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[14, 5], 1), "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps3, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[15, 5], 1), "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps3, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(diagnostics_array[15, 5], 1), 200, "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(diagnostics_array[13, 5], 1), 200, "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(diagnostics_array[12, 5], 1), 200, "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(diagnostics_array[14, 5], 1), 200, "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round(diagnostics_array[15, 5], 1) + round(diagnostics_array[13, 5], 1) + round(diagnostics_array[12, 5], 1) + round(diagnostics_array[14, 5], 1), 800, "kg", "Load Cell Total", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step - 30)
 
                 elif(self.channel[self.board_channel] == 0): # motor
                     if(self.false_traffic):

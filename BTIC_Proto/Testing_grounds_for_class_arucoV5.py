@@ -220,10 +220,14 @@ while not (rc1.Get_Button_From_Controller("Menu") and rc1.Get_Button_From_Contro
         elif(manual_mode == 1):
             rc1.drive_controls(channel_names)
         elif(manual_mode == 2):
-            rc1.mine_controls(channel_names)
+            rc1.reverse_drive_controls(channel_names)
         elif(manual_mode == 3):
-            rc1.docking_excavator(channel_names)
+            rc1.tank_drive_controls(channel_names)
         elif(manual_mode == 4):
+            rc1.mine_controls(channel_names)
+        elif(manual_mode == 5):
+            rc1.docking_excavator(channel_names)
+        elif(manual_mode == 6):
             rc1.docking_dumptruck(channel_names)
 
     elif(mode == 1): # auto mode

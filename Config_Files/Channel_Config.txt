@@ -10,7 +10,7 @@ Channel 9: Excavation Arm Lift Actuator
 Channel 10: Ramps Actuator
 Channel 11: Battery Lock 2 Actuator
 Channel 12: Battery Lock 1 Actuator
-Channel 13: Not Connected
-Channel 14: Not Connected
-Channel 15: Not Connected
+Channel 13: Rear Auger Motor
+Channel 14: Hopper Tip 1 Actuator
+Channel 15: Hopper Tip 2 Actuator
 Channel 16: IMU and Motherboard

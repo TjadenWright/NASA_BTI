@@ -1105,8 +1105,8 @@ class Rover_Controls:
                 left_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
                 right_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
             else:
-                left_side_motors = 150*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
-                right_side_motors = 150*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                left_side_motors = 75*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                right_side_motors = 75*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
 
             if(right_side_motors > left_side_motors): # moving direction
                 if(right_side_motors/3 > left_side_motors):
@@ -1125,49 +1125,556 @@ class Rover_Controls:
 
             # right
             # front
-            # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
-            # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
-            self.controls_vals[driveFR][3] = direction
-            self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
-            if(self.controls_vals[driveFR][4] == 0):
+            if(self.controller): 
+                # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFR][3] = direction
+                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFR][4] == 0):
+                    self.controls_vals[driveFR][2] = 0
+                else:
+                    self.controls_vals[driveFR][2] = right_side_motors
+                self.controls_vals[driveFR][0] = not self.controls_vals[driveFR][3]
+
+                # rear
+                # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRR][3] = direction
+                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRR][4] == 0):
+                    self.controls_vals[driveRR][2] = 0
+                else:
+                    self.controls_vals[driveRR][2] = right_side_motors
+                self.controls_vals[driveRR][0] = not self.controls_vals[driveRR][3]
+
+                # left
+                # front
+                # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFL][3] = not direction
+                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFL][4] == 0):
+                    self.controls_vals[driveFL][2] = 0
+                else:
+                    self.controls_vals[driveFL][2] = left_side_motors
+                self.controls_vals[driveFL][0] = not self.controls_vals[driveFL][3]
+
+                # rear
+                # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRL][3] = not direction
+                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRL][4] == 0):
+                    self.controls_vals[driveRL][2] = 0
+                else:
+                    self.controls_vals[driveRL][2] = left_side_motors
+                self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+            else:
+                self.controls_vals[driveFR][0] = 0
+                self.controls_vals[driveFR][1] = 1
                 self.controls_vals[driveFR][2] = 0
-            else:
-                self.controls_vals[driveFR][2] = right_side_motors
-            self.controls_vals[driveFR][0] = not self.controls_vals[driveFR][3]
+                self.controls_vals[driveFR][3] = 1
+                self.controls_vals[driveFR][4] = 1 
 
-            # rear
-            # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
-            # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
-            self.controls_vals[driveRR][3] = direction
-            self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
-            if(self.controls_vals[driveRR][4] == 0):
+                self.controls_vals[driveRR][0] = 0
+                self.controls_vals[driveRR][1] = 1
                 self.controls_vals[driveRR][2] = 0
-            else:
-                self.controls_vals[driveRR][2] = right_side_motors
-            self.controls_vals[driveRR][0] = not self.controls_vals[driveRR][3]
+                self.controls_vals[driveRR][3] = 1
+                self.controls_vals[driveRR][4] = 1 
 
-            # left
-            # front
-            # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
-            # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
-            self.controls_vals[driveFL][3] = not direction
-            self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
-            if(self.controls_vals[driveFL][4] == 0):
+                self.controls_vals[driveFL][0] = 0
+                self.controls_vals[driveFL][1] = 1
                 self.controls_vals[driveFL][2] = 0
-            else:
-                self.controls_vals[driveFL][2] = left_side_motors
-            self.controls_vals[driveFL][0] = not self.controls_vals[driveFL][3]
+                self.controls_vals[driveFL][3] = 1
+                self.controls_vals[driveFL][4] = 1 
 
-            # rear
-            # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
-            # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
-            self.controls_vals[driveRL][3] = not direction
-            self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
-            if(self.controls_vals[driveRL][4] == 0):
+                self.controls_vals[driveRL][0] = 0
+                self.controls_vals[driveRL][1] = 1
                 self.controls_vals[driveRL][2] = 0
+                self.controls_vals[driveRL][3] = 1
+                self.controls_vals[driveRL][4] = 1 
+
+            # bucketwheel
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFR], self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRR], self.controls_vals[driveRR][0], self.controls_vals[driveRR][2], self.controls_vals[driveRR][3], self.controls_vals[driveRR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 240
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFL], self.controls_vals[driveFL][0], self.controls_vals[driveFL][2], self.controls_vals[driveFL][3], self.controls_vals[driveFL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRL], self.controls_vals[driveRL][0], self.controls_vals[driveRL][2], self.controls_vals[driveRL][3], self.controls_vals[driveRL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 520
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+        else:
+            # bucketwheel
+            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left']
+            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                else:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+    def reverse_drive_controls(self, channel_names):
+        driveFR = None
+        driveFL = None
+        driveRR = None
+        driveRL = None
+
+        # get the channel number 
+        for i, name in enumerate(channel_names):
+            if "Front Left Drive Motor" in name:
+                driveFL = i
+            elif "Front Right Drive Motor" in name:
+                driveFR = i
+            elif "Rear Left Drive Motor" in name:
+                driveRL = i
+            elif "Rear Right Drive Motor" in name:
+                driveRR = i
+
+        print(channel_names)
+
+        print("driveFL: ", driveFL)
+        print("driveFR: ", driveFR)
+        print("driveRL: ", driveRL)
+        print("driveRR: ", driveRR)
+
+        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+
+            if(self.first_time_setup):
+                # set mode to 0
+                self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
+                self.first_time_setup = 0 
+
+            if self.can_flip():
+                if(self.Get_Button_From_Controller('X_Button')):
+                    self.controls_vals[driveFL][5] = not self.controls_vals[driveFL][5]
+                    self.last_flip_time = pygame.time.get_ticks()
+
+            # Controls_Names = ['Left_Joystick_X', 'Left_Joystick_Y', 'Right_Joystick_X', 'Right_Joystick_Y',
+            #                   'Dpad_Up', 'Dpad_Down', 'Dpad_Left', 'Dpad_Right', 'L2_Trigger', 'R2_Trigger',
+            #                   'A_Button', 'B_Button', 'Y_Button', 'X_Button', 'L1_Button', 'R1_Button',
+            #                   'Menu', 'Select', 'Left_Stick_In', 'Right_Stick_In']
+
+            right_x = self.Get_Button_From_Controller('Right_Joystick_X')
+            # right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+            # left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+            left_y = self.Get_Button_From_Controller('Left_Joystick_Y')
+
+            print(left_y)
+
+
+            if(left_y > 0):
+                direction = 1 # go forward
             else:
-                self.controls_vals[driveRL][2] = left_side_motors
-            self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+                direction = 0 # go back
+
+            trigger = max(0, (abs(left_y)-self.dead_zone)*(1/(1-self.dead_zone)))
+
+            if(self.controls_vals[driveFL][5]):
+                left_side_motors = self.maximum_voltage*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                right_side_motors = self.maximum_voltage*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+            else:
+                left_side_motors = 75*trigger*(1.0-max(0, (right_x-self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+                right_side_motors = 75*trigger*(1.0+min(0, (right_x+self.dead_zone)*(1/(1-self.dead_zone)))) + self.upper_loss
+
+            if(right_side_motors > left_side_motors): # moving direction
+                if(right_side_motors/3 > left_side_motors):
+                    left_side_motors = right_side_motors/3
+            elif(right_side_motors < left_side_motors):
+                if(right_side_motors < left_side_motors/3):
+                    right_side_motors = left_side_motors/3
+
+
+            # Motor:
+            # self.controls_vals[0] = Motor Enable
+            # self.controls_vals[1] = ENable EFUSE
+            # self.controls_vals[2] = PWM
+            # self.controls_vals[3] = FR
+            # self.controls_vals[4] = BRAKE
+
+            # right
+            # front
+            if(self.controller): 
+                # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFR][3] = not direction
+                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFR][4] == 0):
+                    self.controls_vals[driveFR][2] = 0
+                else:
+                    self.controls_vals[driveFR][2] = left_side_motors
+                self.controls_vals[driveFR][0] = not self.controls_vals[driveFR][3]
+
+                # rear
+                # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRR][3] = not direction
+                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRR][4] == 0):
+                    self.controls_vals[driveRR][2] = 0
+                else:
+                    self.controls_vals[driveRR][2] = left_side_motors
+                self.controls_vals[driveRR][0] = not self.controls_vals[driveRR][3]
+
+                # left
+                # front
+                # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFL][3] = direction
+                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFL][4] == 0):
+                    self.controls_vals[driveFL][2] = 0
+                else:
+                    self.controls_vals[driveFL][2] = right_side_motors
+                self.controls_vals[driveFL][0] = not self.controls_vals[driveFL][3]
+
+                # rear
+                # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRL][3] = direction
+                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRL][4] == 0):
+                    self.controls_vals[driveRL][2] = 0
+                else:
+                    self.controls_vals[driveRL][2] = right_side_motors
+                self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+            else:
+                self.controls_vals[driveFR][0] = 0
+                self.controls_vals[driveFR][1] = 1
+                self.controls_vals[driveFR][2] = 0
+                self.controls_vals[driveFR][3] = 1
+                self.controls_vals[driveFR][4] = 1 
+
+                self.controls_vals[driveRR][0] = 0
+                self.controls_vals[driveRR][1] = 1
+                self.controls_vals[driveRR][2] = 0
+                self.controls_vals[driveRR][3] = 1
+                self.controls_vals[driveRR][4] = 1 
+
+                self.controls_vals[driveFL][0] = 0
+                self.controls_vals[driveFL][1] = 1
+                self.controls_vals[driveFL][2] = 0
+                self.controls_vals[driveFL][3] = 1
+                self.controls_vals[driveFL][4] = 1 
+
+                self.controls_vals[driveRL][0] = 0
+                self.controls_vals[driveRL][1] = 1
+                self.controls_vals[driveRL][2] = 0
+                self.controls_vals[driveRL][3] = 1
+                self.controls_vals[driveRL][4] = 1 
+
+            # bucketwheel
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFR], self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRR], self.controls_vals[driveRR][0], self.controls_vals[driveRR][2], self.controls_vals[driveRR][3], self.controls_vals[driveRR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 240
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveFL], self.controls_vals[driveFL][0], self.controls_vals[driveFL][2], self.controls_vals[driveFL][3], self.controls_vals[driveFL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
+            signal_states = [channel_names[driveRL], self.controls_vals[driveRL][0], self.controls_vals[driveRL][2], self.controls_vals[driveRL][3], self.controls_vals[driveRL][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
+
+            y = 520
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+        else:
+            # bucketwheel
+            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left']
+            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                else:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+    def tank_drive_controls(self, channel_names):
+        driveFR = None
+        driveFL = None
+        driveRR = None
+        driveRL = None
+
+        # get the channel number 
+        for i, name in enumerate(channel_names):
+            if "Front Left Drive Motor" in name:
+                driveFL = i
+            elif "Front Right Drive Motor" in name:
+                driveFR = i
+            elif "Rear Left Drive Motor" in name:
+                driveRL = i
+            elif "Rear Right Drive Motor" in name:
+                driveRR = i
+
+        print(channel_names)
+
+        print("driveFL: ", driveFL)
+        print("driveFR: ", driveFR)
+        print("driveRL: ", driveRL)
+        print("driveRR: ", driveRR)
+
+        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+
+            if(self.first_time_setup):
+                # set mode to 0
+                self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
+                self.first_time_setup = 0 
+
+            if self.can_flip():
+                if(self.Get_Button_From_Controller('X_Button')):
+                    self.controls_vals[driveFL][5] = not self.controls_vals[driveFL][5]
+                    self.last_flip_time = pygame.time.get_ticks()
+
+            # Controls_Names = ['Left_Joystick_X', 'Left_Joystick_Y', 'Right_Joystick_X', 'Right_Joystick_Y',
+            #                   'Dpad_Up', 'Dpad_Down', 'Dpad_Left', 'Dpad_Right', 'L2_Trigger', 'R2_Trigger',
+            #                   'A_Button', 'B_Button', 'Y_Button', 'X_Button', 'L1_Button', 'R1_Button',
+            #                   'Menu', 'Select', 'Left_Stick_In', 'Right_Stick_In']
+
+            right_y = self.Get_Button_From_Controller('Right_Joystick_Y')
+            # right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+            # left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+            left_y = self.Get_Button_From_Controller('Left_Joystick_Y')
+
+            print(left_y)
+
+
+            if(left_y > 0):
+                direction_l = 1 # go forward
+            else:
+                direction_l = 0 # go back
+
+            if(right_y > 0):
+                direction_r = 1 # go forward
+            else:
+                direction_r = 0 # go back
+
+            if(self.controls_vals[driveFL][5]):
+                trig_right = self.maximum_voltage*abs(right_y)
+                trig_left = self.maximum_voltage*abs(left_y)
+            else:
+                trig_right = 75*abs(right_y)
+                trig_left = 75*abs(left_y)
+
+
+            # Motor:
+            # self.controls_vals[0] = Motor Enable
+            # self.controls_vals[1] = ENable EFUSE
+            # self.controls_vals[2] = PWM
+            # self.controls_vals[3] = FR
+            # self.controls_vals[4] = BRAKE
+
+            # right
+            # front
+            if(self.controller): 
+                # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFR][3] = direction_r
+                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFR][4] == 0):
+                    self.controls_vals[driveFR][2] = 0
+                else:
+                    self.controls_vals[driveFR][2] = trig_right
+                self.controls_vals[driveFR][0] = not self.controls_vals[driveFR][3]
+
+                # rear
+                # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRR][3] = direction_r
+                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRR][4] == 0):
+                    self.controls_vals[driveRR][2] = 0
+                else:
+                    self.controls_vals[driveRR][2] = trig_right
+                self.controls_vals[driveRR][0] = not self.controls_vals[driveRR][3]
+
+                # left
+                # front
+                # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFL][3] = not direction_l
+                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFL][4] == 0):
+                    self.controls_vals[driveFL][2] = 0
+                else:
+                    self.controls_vals[driveFL][2] = trig_left
+                self.controls_vals[driveFL][0] = not self.controls_vals[driveFL][3]
+
+                # rear
+                # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRL][3] = not direction_l
+                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRL][4] == 0):
+                    self.controls_vals[driveRL][2] = 0
+                else:
+                    self.controls_vals[driveRL][2] = trig_left
+                self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+            else:
+                self.controls_vals[driveFR][0] = 0
+                self.controls_vals[driveFR][1] = 1
+                self.controls_vals[driveFR][2] = 0
+                self.controls_vals[driveFR][3] = 1
+                self.controls_vals[driveFR][4] = 1 
+
+                self.controls_vals[driveRR][0] = 0
+                self.controls_vals[driveRR][1] = 1
+                self.controls_vals[driveRR][2] = 0
+                self.controls_vals[driveRR][3] = 1
+                self.controls_vals[driveRR][4] = 1 
+
+                self.controls_vals[driveFL][0] = 0
+                self.controls_vals[driveFL][1] = 1
+                self.controls_vals[driveFL][2] = 0
+                self.controls_vals[driveFL][3] = 1
+                self.controls_vals[driveFL][4] = 1 
+
+                self.controls_vals[driveRL][0] = 0
+                self.controls_vals[driveRL][1] = 1
+                self.controls_vals[driveRL][2] = 0
+                self.controls_vals[driveRL][3] = 1
+                self.controls_vals[driveRL][4] = 1 
 
             # bucketwheel
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
@@ -1310,11 +1817,11 @@ class Rover_Controls:
                 direction_act = 1 # go forward
             else:
                 direction_act = 0 # go back
-            trigger_act = 50*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
+            trigger_act = 100*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
             # print("trigger_act", trigger_act)
             
             # slew
-            left_x = self.Get_Button_From_Controller('Left_Joystick_X')
+            left_x = self.Get_Button_From_Controller('Left_Joystick_Y')
 
             # print("LEFT_X", left_x)
 
@@ -1323,17 +1830,17 @@ class Rover_Controls:
             else:
                 direction_slew = 0 # go back
 
-            trigger_slew = self.maximum_voltage*max(0, (abs(left_x)-self.dead_zone)*(1/(1-self.dead_zone)))
+            trigger_slew = 127*max(0, (abs(left_x)-self.dead_zone)*(1/(1-self.dead_zone)))
 
             if(self.controller):
                 # select between auger and bucketwheel
                 if(self.first_time_setup):
                     # bucketwheel speed: 75 
                     self.controls_vals[bucket_wheel][2] = 75
-                    self.controls_vals[bucket_wheel][3] = 1 # forward
+                    self.controls_vals[bucket_wheel][3] = 0 # forward
                     self.controls_vals[bucket_wheel][0] = 1 # disable motor
                     self.controls_vals[front_auger][2] = 30
-                    self.controls_vals[front_auger][3] = 1 # forward
+                    self.controls_vals[front_auger][3] = 0 # forward
                     self.controls_vals[front_auger][0] = 1 # disable motor
                     self.first_time_setup = 0 
                 if self.can_flip():
@@ -1344,7 +1851,7 @@ class Rover_Controls:
                 # control bucketwheel
                 if(self.auger_or_bucket):
                     if self.can_flip():
-                        if(self.Get_Button_From_Controller('X_Button')):
+                        if(self.Get_Button_From_Controller('A_Button')):
                             self.controls_vals[bucket_wheel][1] = not self.controls_vals[bucket_wheel][1]
                             self.controls_vals[bucket_wheel][0] = not self.controls_vals[bucket_wheel][1]
                             self.last_flip_time = pygame.time.get_ticks()
@@ -1354,12 +1861,7 @@ class Rover_Controls:
                                 self.controls_vals[bucket_wheel][2] = self.controls_vals[bucket_wheel][2] + 5
                                 self.last_flip_time = pygame.time.get_ticks()
                     if self.can_flip():
-                        if(self.Get_Button_From_Controller('B_Button')):
-                            if(self.controls_vals[bucket_wheel][2] == 0):
-                                self.controls_vals[bucket_wheel][3] = not self.controls_vals[bucket_wheel][3]
-                                self.last_flip_time = pygame.time.get_ticks()
-                    if self.can_flip():
-                        if(self.Get_Button_From_Controller('A_Button')):
+                        if(self.Get_Button_From_Controller('X_Button')):
                             if(self.controls_vals[bucket_wheel][2] > 0):
                                 self.controls_vals[bucket_wheel][2] = self.controls_vals[bucket_wheel][2] - 5
                                 self.last_flip_time = pygame.time.get_ticks()
@@ -1367,7 +1869,7 @@ class Rover_Controls:
                     self.controls_vals[bucket_wheel][4] = 0 # active high break?
                 else:
                     if self.can_flip():
-                        if(self.Get_Button_From_Controller('X_Button')):
+                        if(self.Get_Button_From_Controller('A_Button')):
                             self.controls_vals[front_auger][1] = not self.controls_vals[front_auger][1]
                             self.controls_vals[front_auger][0] = not self.controls_vals[front_auger][1]
                             self.last_flip_time = pygame.time.get_ticks()
@@ -1377,29 +1879,48 @@ class Rover_Controls:
                                 self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] + 5
                                 self.last_flip_time = pygame.time.get_ticks()
                     if self.can_flip():
-                        if(self.Get_Button_From_Controller('B_Button')):
-                            if(self.controls_vals[front_auger][2] == 0):
-                                self.controls_vals[front_auger][3] = not self.controls_vals[front_auger][3]
-                                self.last_flip_time = pygame.time.get_ticks()
-                    if self.can_flip():
-                        if(self.Get_Button_From_Controller('A_Button')):
+                        if(self.Get_Button_From_Controller('X_Button')):
                             if(self.controls_vals[front_auger][2] > 0):
                                 self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] - 5
                                 self.last_flip_time = pygame.time.get_ticks()
                             
                     self.controls_vals[front_auger][4] = 0 # active high break?
 
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[bucket_wheel][1] = 0
+                    self.controls_vals[bucket_wheel][0] = 1
+                    self.controls_vals[bucket_wheel][4] = 1 # active high break?
+                else:
+                    self.controls_vals[bucket_wheel][4] = 0 # active high break?
+
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[front_auger][1] = 0
+                    self.controls_vals[front_auger][0] = 1
+                    self.controls_vals[front_auger][4] = 1 # active high break?
+                else:
+                    self.controls_vals[front_auger][4] = 0 # active high break?
+
                 # control of lift actuator
                 self.controls_vals[arm_lift][0] = 1
-                self.controls_vals[arm_lift][1] = trigger_act
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[arm_lift][1] = 0
+                else:
+                    self.controls_vals[arm_lift][1] = trigger_act
                 self.controls_vals[arm_lift][2] = direction_act
 
                 # turn off slew gear
-                self.controls_vals[slew_gear][0] = 0
-                self.controls_vals[slew_gear][1] = 1
-                self.controls_vals[slew_gear][2] = trigger_slew
-                self.controls_vals[slew_gear][3] = direction_slew
-                self.controls_vals[slew_gear][4] = 0 # no break 
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[slew_gear][0] = 1 # disable
+                    self.controls_vals[slew_gear][1] = 0
+                    self.controls_vals[slew_gear][2] = 0
+                    self.controls_vals[slew_gear][3] = direction_slew
+                    self.controls_vals[slew_gear][4] = 1 # break 
+                else:
+                    self.controls_vals[slew_gear][0] = 0
+                    self.controls_vals[slew_gear][1] = 1
+                    self.controls_vals[slew_gear][2] = trigger_slew
+                    self.controls_vals[slew_gear][3] = direction_slew
+                    self.controls_vals[slew_gear][4] = 0 # no break 
 
             else:
                 # turn off bucketwheel
@@ -1550,7 +2071,30 @@ class Rover_Controls:
             elif "Rear Auger Motor" in name:
                 rear_auger = i
 
-        if(lower_ramp_act is not None and batter_locking_act_1 is not None and batter_locking_act_2 is not None and rear_auger is not None):
+        driveFR = None
+        driveFL = None
+        driveRR = None
+        driveRL = None
+
+        # get the channel number 
+        for i, name in enumerate(channel_names):
+            if "Front Left Drive Motor" in name:
+                driveFL = i
+            elif "Front Right Drive Motor" in name:
+                driveFR = i
+            elif "Rear Left Drive Motor" in name:
+                driveRL = i
+            elif "Rear Right Drive Motor" in name:
+                driveRR = i
+
+        print(channel_names)
+
+        print("driveFL: ", driveFL)
+        print("driveFR: ", driveFR)
+        print("driveRL: ", driveRL)
+        print("driveRR: ", driveRR)
+
+        if(lower_ramp_act is not None and batter_locking_act_1 is not None and batter_locking_act_2 is not None and rear_auger is not None and driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
 
             if(self.first_time_setup):
                 self.controls_vals[rear_auger][2] = 30
@@ -1569,22 +2113,32 @@ class Rover_Controls:
             # print("trigger_act", trigger_act)
             
             # battery locking
-            right_x = self.Get_Button_From_Controller('Right_Joystick_X')
+            right_y = self.Get_Button_From_Controller('Right_Joystick_Y')
 
             # print("LEFT_X", left_x)
 
-            if(right_x > 0):
+            if(right_y > 0):
                 direction_act_lock = 1 # go forward
             else:
                 direction_act_lock = 0 # go back
 
-            trigger_act_lock = self.maximum_voltage*max(0, (abs(right_x)-self.dead_zone)*(1/(1-self.dead_zone)))
+            trigger_act_lock = self.maximum_voltage*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
+
+            right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+            left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+
+            trig_drive = 75*max(right_t, left_t)
+
+            if right_t > left_t:
+                direction = 1
+            else:
+                direction = 0
 
 
             if(self.controller): 
                 # control bucketwheel
                 if self.can_flip():
-                    if(self.Get_Button_From_Controller('X_Button')):
+                    if(self.Get_Button_From_Controller('A_Button')):
                         self.controls_vals[rear_auger][1] = not self.controls_vals[rear_auger][1]
                         self.controls_vals[rear_auger][0] = not self.controls_vals[rear_auger][1]
                         self.last_flip_time = pygame.time.get_ticks()
@@ -1593,33 +2147,90 @@ class Rover_Controls:
                         if(self.controls_vals[rear_auger][2] < 255):
                             self.controls_vals[rear_auger][2] = self.controls_vals[rear_auger][2] + 5
                             self.last_flip_time = pygame.time.get_ticks()
+                # if self.can_flip():
+                    # self.last_flip_time = pygame.time.get_ticks
                 if self.can_flip():
-                    if(self.Get_Button_From_Controller('B_Button')):
-                        if(self.controls_vals[rear_auger][2] == 0):
-                            self.controls_vals[rear_auger][3] = not self.controls_vals[rear_auger][3]
-                            self.last_flip_time = pygame.time.get_ticks()
-                if self.can_flip():
-                    if(self.Get_Button_From_Controller('A_Button')):
+                    if(self.Get_Button_From_Controller('X_Button')):
                         if(self.controls_vals[rear_auger][2] > 0):
                             self.controls_vals[rear_auger][2] = self.controls_vals[rear_auger][2] - 5
                             self.last_flip_time = pygame.time.get_ticks()
                         
-                self.controls_vals[rear_auger][4] = 0 # active high break?
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[rear_auger][1] = 0
+                    self.controls_vals[rear_auger][0] = 1
+                    self.controls_vals[rear_auger][4] = 1
+                else:
+                    self.controls_vals[rear_auger][4] = 0 # active high break?
 
                 # ramp act
                 self.controls_vals[lower_ramp_act][0] = 0
-                self.controls_vals[lower_ramp_act][1] = trigger_act_ramp
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[lower_ramp_act][1] = 0 
+                else:
+                    self.controls_vals[lower_ramp_act][1] = trigger_act_ramp
                 self.controls_vals[lower_ramp_act][2] = direction_act_ramp
 
                 # lock 1
                 self.controls_vals[batter_locking_act_1][0] = 0
-                self.controls_vals[batter_locking_act_1][1] = trigger_act_lock
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[batter_locking_act_1][1] = 0
+                else:
+                    self.controls_vals[batter_locking_act_1][1] = trigger_act_lock
                 self.controls_vals[batter_locking_act_1][2] = direction_act_lock
 
                 # lock 2
                 self.controls_vals[batter_locking_act_2][0] = 0
-                self.controls_vals[batter_locking_act_2][1] = trigger_act_lock
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[batter_locking_act_2][1] = 0
+                else:
+                    self.controls_vals[batter_locking_act_2][1] = trigger_act_lock
                 self.controls_vals[batter_locking_act_2][2] = direction_act_lock
+
+                # right
+                # front
+                # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFR][3] = direction
+                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFR][4] == 0):
+                    self.controls_vals[driveFR][2] = 0
+                else:
+                    self.controls_vals[driveFR][2] = trig_drive
+                self.controls_vals[driveFR][0] = not self.controls_vals[driveFR][3]
+
+                # rear
+                # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRR][3] = direction
+                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRR][4] == 0):
+                    self.controls_vals[driveRR][2] = 0
+                else:
+                    self.controls_vals[driveRR][2] = trig_drive
+                self.controls_vals[driveRR][0] = not self.controls_vals[driveRR][3]
+
+                # left
+                # front
+                # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveFL][3] = not direction
+                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveFL][4] == 0):
+                    self.controls_vals[driveFL][2] = 0
+                else:
+                    self.controls_vals[driveFL][2] = trig_drive
+                self.controls_vals[driveFL][0] = not self.controls_vals[driveFL][3]
+
+                # rear
+                # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
+                # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
+                self.controls_vals[driveRL][3] = not direction
+                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                if(self.controls_vals[driveRL][4] == 0):
+                    self.controls_vals[driveRL][2] = 0
+                else:
+                    self.controls_vals[driveRL][2] = trig_drive
+                self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
             else:
                 # mirror auger
                 self.controls_vals[rear_auger][0] = 0
@@ -1643,6 +2254,31 @@ class Rover_Controls:
                 self.controls_vals[batter_locking_act_2][1] = 0
                 self.controls_vals[batter_locking_act_2][2] = 0
         
+                # drive
+                self.controls_vals[driveFR][0] = 0
+                self.controls_vals[driveFR][1] = 1
+                self.controls_vals[driveFR][2] = 0
+                self.controls_vals[driveFR][3] = 1
+                self.controls_vals[driveFR][4] = 1 
+
+                self.controls_vals[driveRR][0] = 0
+                self.controls_vals[driveRR][1] = 1
+                self.controls_vals[driveRR][2] = 0
+                self.controls_vals[driveRR][3] = 1
+                self.controls_vals[driveRR][4] = 1 
+
+                self.controls_vals[driveFL][0] = 0
+                self.controls_vals[driveFL][1] = 1
+                self.controls_vals[driveFL][2] = 0
+                self.controls_vals[driveFL][3] = 1
+                self.controls_vals[driveFL][4] = 1 
+
+                self.controls_vals[driveRL][0] = 0
+                self.controls_vals[driveRL][1] = 1
+                self.controls_vals[driveRL][2] = 0
+                self.controls_vals[driveRL][3] = 1
+                self.controls_vals[driveRL][4] = 1 
+
             #  actuator
             signals = ['CHANNEL', 'PWM', 'FR']
             signal_states = [channel_names[lower_ramp_act], self.controls_vals[lower_ramp_act][1], self.controls_vals[lower_ramp_act][2]]  # Example states, modify as needed
@@ -1661,12 +2297,12 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
             
             signals = ['CHANNEL', 'PWM', 'FR']
             signal_states = [channel_names[batter_locking_act_1], self.controls_vals[batter_locking_act_1][1], self.controls_vals[batter_locking_act_1][2]]  # Example states, modify as needed
 
-            y = 310
+            y = 240
 
             for signal, state in zip(signals, signal_states):
                 # Render text
@@ -1680,10 +2316,29 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             signals = ['CHANNEL', 'PWM', 'FR']
             signal_states = [channel_names[batter_locking_act_2], self.controls_vals[batter_locking_act_2][1], self.controls_vals[batter_locking_act_2][2]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[rear_auger], self.controls_vals[rear_auger][0], self.controls_vals[rear_auger][2], self.controls_vals[rear_auger][3], self.controls_vals[rear_auger][4]]  # Example states, modify as needed
 
             y = 520
 
@@ -1699,12 +2354,12 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[rear_auger], self.controls_vals[rear_auger][0], self.controls_vals[rear_auger][2], self.controls_vals[rear_auger][3], self.controls_vals[rear_auger][4]]  # Example states, modify as needed
+            signal_states = ["Drive Motors", self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4]]  # Example states, modify as needed
 
-            y =730
+            y = 660
 
             for signal, state in zip(signals, signal_states):
                 # Render text
@@ -1718,12 +2373,12 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
-            signals = ['lower_ramp_act', 'batter_locking_act_1', 'batter_locking_act_2', 'rear_auger']
-            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, batter_locking_act_2 is not None, rear_auger is not None]  # Example states, modify as needed
+            signals = ['lower_ramp_act', 'batter_locking_act_1', 'batter_locking_act_2', 'rear_auger', 'driveFR', 'driveFL', 'driveRR', 'driveRL']
+            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, batter_locking_act_2 is not None, rear_auger is not None, not None, driveFR is not None, driveFL is not None, driveRR is not None, driveRL is not None]  # Example states, modify as needed
 
             y = 100
 
