@@ -1967,12 +1967,12 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
             signal_states = [channel_names[front_auger], self.controls_vals[front_auger][0], self.controls_vals[front_auger][2], self.controls_vals[front_auger][3], self.controls_vals[front_auger][4]]  # Example states, modify as needed
 
-            y = 310
+            y = 240
 
             for signal, state in zip(signals, signal_states):
                 # Render text
@@ -1986,11 +1986,31 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             #  actuator
             signals = ['CHANNEL', 'PWM', 'FR']
             signal_states = [channel_names[arm_lift], self.controls_vals[arm_lift][1], self.controls_vals[arm_lift][2]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            #  slew gear
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
 
             y = 520
 
@@ -2006,27 +2026,7 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
-
-            #  slew gear
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
-
-            y = 730
-
-            for signal, state in zip(signals, signal_states):
-                # Render text
-                if signal == 'PWM' or signal == 'CHANNEL':
-                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
-                else:
-                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
-                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
-                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
-                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
-                self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             # Draw the open box
             # bucketwheel selected
