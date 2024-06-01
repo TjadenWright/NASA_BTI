@@ -1924,15 +1924,15 @@ class Rover_Controls:
 
             else:
                 # turn off bucketwheel
-                self.controls_vals[bucket_wheel][0] = 0
-                self.controls_vals[bucket_wheel][1] = 1
+                self.controls_vals[bucket_wheel][0] = 1
+                self.controls_vals[bucket_wheel][1] = 0
                 self.controls_vals[bucket_wheel][2] = 0
                 self.controls_vals[bucket_wheel][3] = 1
                 self.controls_vals[bucket_wheel][4] = 1
 
                 # mirror auger
-                self.controls_vals[front_auger][0] = 0
-                self.controls_vals[front_auger][1] = 1
+                self.controls_vals[front_auger][0] = 1
+                self.controls_vals[front_auger][1] = 0
                 self.controls_vals[front_auger][2] = 0
                 self.controls_vals[front_auger][3] = 1
                 self.controls_vals[front_auger][4] = 1 
@@ -1943,8 +1943,8 @@ class Rover_Controls:
                 self.controls_vals[arm_lift][2] = 0
 
                 # turn off slew gear
-                self.controls_vals[slew_gear][0] = 0
-                self.controls_vals[slew_gear][1] = 1
+                self.controls_vals[slew_gear][0] = 1
+                self.controls_vals[slew_gear][1] = 0
                 self.controls_vals[slew_gear][2] = 0
                 self.controls_vals[slew_gear][3] = 1
                 self.controls_vals[slew_gear][4] = 1 
