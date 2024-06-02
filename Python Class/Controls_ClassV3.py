@@ -862,7 +862,7 @@ class Rover_Controls:
         return self.diagnostics_vals
     
     def reset_controls_array(self):
-        self.controls_vals = np.zeros((16, 6), int)
+        # self.controls_vals = np.zeros((16, 6), int)
         self.first_time_setup = 1
 
     def stop_thread(self):
