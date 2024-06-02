@@ -2160,11 +2160,12 @@ class Rover_Controls:
                 direction_act = 0 # go back
             trigger_act = 100*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
 
-            if(self.first_time_setup):
+            if(self.first_time_setup and not self.Get_Button_From_Controller('B_Button')):
                 # bucketwheel speed: 75
                 self.weird_motor_shit(slew_gear)
                 self.weird_motor_shit(bucket_wheel)
                 # self.weird_motor_shit(front_auger)
+                
                 self.first_time_setup = self.first_time_setup - 1
 
                 # first time setup for the motors
@@ -2256,12 +2257,15 @@ class Rover_Controls:
                     else:
                         self.controls_vals[arm_lift][1] = trigger_act
                     self.controls_vals[arm_lift][2] = direction_act
+
+                    if(self.Get_Button_From_Controller('B_Button')):
+                        self.first_time_setup = self.weird_time
                 else:
                     # turn off bucketwheel
                     self.controls_vals[bucket_wheel][0] = 1
                     self.controls_vals[bucket_wheel][1] = 0
                     self.controls_vals[bucket_wheel][2] = 0
-                    self.controls_vals[bucket_wheel][3] = 1
+                    # self.controls_vals[bucket_wheel][3] = 1
                     self.controls_vals[bucket_wheel][4] = 1
 
                     # mirror auger
