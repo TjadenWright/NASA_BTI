@@ -2079,6 +2079,39 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
+    def weird_motor_shit(self, channel):
+        if(self.first_time_setup < self.weird_time/4): 
+            # move otherway
+            self.controls_vals[channel][0] = 0 # disable
+            self.controls_vals[channel][1] = 1
+            self.controls_vals[channel][2] = 1 # 1 pwm
+            # don't need to change direction
+            self.controls_vals[channel][3] = not self.controls_vals[channel][5] # flip direction
+            self.controls_vals[channel][4] = 0 # no break
+        elif(self.first_time_setup < self.weird_time*2/4):
+            # stop/save direction
+            self.controls_vals[channel][0] = 0 # disable
+            self.controls_vals[channel][1] = 1
+            self.controls_vals[channel][2] = 0 # 1 pwm
+            # don't need to change direction
+                # store direction
+            self.controls_vals[channel][5] = self.controls_vals[channel][3]
+            self.controls_vals[channel][4] = 0 # no break
+        elif(self.first_time_setup < self.weird_time*3/4):
+            # move
+            self.controls_vals[channel][0] = 0 # disable
+            self.controls_vals[channel][1] = 1
+            self.controls_vals[channel][2] = 1 # 1 pwm
+            # don't need to change direction
+            self.controls_vals[channel][4] = 0 # no break
+        else: # break first
+            self.controls_vals[channel][0] = 1 # disable
+            self.controls_vals[channel][1] = 0
+            self.controls_vals[channel][2] = 0
+            # don't need to change direction
+            self.controls_vals[channel][4] = 1 # break
+
+
     def mine_test_controls(self, channel_names):
         # Motor:
         # self.controls_vals[0] = Motor Enable
@@ -2088,16 +2121,22 @@ class Rover_Controls:
         # self.controls_vals[4] = BRAKE
 
 
-        slew_gear = None
+        bucket_wheel = None
+        front_auger = None
         arm_lift = None
+        slew_gear = None
 
         for i, name in enumerate(channel_names):
-            if "Pivot Slew Gear" in name:
-                slew_gear = i
+            if "Front Auger Motor" in name:
+                front_auger = i
+            elif "Bucketwheel Motor" in name:
+                bucket_wheel = i
             elif "Excavation Arm Lift Actuator" in name:
                 arm_lift = i
+            elif "Pivot Slew Gear" in name:
+                slew_gear = i
             
-        if(slew_gear is not None and arm_lift is not None):
+        if(front_auger is not None and bucket_wheel is not None and arm_lift is not None and slew_gear is not None):
         # slew gear
             # get slew stick
             left_x = self.Get_Button_From_Controller('Left_Joystick_Y')
@@ -2123,40 +2162,79 @@ class Rover_Controls:
 
             if(self.first_time_setup):
                 # bucketwheel speed: 75
-                if(self.first_time_setup):
-                    if(self.first_time_setup < self.weird_time/4): 
-                        # move otherway
-                        self.controls_vals[slew_gear][0] = 0 # disable
-                        self.controls_vals[slew_gear][1] = 1
-                        self.controls_vals[slew_gear][2] = 1 # 1 pwm
-                        # don't need to change direction
-                        self.controls_vals[slew_gear][3] = not self.controls_vals[slew_gear][5] # flip direction
-                        self.controls_vals[slew_gear][4] = 0 # no break
-                    elif(self.first_time_setup < self.weird_time*2/4):
-                        # stop/save direction
-                        self.controls_vals[slew_gear][0] = 0 # disable
-                        self.controls_vals[slew_gear][1] = 1
-                        self.controls_vals[slew_gear][2] = 0 # 1 pwm
-                        # don't need to change direction
-                            # store direction
-                        self.controls_vals[slew_gear][5] = self.controls_vals[slew_gear][3]
-                        self.controls_vals[slew_gear][4] = 0 # no break
-                    elif(self.first_time_setup < self.weird_time*3/4):
-                        # move
-                        self.controls_vals[slew_gear][0] = 0 # disable
-                        self.controls_vals[slew_gear][1] = 1
-                        self.controls_vals[slew_gear][2] = 1 # 1 pwm
-                        # don't need to change direction
-                        self.controls_vals[slew_gear][4] = 0 # no break
-                    else: # break first
-                        self.controls_vals[slew_gear][0] = 1 # disable
-                        self.controls_vals[slew_gear][1] = 0
-                        self.controls_vals[slew_gear][2] = 0
-                        # don't need to change direction
-                        self.controls_vals[slew_gear][4] = 1 # break
+                self.weird_motor_shit(slew_gear)
+                self.weird_motor_shit(bucket_wheel)
+                self.weird_motor_shit(front_auger)
                 self.first_time_setup = self.first_time_setup - 1
+
+                # first time setup for the motors
+                if self.first_time_setup == 0:
+                    self.controls_vals[bucket_wheel][2] = 75
+                    self.controls_vals[bucket_wheel][3] = 0 # forward
+                    self.controls_vals[bucket_wheel][0] = 1 # disable motor
+                    self.controls_vals[front_auger][2] = 30
+                    self.controls_vals[front_auger][3] = 0 # forward
+                    self.controls_vals[front_auger][0] = 1 # disable motor
             else:
                 if(self.controller):
+                    if self.can_flip():
+                        if(self.Get_Button_From_Controller('Menu')):
+                            self.auger_or_bucket = not self.auger_or_bucket
+                            self.last_flip_time = pygame.time.get_ticks()
+
+                    # control bucketwheel
+                    if(self.auger_or_bucket):
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('A_Button')):
+                                self.controls_vals[bucket_wheel][1] = not self.controls_vals[bucket_wheel][1]
+                                self.controls_vals[bucket_wheel][0] = not self.controls_vals[bucket_wheel][1]
+                                self.last_flip_time = pygame.time.get_ticks()
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('Y_Button')):
+                                if(self.controls_vals[bucket_wheel][2] < 255):
+                                    self.controls_vals[bucket_wheel][2] = self.controls_vals[bucket_wheel][2] + 5
+                                    self.last_flip_time = pygame.time.get_ticks()
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('X_Button')):
+                                if(self.controls_vals[bucket_wheel][2] > 0):
+                                    self.controls_vals[bucket_wheel][2] = self.controls_vals[bucket_wheel][2] - 5
+                                    self.last_flip_time = pygame.time.get_ticks()
+
+                        self.controls_vals[bucket_wheel][4] = 0 # active high break?
+                    # control auger
+                    else:
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('A_Button')):
+                                self.controls_vals[front_auger][1] = not self.controls_vals[front_auger][1]
+                                self.controls_vals[front_auger][0] = not self.controls_vals[front_auger][1]
+                                self.last_flip_time = pygame.time.get_ticks()
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('Y_Button')):
+                                if(self.controls_vals[front_auger][2] < 255):
+                                    self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] + 5
+                                    self.last_flip_time = pygame.time.get_ticks()
+                        if self.can_flip():
+                            if(self.Get_Button_From_Controller('X_Button')):
+                                if(self.controls_vals[front_auger][2] > 0):
+                                    self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] - 5
+                                    self.last_flip_time = pygame.time.get_ticks()
+
+                        self.controls_vals[front_auger][4] = 0 # active high break?
+
+                    if(self.Get_Button_From_Controller('B_Button')):
+                        self.controls_vals[bucket_wheel][1] = 0
+                        self.controls_vals[bucket_wheel][0] = 1
+                        self.controls_vals[bucket_wheel][4] = 1 # active high break?
+                    else:
+                        self.controls_vals[bucket_wheel][4] = 0 # active high break?
+
+                    if(self.Get_Button_From_Controller('B_Button')):
+                        self.controls_vals[front_auger][1] = 0
+                        self.controls_vals[front_auger][0] = 1
+                        self.controls_vals[front_auger][4] = 1 # active high break?
+                    else:
+                        self.controls_vals[front_auger][4] = 0 # active high break?
+
                     # turn off/on slew gear
                     if(self.Get_Button_From_Controller('B_Button')):
                         self.controls_vals[slew_gear][0] = 1 # disable
@@ -2179,6 +2257,20 @@ class Rover_Controls:
                         self.controls_vals[arm_lift][1] = trigger_act
                     self.controls_vals[arm_lift][2] = direction_act
                 else:
+                    # turn off bucketwheel
+                    self.controls_vals[bucket_wheel][0] = 1
+                    self.controls_vals[bucket_wheel][1] = 0
+                    self.controls_vals[bucket_wheel][2] = 0
+                    self.controls_vals[bucket_wheel][3] = 1
+                    self.controls_vals[bucket_wheel][4] = 1
+
+                    # mirror auger
+                    self.controls_vals[front_auger][0] = 1
+                    self.controls_vals[front_auger][1] = 0
+                    self.controls_vals[front_auger][2] = 0
+                    self.controls_vals[front_auger][3] = 1
+                    self.controls_vals[front_auger][4] = 1
+
                     self.controls_vals[slew_gear][0] = 1 # disable
                     self.controls_vals[slew_gear][1] = 0
                     self.controls_vals[slew_gear][2] = 0
@@ -2190,8 +2282,9 @@ class Rover_Controls:
                     self.controls_vals[arm_lift][1] = 0
                     self.controls_vals[arm_lift][2] = 0
         
+            # bucketwheel
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
+            signal_states = [channel_names[bucket_wheel], self.controls_vals[bucket_wheel][0], self.controls_vals[bucket_wheel][2], self.controls_vals[bucket_wheel][3], self.controls_vals[bucket_wheel][4]]  # Example states, modify as needed
 
             y = 100
 
@@ -2210,10 +2303,9 @@ class Rover_Controls:
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
-            
-            #  actuator
-            signals = ['CHANNEL', 'PWM', 'FR']
-            signal_states = [channel_names[arm_lift], self.controls_vals[arm_lift][1], self.controls_vals[arm_lift][2]]  # Example states, modify as needed
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[front_auger], self.controls_vals[front_auger][0], self.controls_vals[front_auger][2], self.controls_vals[front_auger][3], self.controls_vals[front_auger][4]]  # Example states, modify as needed
 
             y = 240
 
@@ -2232,10 +2324,62 @@ class Rover_Controls:
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
+
+            #  actuator
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[arm_lift], self.controls_vals[arm_lift][1], self.controls_vals[arm_lift][2]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state == 1:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    elif state == 0:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            #  slew gear
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
+
+            y = 520
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state == 1:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    elif state == 0:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            # Draw the open box
+            # bucketwheel selected
+            if(self.auger_or_bucket):
+                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(50, 60, 400, 150), 2)  # Green open box
+            # auger selected
+            else:                                                       # Left, top, width, height
+                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(50, 210, 400, 150), 2)  # Green open box
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
-            signals = ['slew_gear', 'arm_lift']
-            signal_states = [slew_gear is not None, arm_lift is not None]  # Example states, modify as needed
+            signals = ['front_auger', 'bucket_wheel', 'arm_lift', 'slew_gear']
+            signal_states = [front_auger is not None, bucket_wheel is not None, arm_lift is not None, slew_gear is not None]  # Example states, modify as needed
 
             y = 100
 
