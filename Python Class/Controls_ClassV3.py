@@ -9,6 +9,7 @@ import sys
 import numpy as np
 import threading
 from PIL import Image, ImageTk
+from datetime import datetime
 
 class Rover_Controls:
     def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
@@ -65,6 +66,7 @@ class Rover_Controls:
 
         self.auger_or_bucket = 1 # default to bucketwheel
         self.first_time_setup = 1
+        self.now = datetime.now()
 
     
     def setup_USB_Controller(self, controller_numb = 0):
@@ -470,6 +472,16 @@ class Rover_Controls:
                 print("Got Stuck on: " + str(index) + ": " + data)
                 with open("error_log.txt", "a") as error_file:
                     error_file.write("Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
+
+        current_time = self.now.strftime("%H:%M:%S")
+
+        if index == 0:
+            with open("arduino_log.txt", "a") as error_file:
+                error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
+        else:
+            with open("leonardo_log.txt", "a") as error_file:
+                error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
+
         return str(data_get)
     
     def set_act_OR_motor(self, config=np.zeros(16)):
@@ -1185,13 +1197,13 @@ class Rover_Controls:
                 self.controls_vals[driveFL][0] = 0
                 self.controls_vals[driveFL][1] = 1
                 self.controls_vals[driveFL][2] = 0
-                self.controls_vals[driveFL][3] = 1
+                self.controls_vals[driveFL][3] = 0
                 self.controls_vals[driveFL][4] = 1 
 
                 self.controls_vals[driveRL][0] = 0
                 self.controls_vals[driveRL][1] = 1
                 self.controls_vals[driveRL][2] = 0
-                self.controls_vals[driveRL][3] = 1
+                self.controls_vals[driveRL][3] = 0
                 self.controls_vals[driveRL][4] = 1 
 
             # bucketwheel
@@ -1907,6 +1919,7 @@ class Rover_Controls:
                 else:
                     self.controls_vals[arm_lift][1] = trigger_act
                 self.controls_vals[arm_lift][2] = direction_act
+                
 
                 # turn off slew gear
                 if(self.Get_Button_From_Controller('B_Button')):
@@ -1961,10 +1974,12 @@ class Rover_Controls:
                     text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
                 else:
                     text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
+                    if state == 1:
                         pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
+                    elif state == 0:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
@@ -1980,10 +1995,12 @@ class Rover_Controls:
                     text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
                 else:
                     text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
+                    if state == 1:
                         pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
+                    elif state == 0:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
@@ -2000,10 +2017,12 @@ class Rover_Controls:
                     text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
                 else:
                     text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
+                    if state == 1:
                         pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
+                    elif state == 0:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
@@ -2020,10 +2039,12 @@ class Rover_Controls:
                     text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
                 else:
                     text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
+                    if state == 1:
                         pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
+                    elif state == 0:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
@@ -2031,10 +2052,10 @@ class Rover_Controls:
             # Draw the open box
             # bucketwheel selected
             if(self.auger_or_bucket):
-                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(200, 60, 400, 210), 2)  # Green open box
+                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(50, 60, 400, 150), 2)  # Green open box
             # auger selected
-            else:
-                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(200, 270, 400, 210), 2)  # Green open box
+            else:                                                       # Left, top, width, height
+                pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(50, 210, 400, 150), 2)  # Green open box
 
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
@@ -2046,10 +2067,12 @@ class Rover_Controls:
             for signal, state in zip(signals, signal_states):
                 # Render text
                 text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                if state:
+                if state == 1:
                     pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                else:
+                elif state == 0:
                     pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                else:
+                    pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
