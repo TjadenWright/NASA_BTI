@@ -2164,7 +2164,7 @@ class Rover_Controls:
                 # bucketwheel speed: 75
                 self.weird_motor_shit(slew_gear)
                 self.weird_motor_shit(bucket_wheel)
-                self.weird_motor_shit(front_auger)
+                # self.weird_motor_shit(front_auger)
                 self.first_time_setup = self.first_time_setup - 1
 
                 # first time setup for the motors
@@ -2172,9 +2172,9 @@ class Rover_Controls:
                     self.controls_vals[bucket_wheel][2] = 75
                     self.controls_vals[bucket_wheel][3] = 1 # forward
                     self.controls_vals[bucket_wheel][0] = 1 # disable motor
-                    self.controls_vals[front_auger][2] = 30
-                    self.controls_vals[front_auger][3] = 1 # forward
-                    self.controls_vals[front_auger][0] = 1 # disable motor
+                    # self.controls_vals[front_auger][2] = 30
+                    # self.controls_vals[front_auger][3] = 1 # forward
+                    # self.controls_vals[front_auger][0] = 1 # disable motor
             else:
                 if(self.controller):
                     if self.can_flip():
@@ -2202,24 +2202,24 @@ class Rover_Controls:
 
                         self.controls_vals[bucket_wheel][4] = 0 # active high break?
                     # control auger
-                    else:
-                        if self.can_flip():
-                            if(self.Get_Button_From_Controller('A_Button')):
-                                self.controls_vals[front_auger][1] = not self.controls_vals[front_auger][1]
-                                self.controls_vals[front_auger][0] = not self.controls_vals[front_auger][1]
-                                self.last_flip_time = pygame.time.get_ticks()
-                        if self.can_flip():
-                            if(self.Get_Button_From_Controller('Y_Button')):
-                                if(self.controls_vals[front_auger][2] < 255):
-                                    self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] + 5
-                                    self.last_flip_time = pygame.time.get_ticks()
-                        if self.can_flip():
-                            if(self.Get_Button_From_Controller('X_Button')):
-                                if(self.controls_vals[front_auger][2] > 0):
-                                    self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] - 5
-                                    self.last_flip_time = pygame.time.get_ticks()
+                    # else:
+                    #     if self.can_flip():
+                    #         if(self.Get_Button_From_Controller('A_Button')):
+                    #             self.controls_vals[front_auger][1] = not self.controls_vals[front_auger][1]
+                    #             self.controls_vals[front_auger][0] = not self.controls_vals[front_auger][1]
+                    #             self.last_flip_time = pygame.time.get_ticks()
+                    #     if self.can_flip():
+                    #         if(self.Get_Button_From_Controller('Y_Button')):
+                    #             if(self.controls_vals[front_auger][2] < 255):
+                    #                 self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] + 5
+                    #                 self.last_flip_time = pygame.time.get_ticks()
+                    #     if self.can_flip():
+                    #         if(self.Get_Button_From_Controller('X_Button')):
+                    #             if(self.controls_vals[front_auger][2] > 0):
+                    #                 self.controls_vals[front_auger][2] = self.controls_vals[front_auger][2] - 5
+                    #                 self.last_flip_time = pygame.time.get_ticks()
 
-                        self.controls_vals[front_auger][4] = 0 # active high break?
+                    #     self.controls_vals[front_auger][4] = 0 # active high break?
 
                     if(self.Get_Button_From_Controller('B_Button')):
                         self.controls_vals[bucket_wheel][1] = 0
@@ -2228,12 +2228,12 @@ class Rover_Controls:
                     else:
                         self.controls_vals[bucket_wheel][4] = 0 # active high break?
 
-                    if(self.Get_Button_From_Controller('B_Button')):
-                        self.controls_vals[front_auger][1] = 0
-                        self.controls_vals[front_auger][0] = 1
-                        self.controls_vals[front_auger][4] = 1 # active high break?
-                    else:
-                        self.controls_vals[front_auger][4] = 0 # active high break?
+                    # if(self.Get_Button_From_Controller('B_Button')):
+                    #     self.controls_vals[front_auger][1] = 0
+                    #     self.controls_vals[front_auger][0] = 1
+                    #     self.controls_vals[front_auger][4] = 1 # active high break?
+                    # else:
+                    #     self.controls_vals[front_auger][4] = 0 # active high break?
 
                     # turn off/on slew gear
                     if(self.Get_Button_From_Controller('B_Button')):
@@ -2265,11 +2265,11 @@ class Rover_Controls:
                     self.controls_vals[bucket_wheel][4] = 1
 
                     # mirror auger
-                    self.controls_vals[front_auger][0] = 1
-                    self.controls_vals[front_auger][1] = 0
-                    self.controls_vals[front_auger][2] = 0
-                    self.controls_vals[front_auger][3] = 1
-                    self.controls_vals[front_auger][4] = 1
+                    # self.controls_vals[front_auger][0] = 1
+                    # self.controls_vals[front_auger][1] = 0
+                    # self.controls_vals[front_auger][2] = 0
+                    # self.controls_vals[front_auger][3] = 1
+                    # self.controls_vals[front_auger][4] = 1
 
                     self.controls_vals[slew_gear][0] = 1 # disable
                     self.controls_vals[slew_gear][1] = 0
