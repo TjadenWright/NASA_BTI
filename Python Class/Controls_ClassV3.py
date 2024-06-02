@@ -2105,26 +2105,35 @@ class Rover_Controls:
             # slew trigger
             trigger_slew = 127*max(0, (abs(left_x)-self.dead_zone)*(1/(1-self.dead_zone)))
 
-            if(self.controller):
-                # turn off/on slew gear
-                if(self.Get_Button_From_Controller('B_Button')):
-                    self.controls_vals[slew_gear][0] = 1 # disable
-                    self.controls_vals[slew_gear][1] = 0
-                    self.controls_vals[slew_gear][2] = 0
-                    self.controls_vals[slew_gear][3] = direction_slew
-                    self.controls_vals[slew_gear][4] = 1 # break
-                else:
-                    self.controls_vals[slew_gear][0] = 0
-                    self.controls_vals[slew_gear][1] = 1
-                    self.controls_vals[slew_gear][2] = trigger_slew
-                    self.controls_vals[slew_gear][3] = direction_slew
-                    self.controls_vals[slew_gear][4] = 0 # no break
-            else:
+            if(self.first_time_setup):
+                # bucketwheel speed: 75
                 self.controls_vals[slew_gear][0] = 1 # disable
                 self.controls_vals[slew_gear][1] = 0
                 self.controls_vals[slew_gear][2] = 0
                 # don't need to change direction
                 self.controls_vals[slew_gear][4] = 1 # break
+                self.first_time_setup = 0
+            else:
+                if(self.controller):
+                    # turn off/on slew gear
+                    if(self.Get_Button_From_Controller('B_Button')):
+                        self.controls_vals[slew_gear][0] = 1 # disable
+                        self.controls_vals[slew_gear][1] = 0
+                        self.controls_vals[slew_gear][2] = 0
+                        self.controls_vals[slew_gear][3] = direction_slew
+                        self.controls_vals[slew_gear][4] = 1 # break
+                    else:
+                        self.controls_vals[slew_gear][0] = 0
+                        self.controls_vals[slew_gear][1] = 1
+                        self.controls_vals[slew_gear][2] = trigger_slew
+                        self.controls_vals[slew_gear][3] = direction_slew
+                        self.controls_vals[slew_gear][4] = 0 # no break
+                else:
+                    self.controls_vals[slew_gear][0] = 1 # disable
+                    self.controls_vals[slew_gear][1] = 0
+                    self.controls_vals[slew_gear][2] = 0
+                    # don't need to change direction
+                    self.controls_vals[slew_gear][4] = 1 # break
         
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
             signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
