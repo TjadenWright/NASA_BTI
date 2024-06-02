@@ -2170,10 +2170,10 @@ class Rover_Controls:
                 # first time setup for the motors
                 if self.first_time_setup == 0:
                     self.controls_vals[bucket_wheel][2] = 75
-                    self.controls_vals[bucket_wheel][3] = 0 # forward
+                    self.controls_vals[bucket_wheel][3] = 1 # forward
                     self.controls_vals[bucket_wheel][0] = 1 # disable motor
                     self.controls_vals[front_auger][2] = 30
-                    self.controls_vals[front_auger][3] = 0 # forward
+                    self.controls_vals[front_auger][3] = 1 # forward
                     self.controls_vals[front_auger][0] = 1 # disable motor
             else:
                 if(self.controller):
