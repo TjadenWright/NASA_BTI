@@ -2077,6 +2077,76 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
+    def mine_test_controls(self, channel_names):
+        # Motor:
+        # self.controls_vals[0] = Motor Enable
+        # self.controls_vals[1] = ENable EFUSE
+        # self.controls_vals[2] = PWM
+        # self.controls_vals[3] = FR
+        # self.controls_vals[4] = BRAKE
+
+
+        slew_gear = None
+
+        for i, name in enumerate(channel_names):
+            if "Pivot Slew Gear" in name:
+                slew_gear = i
+            
+        if(slew_gear is not None):
+            # get slew stick
+            left_x = self.Get_Button_From_Controller('Left_Joystick_Y')
+
+            # determine slew direction
+            if(left_x > 0):
+                direction_slew = 1 # go forward
+            else:
+                direction_slew = 0 # go back
+
+            # slew trigger
+            trigger_slew = 127*max(0, (abs(left_x)-self.dead_zone)*(1/(1-self.dead_zone)))
+
+            if(self.controller):
+                # turn off/on slew gear
+                if(self.Get_Button_From_Controller('B_Button')):
+                    self.controls_vals[slew_gear][0] = 1 # disable
+                    self.controls_vals[slew_gear][1] = 0
+                    self.controls_vals[slew_gear][2] = 0
+                    self.controls_vals[slew_gear][3] = direction_slew
+                    self.controls_vals[slew_gear][4] = 1 # break
+                else:
+                    self.controls_vals[slew_gear][0] = 0
+                    self.controls_vals[slew_gear][1] = 1
+                    self.controls_vals[slew_gear][2] = trigger_slew
+                    self.controls_vals[slew_gear][3] = direction_slew
+                    self.controls_vals[slew_gear][4] = 0 # no break
+        else:
+            self.controls_vals[slew_gear][0] = 1 # disable
+            self.controls_vals[slew_gear][1] = 0
+            self.controls_vals[slew_gear][2] = 0
+            # don't need to change direction
+            self.controls_vals[slew_gear][4] = 1 # break
+        
+        signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+        signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
+
+        y = 100
+
+        for signal, state in zip(signals, signal_states):
+            # Render text
+            if signal == 'PWM' or signal == 'CHANNEL':
+                text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+            else:
+                text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                if state == 1:
+                    pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                elif state == 0:
+                    pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                else:
+                    pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
+            text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+            self.screen.blit(text, text_rect)
+            y += 20
+
     def docking_excavator(self, channel_names):
         rear_auger = None
         lower_ramp_act = None
