@@ -863,7 +863,7 @@ class Rover_Controls:
 
     def reset_controls_array(self):
         # self.controls_vals = np.zeros((16, 6), int)
-        self.first_time_setup = 1
+        self.first_time_setup = 2
 
     def stop_thread(self):
         self.run_thread = False
@@ -2107,12 +2107,19 @@ class Rover_Controls:
 
             if(self.first_time_setup):
                 # bucketwheel speed: 75
-                self.controls_vals[slew_gear][0] = 1 # disable
-                self.controls_vals[slew_gear][1] = 0
-                self.controls_vals[slew_gear][2] = 0
-                # don't need to change direction
-                self.controls_vals[slew_gear][4] = 1 # break
-                self.first_time_setup = 0
+                if(self.first_time_setup == 2):
+                    self.controls_vals[slew_gear][0] = 1 # disable
+                    self.controls_vals[slew_gear][1] = 0
+                    self.controls_vals[slew_gear][2] = 0
+                    # don't need to change direction
+                    self.controls_vals[slew_gear][4] = 1 # break
+                else:
+                    self.controls_vals[slew_gear][0] = 0 # disable
+                    self.controls_vals[slew_gear][1] = 1
+                    self.controls_vals[slew_gear][2] = 1
+                    # don't need to change direction
+                    self.controls_vals[slew_gear][4] = 0 # break
+                self.first_time_setup = self.first_time_setup - 1
             else:
                 if(self.controller):
                     # turn off/on slew gear
