@@ -2119,23 +2119,42 @@ class Rover_Controls:
                     self.controls_vals[slew_gear][2] = trigger_slew
                     self.controls_vals[slew_gear][3] = direction_slew
                     self.controls_vals[slew_gear][4] = 0 # no break
-        else:
-            self.controls_vals[slew_gear][0] = 1 # disable
-            self.controls_vals[slew_gear][1] = 0
-            self.controls_vals[slew_gear][2] = 0
-            # don't need to change direction
-            self.controls_vals[slew_gear][4] = 1 # break
-        
-        signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-        signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
-
-        y = 100
-
-        for signal, state in zip(signals, signal_states):
-            # Render text
-            if signal == 'PWM' or signal == 'CHANNEL':
-                text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
             else:
+                self.controls_vals[slew_gear][0] = 1 # disable
+                self.controls_vals[slew_gear][1] = 0
+                self.controls_vals[slew_gear][2] = 0
+                # don't need to change direction
+                self.controls_vals[slew_gear][4] = 1 # break
+        
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[slew_gear], self.controls_vals[slew_gear][0], self.controls_vals[slew_gear][2], self.controls_vals[slew_gear][3], self.controls_vals[slew_gear][4]]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state == 1:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    elif state == 0:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                    else:
+                        pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+        else:
+            # front_auger is not None and bucket_wheel is not None and arm_lift is not None
+            signals = ['slew_gear']
+            signal_states = [slew_gear is not None]  # Example states, modify as needed
+
+            y = 100
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
                 text = self.small.render(f"{signal}: ", True, (255, 255, 255))
                 if state == 1:
                     pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
@@ -2143,9 +2162,9 @@ class Rover_Controls:
                     pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 else:
                     pygame.draw.circle(self.screen, (0, 0, 255), (self.Output_Res[0] // 2 + 100, y), 10)  # blue circle?
-            text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
-            self.screen.blit(text, text_rect)
-            y += 20
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
 
     def docking_excavator(self, channel_names):
         rear_auger = None
