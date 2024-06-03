@@ -12,7 +12,7 @@ from PIL import Image, ImageTk
 # from datetime import datetime
 
 class Rover_Controls:
-    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC"):
+    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC", excavator_mode=False):
         # print out stuff
         self.verbose = verbose                       # debuggin purposes.
         self.verbose_control = verbose_control
@@ -67,6 +67,8 @@ class Rover_Controls:
         self.auger_or_bucket = 1 # default to bucketwheel
         self.first_time_setup = 1
         # self.now = datetime.now()
+
+        self.excvator_mode = excavator_mode
 
 
 
@@ -1152,7 +1154,10 @@ class Rover_Controls:
                 # rear
                 # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
-                self.controls_vals[driveRR][3] = direction
+                if self.excvator_mode:
+                    self.controls_vals[driveRR][3] = not direction
+                else:
+                    self.controls_vals[driveRR][3] = direction
                 self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
@@ -1395,7 +1400,10 @@ class Rover_Controls:
                 # rear
                 # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
-                self.controls_vals[driveRR][3] = not direction
+                if self.excvator_mode:
+                    self.controls_vals[driveRR][3] = direction
+                else:
+                    self.controls_vals[driveRR][3] = not direction
                 self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
@@ -1634,7 +1642,10 @@ class Rover_Controls:
                 # rear
                 # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
-                self.controls_vals[driveRR][3] = direction_r
+                if self.excvator_mode:
+                    self.controls_vals[driveRR][3] = not direction_r
+                else:
+                    self.controls_vals[driveRR][3] = direction_r
                 self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0

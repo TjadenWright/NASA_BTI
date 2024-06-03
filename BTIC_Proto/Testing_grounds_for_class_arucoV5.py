@@ -25,6 +25,9 @@ from Controls_ClassV3 import Rover_Controls
 #### Variables ####
 ###################
 
+######## - John
+am_I_excavator = False
+
 #### Camera Values to Change ####
 Input_Res = (1920, 1080)                   # <--- change camera resolution (if change reclaibrate)
 FPS_video = 30                             # <--- change fps (no need to recalibrate)
@@ -133,7 +136,7 @@ def scale_range(value, old_min, old_max, new_min, new_max):
 #######################
 
 # setup the rover controls class.
-rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI) 
+rc1 = Rover_Controls(verbose=VERBOSE, PC_or_PI = PC_or_PI, excavator_mode=am_I_excavator) 
 rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controller # you want to use (default = 0)
 
 #### setup communication with the arduino ####
