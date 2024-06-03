@@ -2420,6 +2420,8 @@ class Rover_Controls:
     def docking_dumptruck(self, channel_names):
         hopper_act_1 = None
         hopper_act_2 = None
+        battery_push = None
+        retract_bat = None
 
         # get the channel number
         for i, name in enumerate(channel_names):
@@ -2427,29 +2429,88 @@ class Rover_Controls:
                 hopper_act_1 = i
             elif "Hopper Tip 2 Actuator" in name:
                 hopper_act_2 = i
+            elif "Battery Push Actuator" in name:
+                battery_push = i
+            elif "Battery Align Actuator" in name:
+                retract_bat = i
 
-        if(hopper_act_1 is not None and hopper_act_2 is not None):
-            # ramp actuator
+        if(hopper_act_1 is not None and hopper_act_2 is not None and battery_push is not None and retract_bat is not None):
+            # battery actuator
             left_y = self.Get_Button_From_Controller('Left_Joystick_Y')
             # print("RIGHT_Y", right_y)
             if(left_y < 0):
-                direction_act_hopper = 1 # go forward
+                direction_act_battery = 1 # go forward
             else:
-                direction_act_hopper = 0 # go back
-            trigger_act_hopper = self.maximum_voltage*max(0, (abs(left_y)-self.dead_zone)*(1/(1-self.dead_zone)))
-            # print("trigger_act", trigger_act)
+                direction_act_battery = 0 # go back
+            trigger_act_battery = self.maximum_voltage*max(0, (abs(left_y)-self.dead_zone)*(1/(1-self.dead_zone)))
+
+            # align actuator
+            right_x = self.Get_Button_From_Controller('Right_Joystick_X')
+            # print("RIGHT_Y", right_y)
+            if(right_x < 0):
+                direction_act_alignement = 1 # go forward
+            else:
+                direction_act_alignement = 0 # go back
+            trigger_act_alignement = self.maximum_voltage*max(0, (abs(right_x)-self.dead_zone)*(1/(1-self.dead_zone)))
+
+            # hopper actuators
+            right_t = (self.Get_Button_From_Controller('R2_Trigger') + 1)/2
+            left_t = (self.Get_Button_From_Controller('L2_Trigger') + 1)/2
+
+            if(right_t > left_t):
+                direction_hopper = 1 # go forward
+            elif(right_t < left_t):
+                direction_hopper = 0 # go back
+            else:
+                direction_hopper = 1
+
+            trigger_hopper = self.maximum_voltage*max(right_t, left_t)
+
+
 
             if(self.controller):
+                if(self.Get_Button_From_Controller('B_Button')):
+                    #hopper 1
+                    self.controls_vals[hopper_act_1][0] = 0
+                    self.controls_vals[hopper_act_1][1] = 0
+                    self.controls_vals[hopper_act_1][2] = direction_hopper
 
-                #hopper 1
-                self.controls_vals[hopper_act_1][0] = 0
-                self.controls_vals[hopper_act_1][1] = trigger_act_hopper
-                self.controls_vals[hopper_act_1][2] = direction_act_hopper
+                    # hopper 2
+                    self.controls_vals[hopper_act_2][0] = 0
+                    self.controls_vals[hopper_act_2][1] = 0
+                    self.controls_vals[hopper_act_2][2] = direction_hopper
 
-                # hopper 2
-                self.controls_vals[hopper_act_2][0] = 0
-                self.controls_vals[hopper_act_2][1] = trigger_act_hopper
-                self.controls_vals[hopper_act_2][2] = direction_act_hopper
+                    # battery
+                    self.controls_vals[battery_push][0] = 0
+                    self.controls_vals[battery_push][1] = 0
+                    self.controls_vals[battery_push][2] = direction_act_battery
+
+                    # align
+                    self.controls_vals[retract_bat][0] = 0
+                    self.controls_vals[retract_bat][1] = 0
+                    self.controls_vals[retract_bat][2] = direction_act_alignement
+                else:
+                    #hopper 1
+                    self.controls_vals[hopper_act_1][0] = 0
+                    self.controls_vals[hopper_act_1][1] = trigger_hopper
+                    self.controls_vals[hopper_act_1][2] = direction_hopper
+
+                    # hopper 2
+                    self.controls_vals[hopper_act_2][0] = 0
+                    self.controls_vals[hopper_act_2][1] = trigger_hopper
+                    self.controls_vals[hopper_act_2][2] = direction_hopper
+
+                    # battery
+                    self.controls_vals[battery_push][0] = 0
+                    self.controls_vals[battery_push][1] = trigger_act_battery
+                    self.controls_vals[battery_push][2] = direction_act_battery
+
+                    # align
+                    self.controls_vals[retract_bat][0] = 0
+                    self.controls_vals[retract_bat][1] = trigger_act_alignement
+                    self.controls_vals[retract_bat][2] = direction_act_alignement
+
+
 
             else:
 
@@ -2462,6 +2523,16 @@ class Rover_Controls:
                 self.controls_vals[hopper_act_2][0] = 0
                 self.controls_vals[hopper_act_2][1] = 0
                 self.controls_vals[hopper_act_2][2] = 0
+
+                # battery
+                self.controls_vals[battery_push][0] = 0
+                self.controls_vals[battery_push][1] = 0
+                self.controls_vals[battery_push][2] = 0
+
+                # align
+                self.controls_vals[retract_bat][0] = 0
+                self.controls_vals[retract_bat][1] = 0
+                self.controls_vals[retract_bat][2] = 0
 
             #  actuator
             signals = ['CHANNEL', 'PWM', 'FR']
@@ -2481,12 +2552,12 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
 
             signals = ['CHANNEL', 'PWM', 'FR']
             signal_states = [channel_names[hopper_act_2], self.controls_vals[hopper_act_2][1], self.controls_vals[hopper_act_2][2]]  # Example states, modify as needed
 
-            y = 310
+            y = 240
 
             for signal, state in zip(signals, signal_states):
                 # Render text
@@ -2500,12 +2571,50 @@ class Rover_Controls:
                         pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
-                y += 30
+                y += 20
+
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[battery_push], self.controls_vals[battery_push][1], self.controls_vals[battery_push][2]]  # Example states, modify as needed
+
+            y = 380
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[retract_bat], self.controls_vals[retract_bat][1], self.controls_vals[retract_bat][2]]  # Example states, modify as needed
+
+            y = 520
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
 
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
-            signals = ['hopper_act_1', 'hopper_act_2']
-            signal_states = [hopper_act_1 is not None, hopper_act_2 is not None]  # Example states, modify as needed
+            signals = ['hopper_act_1', 'hopper_act_2', 'battery_push', 'align']
+            signal_states = [hopper_act_1 is not None, hopper_act_2 is not None, battery_push is not None, retract_bat is not None]  # Example states, modify as needed
 
             y = 100
 
