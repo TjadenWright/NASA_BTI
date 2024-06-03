@@ -12,7 +12,7 @@ from PIL import Image, ImageTk
 # from datetime import datetime
 
 class Rover_Controls:
-    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC", excavator_mode=False):
+    def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC", excavator_mode=False, break_time = 5):
         # print out stuff
         self.verbose = verbose                       # debuggin purposes.
         self.verbose_control = verbose_control
@@ -69,6 +69,11 @@ class Rover_Controls:
         # self.now = datetime.now()
 
         self.excvator_mode = excavator_mode
+
+        self.break_timer = 0
+        self.start_moving_timer = 0
+        self.drive_break_val = 0
+        self.break_time = break_time
 
 
 
@@ -1065,6 +1070,7 @@ class Rover_Controls:
         driveFL = None
         driveRR = None
         driveRL = None
+        externBreak = None
 
         # get the channel number
         for i, name in enumerate(channel_names):
@@ -1076,20 +1082,16 @@ class Rover_Controls:
                 driveRL = i
             elif "Rear Right Drive Motor" in name:
                 driveRR = i
+            elif "External Break Actuator" in name:
+                externBreak = i
 
-        print(channel_names)
-
-        print("driveFL: ", driveFL)
-        print("driveFR: ", driveFR)
-        print("driveRL: ", driveRL)
-        print("driveRR: ", driveRR)
-
-        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None and externBreak is not None):
 
             if(self.first_time_setup):
                 # set mode to 0
                 self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
                 self.first_time_setup = 0
+                self.drive_break_val = 0 # reset break
 
             if self.can_flip():
                 if(self.Get_Button_From_Controller('X_Button')):
@@ -1137,14 +1139,27 @@ class Rover_Controls:
             # self.controls_vals[2] = PWM
             # self.controls_vals[3] = FR
             # self.controls_vals[4] = BRAKE
-
+            
             # right
             # front
             if(self.controller):
+                # internal break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break immediately
+                    self.start_moving_timer = self.break_time
+                    self.drive_break_val = 1
+                else:
+                    if(self.start_moving_timer > 0):
+                        self.start_moving_timer = self.start_moving_timer - 1
+                    else:
+                        # unlock break after time
+                        self.drive_break_val = 0
+
+
                 # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFR][3] = direction
-                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFR][4] = not self.drive_break_val
                 if(self.controls_vals[driveFR][4] == 0):
                     self.controls_vals[driveFR][2] = 0
                 else:
@@ -1158,7 +1173,7 @@ class Rover_Controls:
                     self.controls_vals[driveRR][3] = not direction
                 else:
                     self.controls_vals[driveRR][3] = direction
-                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRR][4] = not self.drive_break_val
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
                 else:
@@ -1170,7 +1185,7 @@ class Rover_Controls:
                 # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFL][3] = not direction
-                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFL][4] = not self.drive_break_val
                 if(self.controls_vals[driveFL][4] == 0):
                     self.controls_vals[driveFL][2] = 0
                 else:
@@ -1181,12 +1196,27 @@ class Rover_Controls:
                 # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveRL][3] = not direction
-                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRL][4] = not self.drive_break_val
                 if(self.controls_vals[driveRL][4] == 0):
                     self.controls_vals[driveRL][2] = 0
                 else:
                     self.controls_vals[driveRL][2] = left_side_motors
                 self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+
+                # external break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break after time
+                    if(self.break_timer > 0):
+                        self.break_timer = self.break_timer - 1
+                    else:
+                        self.controls_vals[externBreak][1] = 255
+                else:
+                    # unlock break immediately
+                    self.break_timer = self.break_time
+                    self.controls_vals[externBreak][1] = 0
+
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][2] = 1
             else:
                 self.controls_vals[driveFR][0] = 0
                 self.controls_vals[driveFR][1] = 1
@@ -1212,6 +1242,10 @@ class Rover_Controls:
                 self.controls_vals[driveRL][3] = 0
                 self.controls_vals[driveRL][4] = 1
 
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][1] = 0
+                self.controls_vals[externBreak][2] = 1
+
             # bucketwheel
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
             signal_states = [channel_names[driveFR], self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4], self.controls_vals[driveFL][5]]  # Example states, modify as needed
@@ -1288,10 +1322,30 @@ class Rover_Controls:
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
+
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[externBreak], self.controls_vals[externBreak][1], self.controls_vals[externBreak][2]]  # Example states, modify as needed
+
+            y = 660
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
+
         else:
             # bucketwheel
-            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left']
-            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None]  # Example states, modify as needed
+            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left', 'extern_break']
+            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None, externBreak is not None]  # Example states, modify as needed
 
             y = 100
 
@@ -1311,6 +1365,7 @@ class Rover_Controls:
         driveFL = None
         driveRR = None
         driveRL = None
+        externBreak = None
 
         # get the channel number
         for i, name in enumerate(channel_names):
@@ -1322,20 +1377,17 @@ class Rover_Controls:
                 driveRL = i
             elif "Rear Right Drive Motor" in name:
                 driveRR = i
+            elif "External Break Actuator" in name:
+                externBreak = i
 
-        print(channel_names)
 
-        print("driveFL: ", driveFL)
-        print("driveFR: ", driveFR)
-        print("driveRL: ", driveRL)
-        print("driveRR: ", driveRR)
-
-        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None and externBreak is not None):
 
             if(self.first_time_setup):
                 # set mode to 0
                 self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
                 self.first_time_setup = 0
+                self.drive_break_val = 0 # reset break
 
             if self.can_flip():
                 if(self.Get_Button_From_Controller('X_Button')):
@@ -1387,10 +1439,22 @@ class Rover_Controls:
             # right
             # front
             if(self.controller):
+                # internal break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break immediately
+                    self.start_moving_timer = self.break_time
+                    self.drive_break_val = 1
+                else:
+                    if(self.start_moving_timer > 0):
+                        self.start_moving_timer = self.start_moving_timer - 1
+                    else:
+                        # unlock break after time
+                        self.drive_break_val = 0
+
                 # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFR][3] = not direction
-                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFR][4] = not self.drive_break_val
                 if(self.controls_vals[driveFR][4] == 0):
                     self.controls_vals[driveFR][2] = 0
                 else:
@@ -1404,7 +1468,7 @@ class Rover_Controls:
                     self.controls_vals[driveRR][3] = direction
                 else:
                     self.controls_vals[driveRR][3] = not direction
-                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRR][4] = not self.drive_break_val
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
                 else:
@@ -1416,7 +1480,7 @@ class Rover_Controls:
                 # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFL][3] = direction
-                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFL][4] = not self.drive_break_val
                 if(self.controls_vals[driveFL][4] == 0):
                     self.controls_vals[driveFL][2] = 0
                 else:
@@ -1427,12 +1491,27 @@ class Rover_Controls:
                 # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveRL][3] = direction
-                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRL][4] = not self.drive_break_val
                 if(self.controls_vals[driveRL][4] == 0):
                     self.controls_vals[driveRL][2] = 0
                 else:
                     self.controls_vals[driveRL][2] = right_side_motors
                 self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+            
+                # external break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break after time
+                    if(self.break_timer > 0):
+                        self.break_timer = self.break_timer - 1
+                    else:
+                        self.controls_vals[externBreak][1] = 255
+                else:
+                    # unlock break immediately
+                    self.break_timer = self.break_time
+                    self.controls_vals[externBreak][1] = 0
+
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][2] = 1
             else:
                 self.controls_vals[driveFR][0] = 0
                 self.controls_vals[driveFR][1] = 1
@@ -1457,6 +1536,10 @@ class Rover_Controls:
                 self.controls_vals[driveRL][2] = 0
                 self.controls_vals[driveRL][3] = 1
                 self.controls_vals[driveRL][4] = 1
+
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][1] = 0
+                self.controls_vals[externBreak][2] = 1
 
             # bucketwheel
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
@@ -1534,10 +1617,29 @@ class Rover_Controls:
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
+
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[externBreak], self.controls_vals[externBreak][1], self.controls_vals[externBreak][2]]  # Example states, modify as needed
+
+            y = 660
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
         else:
             # bucketwheel
-            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left']
-            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None]  # Example states, modify as needed
+            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left', 'extern_break']
+            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None, externBreak is not None]  # Example states, modify as needed
 
             y = 100
 
@@ -1557,6 +1659,7 @@ class Rover_Controls:
         driveFL = None
         driveRR = None
         driveRL = None
+        externBreak = None
 
         # get the channel number
         for i, name in enumerate(channel_names):
@@ -1568,20 +1671,16 @@ class Rover_Controls:
                 driveRL = i
             elif "Rear Right Drive Motor" in name:
                 driveRR = i
+            elif "External Break Actuator" in name:
+                externBreak = i
 
-        print(channel_names)
-
-        print("driveFL: ", driveFL)
-        print("driveFR: ", driveFR)
-        print("driveRL: ", driveRL)
-        print("driveRR: ", driveRR)
-
-        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+        if(driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None and externBreak is not None):
 
             if(self.first_time_setup):
                 # set mode to 0
                 self.controls_vals[driveFL][5] = 0 # one to behold the slow fast key
                 self.first_time_setup = 0
+                self.drive_break_val = 0 # reset break
 
             if self.can_flip():
                 if(self.Get_Button_From_Controller('X_Button')):
@@ -1629,10 +1728,22 @@ class Rover_Controls:
             # right
             # front
             if(self.controller):
+                # internal break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break immediately
+                    self.start_moving_timer = self.break_time
+                    self.drive_break_val = 1
+                else:
+                    if(self.start_moving_timer > 0):
+                        self.start_moving_timer = self.start_moving_timer - 1
+                    else:
+                        # unlock break after time
+                        self.drive_break_val = 0
+
                 # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFR][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFR][3] = direction_r
-                self.controls_vals[driveFR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFR][4] = not self.drive_break_val
                 if(self.controls_vals[driveFR][4] == 0):
                     self.controls_vals[driveFR][2] = 0
                 else:
@@ -1646,7 +1757,7 @@ class Rover_Controls:
                     self.controls_vals[driveRR][3] = not direction_r
                 else:
                     self.controls_vals[driveRR][3] = direction_r
-                self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRR][4] = not self.drive_break_val
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
                 else:
@@ -1658,7 +1769,7 @@ class Rover_Controls:
                 # self.controls_vals[driveFL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveFL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveFL][3] = not direction_l
-                self.controls_vals[driveFL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveFL][4] = not self.drive_break_val
                 if(self.controls_vals[driveFL][4] == 0):
                     self.controls_vals[driveFL][2] = 0
                 else:
@@ -1669,12 +1780,27 @@ class Rover_Controls:
                 # self.controls_vals[driveRL][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRL][1] = not self.Get_Button_From_Controller('X_Button')
                 self.controls_vals[driveRL][3] = not direction_l
-                self.controls_vals[driveRL][4] = not self.Get_Button_From_Controller('B_Button')
+                self.controls_vals[driveRL][4] = not self.drive_break_val
                 if(self.controls_vals[driveRL][4] == 0):
                     self.controls_vals[driveRL][2] = 0
                 else:
                     self.controls_vals[driveRL][2] = trig_left
                 self.controls_vals[driveRL][0] = not self.controls_vals[driveRL][3]
+
+                # external break
+                if self.Get_Button_From_Controller('B_Button'):
+                    # lock break after time
+                    if(self.break_timer > 0):
+                        self.break_timer = self.break_timer - 1
+                    else:
+                        self.controls_vals[externBreak][1] = 255
+                else:
+                    # unlock break immediately
+                    self.break_timer = self.break_time
+                    self.controls_vals[externBreak][1] = 0
+
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][2] = 1
             else:
                 self.controls_vals[driveFR][0] = 0
                 self.controls_vals[driveFR][1] = 1
@@ -1699,6 +1825,10 @@ class Rover_Controls:
                 self.controls_vals[driveRL][2] = 0
                 self.controls_vals[driveRL][3] = 1
                 self.controls_vals[driveRL][4] = 1
+
+                self.controls_vals[externBreak][0] = 0
+                self.controls_vals[externBreak][1] = 0
+                self.controls_vals[externBreak][2] = 1
 
             # bucketwheel
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK', 'MODE']
@@ -1776,10 +1906,29 @@ class Rover_Controls:
                 text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
                 self.screen.blit(text, text_rect)
                 y += 20
+
+            signals = ['CHANNEL', 'PWM', 'FR']
+            signal_states = [channel_names[externBreak], self.controls_vals[externBreak][1], self.controls_vals[externBreak][2]]  # Example states, modify as needed
+
+            y = 660
+
+            for signal, state in zip(signals, signal_states):
+                # Render text
+                if signal == 'PWM' or signal == 'CHANNEL':
+                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
+                else:
+                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
+                    if state:
+                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
+                    else:
+                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
+                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
+                self.screen.blit(text, text_rect)
+                y += 20
         else:
             # bucketwheel
-            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left']
-            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None]  # Example states, modify as needed
+            signals = ['drive_front_right', 'drive_rear_right', 'drive_front_left', 'drive_rear_left', 'extern_break']
+            signal_states = [driveFR is not None, driveRR is not None, driveFL is not None, driveRL is not None, externBreak is not None]  # Example states, modify as needed
 
             y = 100
 

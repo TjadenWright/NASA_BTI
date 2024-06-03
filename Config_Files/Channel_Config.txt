@@ -10,7 +10,7 @@ Channel 9: Not Connected
 Channel 10: Rear Right Drive Motor
 Channel 11: Not Connected
 Channel 12: Not Connected
-Channel 13: Not Connected
+Channel 13: External Break Actuator
 Channel 14: Not Connected
 Channel 15: Not Connected
 Channel 16: IMU and Motherboard

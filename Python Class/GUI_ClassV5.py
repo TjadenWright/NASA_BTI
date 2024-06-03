@@ -143,8 +143,8 @@ class GUI:
 
         # channel selector
         self.channel = np.zeros(16, int) # 16 channels
-        self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push Actuator", "Battery Align Actuator", "Hopper Tip 1 Actuator", "Hopper Tip 2 Actuator", "IMU and Motherboard", "Not Connected"]
-        self.channel_option_to_arduino = [0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0]
+        self.channel_options = ["Front Left Drive Motor", "Front Right Drive Motor", "Rear Left Drive Motor", "Rear Right Drive Motor", "Bucketwheel Motor", "Front Auger Motor", "Rear Auger Motor", "Pivot Slew Gear", "Vibration Motor", "Excavation Arm Lift Actuator", "Ramps Actuator", "Battery Lock 1 Actuator", "Battery Lock 2 Actuator", "Battery Push Actuator", "Battery Align Actuator", "Hopper Tip 1 Actuator", "Hopper Tip 2 Actuator", "External Break Actuator", "IMU and Motherboard", "Not Connected"]
+        self.channel_option_to_arduino = [0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0]
         self.channel_config_naming = np.zeros(16, int)
                               # "Motor", "Actuator", "Slew Gear", "IMU and Motherboard"
 
