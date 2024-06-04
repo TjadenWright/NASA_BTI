@@ -2242,7 +2242,6 @@ class Rover_Controls:
         rear_auger = None
         lower_ramp_act = None
         batter_locking_act_1 = None
-        batter_locking_act_2 = None
 
         # get the channel number
         for i, name in enumerate(channel_names):
@@ -2250,8 +2249,6 @@ class Rover_Controls:
                 lower_ramp_act = i
             elif "Battery Lock 1 Actuator" in name:
                 batter_locking_act_1 = i
-            elif "Battery Lock 2 Actuator" in name:
-                batter_locking_act_2 = i
             elif "Rear Auger Motor" in name:
                 rear_auger = i
 
@@ -2278,7 +2275,7 @@ class Rover_Controls:
         print("driveRL: ", driveRL)
         print("driveRR: ", driveRR)
 
-        if(lower_ramp_act is not None and batter_locking_act_1 is not None and batter_locking_act_2 is not None and rear_auger is not None and driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
+        if(lower_ramp_act is not None and batter_locking_act_1 is not None and rear_auger is not None and driveFR is not None and driveFL is not None and driveRR is not None and driveRL is not None):
 
             if(self.first_time_setup):
                 self.controls_vals[rear_auger][2] = 30
@@ -2362,14 +2359,6 @@ class Rover_Controls:
                     self.controls_vals[batter_locking_act_1][1] = trigger_act_lock
                 self.controls_vals[batter_locking_act_1][2] = direction_act_lock
 
-                # lock 2
-                self.controls_vals[batter_locking_act_2][0] = 0
-                if(self.Get_Button_From_Controller('B_Button')):
-                    self.controls_vals[batter_locking_act_2][1] = 0
-                else:
-                    self.controls_vals[batter_locking_act_2][1] = trigger_act_lock
-                self.controls_vals[batter_locking_act_2][2] = direction_act_lock
-
                 # right
                 # front
                 # self.controls_vals[driveFR][0] = not self.Get_Button_From_Controller('X_Button')
@@ -2385,7 +2374,10 @@ class Rover_Controls:
                 # rear
                 # self.controls_vals[driveRR][0] = not self.Get_Button_From_Controller('X_Button')
                 # self.controls_vals[driveRR][1] = not self.Get_Button_From_Controller('X_Button')
-                self.controls_vals[driveRR][3] = direction
+                if self.excvator_mode:
+                    self.controls_vals[driveRR][3] = not direction
+                else:
+                    self.controls_vals[driveRR][3] = direction
                 self.controls_vals[driveRR][4] = not self.Get_Button_From_Controller('B_Button')
                 if(self.controls_vals[driveRR][4] == 0):
                     self.controls_vals[driveRR][2] = 0
@@ -2432,11 +2424,6 @@ class Rover_Controls:
                 self.controls_vals[batter_locking_act_1][0] = 0
                 self.controls_vals[batter_locking_act_1][1] = 0
                 self.controls_vals[batter_locking_act_1][2] = 0
-
-                # turn off acutator
-                self.controls_vals[batter_locking_act_2][0] = 0
-                self.controls_vals[batter_locking_act_2][1] = 0
-                self.controls_vals[batter_locking_act_2][2] = 0
 
                 # drive
                 self.controls_vals[driveFR][0] = 0
@@ -2502,8 +2489,9 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
-            signals = ['CHANNEL', 'PWM', 'FR']
-            signal_states = [channel_names[batter_locking_act_2], self.controls_vals[batter_locking_act_2][1], self.controls_vals[batter_locking_act_2][2]]  # Example states, modify as needed
+
+            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
+            signal_states = [channel_names[rear_auger], self.controls_vals[rear_auger][0], self.controls_vals[rear_auger][2], self.controls_vals[rear_auger][3], self.controls_vals[rear_auger][4]]  # Example states, modify as needed
 
             y = 380
 
@@ -2522,7 +2510,7 @@ class Rover_Controls:
                 y += 20
 
             signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = [channel_names[rear_auger], self.controls_vals[rear_auger][0], self.controls_vals[rear_auger][2], self.controls_vals[rear_auger][3], self.controls_vals[rear_auger][4]]  # Example states, modify as needed
+            signal_states = ["Drive Motors", self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4]]  # Example states, modify as needed
 
             y = 520
 
@@ -2540,29 +2528,10 @@ class Rover_Controls:
                 self.screen.blit(text, text_rect)
                 y += 20
 
-            signals = ['CHANNEL', 'EN', 'PWM', 'FR', 'BREAK']
-            signal_states = ["Drive Motors", self.controls_vals[driveFR][0], self.controls_vals[driveFR][2], self.controls_vals[driveFR][3], self.controls_vals[driveFR][4]]  # Example states, modify as needed
-
-            y = 660
-
-            for signal, state in zip(signals, signal_states):
-                # Render text
-                if signal == 'PWM' or signal == 'CHANNEL':
-                    text = self.small.render(f"{signal}: {state}", True, (255, 255, 255))
-                else:
-                    text = self.small.render(f"{signal}: ", True, (255, 255, 255))
-                    if state:
-                        pygame.draw.circle(self.screen, (0, 255, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Green circle
-                    else:
-                        pygame.draw.circle(self.screen, (255, 0, 0), (self.Output_Res[0] // 2 + 100, y), 10)  # Red circle
-                text_rect = text.get_rect(center=(self.Output_Res[0] // 2, y))
-                self.screen.blit(text, text_rect)
-                y += 20
-
         else:
             # front_auger is not None and bucket_wheel is not None and arm_lift is not None
-            signals = ['lower_ramp_act', 'batter_locking_act_1', 'batter_locking_act_2', 'rear_auger', 'driveFR', 'driveFL', 'driveRR', 'driveRL']
-            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, batter_locking_act_2 is not None, rear_auger is not None, not None, driveFR is not None, driveFL is not None, driveRR is not None, driveRL is not None]  # Example states, modify as needed
+            signals = ['lower_ramp_act', 'batter_locking_act_1', 'rear_auger', 'driveFR', 'driveFL', 'driveRR', 'driveRL']
+            signal_states = [lower_ramp_act is not None, batter_locking_act_1 is not None, rear_auger is not None, not None, driveFR is not None, driveFL is not None, driveRR is not None, driveRL is not None]  # Example states, modify as needed
 
             y = 100
 

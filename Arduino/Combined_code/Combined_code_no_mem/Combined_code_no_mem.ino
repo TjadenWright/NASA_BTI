@@ -115,7 +115,7 @@ void setup() {
   if (Arduino_or_latte) {
     Serial.begin(115200);
   } else {
-    Serial.begin(9600);
+    Serial.begin(115200);
   }
 
   // wait for Serial.print to start
