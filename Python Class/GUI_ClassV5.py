@@ -2046,19 +2046,19 @@ class GUI:
 
     def offset_control_1(self):
         diagnostics_array = self.controls.get_diagnostics_array()
-        self.load_cell_1_offset = -diagnostics_array[15, 5] 
+        self.load_cell_1_offset = diagnostics_array[15, 5] 
     
     def offset_control_2(self):
         diagnostics_array = self.controls.get_diagnostics_array()
-        self.load_cell_2_offset = -diagnostics_array[13, 5]
+        self.load_cell_2_offset = diagnostics_array[13, 5]
 
     def offset_control_3(self):
         diagnostics_array = self.controls.get_diagnostics_array()
-        self.load_cell_3_offset = -diagnostics_array[12, 5]  
+        self.load_cell_3_offset = diagnostics_array[12, 5]  
 
     def offset_control_4(self):
         diagnostics_array = self.controls.get_diagnostics_array()
-        self.load_cell_4_offset = -diagnostics_array[14, 5]
+        self.load_cell_4_offset = diagnostics_array[14, 5]
 
     def check_size(self, size):
         if size == 1:

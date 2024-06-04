@@ -2010,10 +2010,10 @@ class Rover_Controls:
                 if(self.first_time_setup):
                     # bucketwheel speed: 75
                     self.controls_vals[bucket_wheel][2] = 75
-                    self.controls_vals[bucket_wheel][3] = 0 # forward
+                    self.controls_vals[bucket_wheel][3] = 1 # forward
                     self.controls_vals[bucket_wheel][0] = 1 # disable motor
                     self.controls_vals[front_auger][2] = 30
-                    self.controls_vals[front_auger][3] = 0 # forward
+                    self.controls_vals[front_auger][3] = 1 # forward
                     self.controls_vals[front_auger][0] = 1 # disable motor
                     self.first_time_setup = 0
                 if self.can_flip():
@@ -2282,7 +2282,7 @@ class Rover_Controls:
 
             if(self.first_time_setup):
                 self.controls_vals[rear_auger][2] = 30
-                self.controls_vals[rear_auger][3] = 1 # forward
+                self.controls_vals[rear_auger][3] = 0 # forward
                 self.controls_vals[rear_auger][0] = 1 # disable motor
                 self.first_time_setup = 0
 
