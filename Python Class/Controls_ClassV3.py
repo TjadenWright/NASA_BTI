@@ -1209,11 +1209,11 @@ class Rover_Controls:
                     if(self.break_timer > 0):
                         self.break_timer = self.break_timer - 1
                     else:
-                        self.controls_vals[externBreak][1] = 255
+                        self.controls_vals[externBreak][1] = 0
                 else:
                     # unlock break immediately
                     self.break_timer = self.break_time
-                    self.controls_vals[externBreak][1] = 0
+                    self.controls_vals[externBreak][1] = 255
 
                 self.controls_vals[externBreak][0] = 0
                 self.controls_vals[externBreak][2] = 1
@@ -1504,11 +1504,11 @@ class Rover_Controls:
                     if(self.break_timer > 0):
                         self.break_timer = self.break_timer - 1
                     else:
-                        self.controls_vals[externBreak][1] = 255
+                        self.controls_vals[externBreak][1] = 0
                 else:
                     # unlock break immediately
                     self.break_timer = self.break_time
-                    self.controls_vals[externBreak][1] = 0
+                    self.controls_vals[externBreak][1] = 255
 
                 self.controls_vals[externBreak][0] = 0
                 self.controls_vals[externBreak][2] = 1
@@ -1793,11 +1793,11 @@ class Rover_Controls:
                     if(self.break_timer > 0):
                         self.break_timer = self.break_timer - 1
                     else:
-                        self.controls_vals[externBreak][1] = 255
+                        self.controls_vals[externBreak][1] = 0
                 else:
                     # unlock break immediately
                     self.break_timer = self.break_time
-                    self.controls_vals[externBreak][1] = 0
+                    self.controls_vals[externBreak][1] = 255
 
                 self.controls_vals[externBreak][0] = 0
                 self.controls_vals[externBreak][2] = 1

@@ -183,6 +183,27 @@ class GUI:
         self.diag_keys = 9 # 8.5
         self.diag_drop_down = 7 # 8.5
 
+        # load cell bullshit
+        self.load_cell_1_offset_button = None
+        self.load_cell_2_offset_button = None
+        self.load_cell_3_offset_button = None
+        self.load_cell_4_offset_button = None
+
+        self.load_cell_1_offset = 0
+        self.load_cell_2_offset = 0
+        self.load_cell_3_offset = 0
+        self.load_cell_4_offset = 0
+
+        self.load_cell_1_size_button = None
+        self.load_cell_2_size_button = None
+        self.load_cell_3_size_button = None
+        self.load_cell_4_size_button = None
+
+        self.load_cell_1_size = 1
+        self.load_cell_2_size = 1
+        self.load_cell_3_size = 1
+        self.load_cell_4_size = 1
+
     def auto_load_channels(self):
         # read from file
         channel_values = {}
@@ -1585,11 +1606,11 @@ class GUI:
                         self.draw_load(self.screenDiag, round(self.temperature_2[self.bms_numb], 1) * 4, 800, "kg", "Load Cell Total", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step - 30)
                     else:
                         # diagnostics_array[self.board_channel, 2]
-                        self.draw_load(self.screenDiag, round(diagnostics_array[15, 5], 1), 200, "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[13, 5], 1), 200, "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[12, 5], 1), 200, "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[14, 5], 1), 200, "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
-                        self.draw_load(self.screenDiag, round(diagnostics_array[15, 5], 1) + round(diagnostics_array[13, 5], 1) + round(diagnostics_array[12, 5], 1) + round(diagnostics_array[14, 5], 1), 800, "kg", "Load Cell Total", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round((diagnostics_array[15, 5]-self.load_cell_1_offset)*self.load_cell_1_size, 1), 200, "kg", "Load Cell 1", BATTERY_X + BATTERY_WIDTH, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round((diagnostics_array[13, 5]-self.load_cell_2_offset)*self.load_cell_2_size, 1), 200, "kg", "Load Cell 2", BATTERY_X + BATTERY_WIDTH + self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round((diagnostics_array[12, 5]-self.load_cell_3_offset)*self.load_cell_3_size, 1), 200, "kg", "Load Cell 3", BATTERY_X + BATTERY_WIDTH + 2*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round((diagnostics_array[14, 5]-self.load_cell_4_offset)*self.load_cell_4_size, 1), 200, "kg", "Load Cell 4", BATTERY_X + BATTERY_WIDTH + 3*self.steps4, self.down_step - 30)
+                        self.draw_load(self.screenDiag, round((diagnostics_array[15, 5]-self.load_cell_1_offset)*self.load_cell_1_size + (diagnostics_array[13, 5]-self.load_cell_2_offset)*self.load_cell_2_size + (diagnostics_array[12, 5]-self.load_cell_3_offset)*self.load_cell_3_size + (diagnostics_array[14, 5]-self.load_cell_4_offset)*self.load_cell_4_size, 1), 800, "kg", "Load Cell Total", BATTERY_X + BATTERY_WIDTH + 4*self.steps4, self.down_step - 30)
 
                 elif(self.channel[self.board_channel] == 0): # motor
                     if(self.false_traffic):
@@ -1999,8 +2020,177 @@ class GUI:
 
         self.start_debugger()
 
+    
+
+    def load_cell_offset_button_setup(self, x, y, numb):
+        if numb == 1:
+            if(self.load_cell_1_offset_button == None):
+                self.load_cell_1_offset_button = Button(self.root, text="reset 1", command=self.offset_control_1)
+                self.load_cell_1_offset_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_1_offset_button.config(font=self.ui_font)
+        elif numb == 2:
+            if(self.load_cell_2_offset_button == None):
+                self.load_cell_2_offset_button = Button(self.root, text="reset 2", command=self.offset_control_2)
+                self.load_cell_2_offset_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_2_offset_button.config(font=self.ui_font)
+        elif numb == 3:
+            if(self.load_cell_3_offset_button == None):
+                self.load_cell_3_offset_button = Button(self.root, text="reset 3", command=self.offset_control_3)
+                self.load_cell_3_offset_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_3_offset_button.config(font=self.ui_font)
+        elif numb == 4:
+            if(self.load_cell_4_offset_button == None):
+                self.load_cell_4_offset_button = Button(self.root, text="reset 4", command=self.offset_control_4)
+                self.load_cell_4_offset_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_4_offset_button.config(font=self.ui_font)
+
+    def offset_control_1(self):
+        diagnostics_array = self.controls.get_diagnostics_array()
+        self.load_cell_1_offset = -diagnostics_array[15, 5] 
+    
+    def offset_control_2(self):
+        diagnostics_array = self.controls.get_diagnostics_array()
+        self.load_cell_2_offset = -diagnostics_array[13, 5]
+
+    def offset_control_3(self):
+        diagnostics_array = self.controls.get_diagnostics_array()
+        self.load_cell_3_offset = -diagnostics_array[12, 5]  
+
+    def offset_control_4(self):
+        diagnostics_array = self.controls.get_diagnostics_array()
+        self.load_cell_4_offset = -diagnostics_array[14, 5]
+
+    def check_size(self, size):
+        if size == 1:
+            text = "1x"
+        else:
+            text = "2x"
+        
+        return text
+
+    def load_cell_size_button_setup(self, x, y, numb):
+        if numb == 1:
+            if(self.load_cell_1_size_button == None):
+                text = self.check_size(self.load_cell_1_size)
+                self.load_cell_1_size_button = Button(self.root, text=text, command=self.size_control_loadsell1)
+                self.load_cell_1_size_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_1_size_button.config(font=self.ui_font)
+        elif numb == 2:
+            if(self.load_cell_2_size_button == None):
+                text = self.check_size(self.load_cell_2_size)
+                self.load_cell_2_size_button = Button(self.root, text=text, command=self.size_control_loadsell2)
+                self.load_cell_2_size_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_2_size_button.config(font=self.ui_font)
+        elif numb == 3:
+            if(self.load_cell_3_size_button == None):
+                text = self.check_size(self.load_cell_3_size)
+                self.load_cell_3_size_button = Button(self.root, text=text, command=self.size_control_loadsell3)
+                self.load_cell_3_size_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_3_size_button.config(font=self.ui_font)
+        elif numb == 4:
+            if(self.load_cell_4_size_button == None):
+                text = self.check_size(self.load_cell_4_size)
+                self.load_cell_4_size_button = Button(self.root, text=text, command=self.size_control_loadsell4)
+                self.load_cell_4_size_button.place(relx=1.0, rely=1.0, x=-x, y=-y, anchor='se', width=100, height=50)
+                self.load_cell_4_size_button.config(font=self.ui_font)
+
+    def delete_load_cell_offset_button_setup(self, numb):
+        if numb == 1:
+            if(self.load_cell_1_offset_button):
+                self.load_cell_1_offset_button.destroy()
+                self.load_cell_1_offset_button = None
+        elif numb == 2:
+            if(self.load_cell_2_offset_button):
+                self.load_cell_2_offset_button.destroy()
+                self.load_cell_2_offset_button = None
+        elif numb == 3:
+            if(self.load_cell_3_offset_button):
+                self.load_cell_3_offset_button.destroy()
+                self.load_cell_3_offset_button = None
+        elif numb == 4:
+            if(self.load_cell_4_offset_button):
+                self.load_cell_4_offset_button.destroy()
+                self.load_cell_4_offset_button = None
+
+    def delete_load_cell_size_button_setup(self, numb):
+        if numb == 1:
+            if(self.load_cell_1_size_button):
+                self.load_cell_1_size_button.destroy()
+                self.load_cell_1_size_button = None
+        elif numb == 2:
+            if(self.load_cell_2_size_button):
+                self.load_cell_2_size_button.destroy()
+                self.load_cell_2_size_button = None
+        elif numb == 3:
+            if(self.load_cell_3_size_button):
+                self.load_cell_3_size_button.destroy()
+                self.load_cell_3_size_button = None
+        elif numb == 4:
+            if(self.load_cell_4_size_button):
+                self.load_cell_4_size_button.destroy()
+                self.load_cell_4_size_button = None
+
+    def size_control_loadsell1(self):
+        if self.load_cell_1_size == 1:
+            self.load_cell_1_size = 2
+        else:
+            self.load_cell_1_size = 1
+        text = self.check_size(self.load_cell_1_size)
+        self.load_cell_1_size_button.config(text=text)
+
+    def size_control_loadsell2(self):
+        if self.load_cell_2_size == 1:
+            self.load_cell_2_size = 2
+        else:
+            self.load_cell_2_size = 1
+        text = self.check_size(self.load_cell_2_size)
+        self.load_cell_2_size_button.config(text=text)
+
+    def size_control_loadsell3(self):
+        if self.load_cell_3_size == 1:
+            self.load_cell_3_size = 2
+        else:
+            self.load_cell_3_size = 1
+        text = self.check_size(self.load_cell_3_size)
+        self.load_cell_3_size_button.config(text=text)
+
+    def size_control_loadsell4(self):
+        if self.load_cell_4_size == 1:
+            self.load_cell_4_size = 2
+        else:
+            self.load_cell_4_size = 1
+        text = self.check_size(self.load_cell_4_size)
+        self.load_cell_4_size_button.config(text=text)
+
     # loop function for main gui
     def loop_Main_UI(self, local_img, imu_image = None, popup = 0):
+        if self.board_channel == 16 and self.board_batt != 0:
+            # offset
+            root = 1270
+            disp = 330
+            self.load_cell_offset_button_setup(root, 130, 1)
+            self.load_cell_offset_button_setup(root-disp, 130, 2)
+            self.load_cell_offset_button_setup(root-disp*2, 130, 3)
+            self.load_cell_offset_button_setup(root-disp*3, 130, 4)
+
+            # 1 or 2 times
+            self.load_cell_size_button_setup(root, 70, 1)
+            self.load_cell_size_button_setup(root-disp, 70, 2)
+            self.load_cell_size_button_setup(root-disp*2, 70, 3)
+            self.load_cell_size_button_setup(root-disp*3, 70, 4)
+        else:
+            self.delete_load_cell_offset_button_setup(1)
+            self.delete_load_cell_offset_button_setup(2)
+            self.delete_load_cell_offset_button_setup(3)
+            self.delete_load_cell_offset_button_setup(4)
+
+            self.delete_load_cell_size_button_setup(1)
+            self.delete_load_cell_size_button_setup(2)
+            self.delete_load_cell_size_button_setup(3)
+            self.delete_load_cell_size_button_setup(4)
+
+
+
         self.popup = popup
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
