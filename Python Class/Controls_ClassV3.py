@@ -478,6 +478,8 @@ class Rover_Controls:
         # Read from the serial port
         while not data_get:
             data_get = self.arduino[index].readline().decode('utf-8').strip()
+            if index == 1:
+                print(data_get)
             if(not data_get):
                 print("Got Stuck on: " + str(index) + ": " + data)
                 with open("error_log.txt", "a") as error_file:
