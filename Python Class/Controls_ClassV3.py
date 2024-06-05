@@ -453,6 +453,8 @@ class Rover_Controls:
         # Set up the serial connection
         self.arduino[index] = serial.Serial(arduino_port, baudrate=baud_rate) # connection made.
         self.arduino[index].timeout = 0.1
+        self.arduino[index].DtrEnable = True
+        self.arduino[index].RtsEnable = True
         time.sleep(10)
 
     # def Disable_write_arduino(self, index = 0):
