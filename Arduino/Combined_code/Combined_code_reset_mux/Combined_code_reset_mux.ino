@@ -256,14 +256,16 @@ void setup() {
     // 2. I2C IMU //
     ////////////////
 
-    delay(100);
-
     if (Arduino_or_latte) {
       digitalWrite(5, LOW);
     }
     else {
       digitalWrite(4, LOW);
     }
+    
+    delay(100);
+
+    
   }
   if (TestArduinoScript){
     Serial.println("done!");
