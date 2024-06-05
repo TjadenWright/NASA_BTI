@@ -479,20 +479,20 @@ class Rover_Controls:
             data_get = self.arduino[index].readline().decode('utf-8').strip()
             # if index == 1:
             #     print(data_get)
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+
             if(not data_get):
                 print("Got Stuck on: " + str(index) + ": " + data)
                 with open("error_log.txt", "a") as error_file:
-                    error_file.write("Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
+                    error_file.write(current_time + ": Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
 
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-
-        # if index == 0:
-        #     with open("arduino_log.txt", "a") as error_file:
-        #         error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
-        if index == 1:
-            with open("leonardo_log.txt", "a") as error_file:
-                error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
+            # if index == 0:
+            #     with open("arduino_log.txt", "a") as error_file:
+            #         error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
+            if index == 1:
+                with open("leonardo_log.txt", "a") as error_file:
+                    error_file.write(current_time + ": " + str(index) + ": " + data + ": " + data_get + "\n")
 
         return str(data_get)
 
