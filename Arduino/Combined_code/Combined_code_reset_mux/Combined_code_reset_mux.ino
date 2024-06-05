@@ -333,6 +333,8 @@ void command_finder(uint8_t index, String command_from_python) {
       break;
       // Add cases for additional words as needed
   }
+
+  delay(10);
 }
 
 void reset_board(){
@@ -874,8 +876,6 @@ void loop() {
   else {
     digitalWrite(4, LOW);
   }
-
-  delay(10);
 
   // Fun communication! (first test all functions at once then communicate with python)
   if (Serial.available() > 0) {
