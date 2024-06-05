@@ -9,7 +9,7 @@ import sys
 import numpy as np
 import threading
 from PIL import Image, ImageTk
-# from datetime import datetime
+from datetime import datetime
 
 class Rover_Controls:
     def __init__(self, verbose = False, verbose_control = False, verbose_diagnostics = False, timing = True, maximum_voltage = 255, dead_zone = 0.05, upper_loss = 0.004, PC_or_PI = "PC", excavator_mode=False, break_time = 5):
@@ -66,7 +66,6 @@ class Rover_Controls:
 
         self.auger_or_bucket = 1 # default to bucketwheel
         self.first_time_setup = 1
-        # self.now = datetime.now()
 
         self.excvator_mode = excavator_mode
 
@@ -478,21 +477,22 @@ class Rover_Controls:
         # Read from the serial port
         while not data_get:
             data_get = self.arduino[index].readline().decode('utf-8').strip()
-            if index == 1:
-                print(data_get)
+            # if index == 1:
+            #     print(data_get)
             if(not data_get):
                 print("Got Stuck on: " + str(index) + ": " + data)
                 with open("error_log.txt", "a") as error_file:
                     error_file.write("Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
 
-        # current_time = self.now.strftime("%H:%M:%S")
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
 
         # if index == 0:
         #     with open("arduino_log.txt", "a") as error_file:
         #         error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
-        # else:
-        #     with open("leonardo_log.txt", "a") as error_file:
-        #         error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
+        if index == 1:
+            with open("leonardo_log.txt", "a") as error_file:
+                error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
 
         return str(data_get)
 
