@@ -494,9 +494,10 @@ class Rover_Controls:
                 with open("leonardo_log.txt", "a") as error_file:
                     error_file.write(current_time + ": " + str(index) + ": " + data + ": " + data_get + "\n")
 
-        data_mem = self.arduino[index].readline().decode('utf-8').strip()
-        with open("mem.txt", "a") as error_file:
-            error_file.write(current_time + ": " + data_mem + "\n")
+        if index == 1:
+            data_mem = self.arduino[index].readline().decode('utf-8').strip()
+            with open("mem.txt", "a") as error_file:
+                error_file.write(current_time + ": " + data_mem + "\n")
 
         return str(data_get)
 
