@@ -252,8 +252,8 @@ void setup() {
     // 2. I2C IMU //
     ////////////////
 
-
     delay(100);
+
   }
   if (TestArduinoScript){
     Serial.println("done!");
