@@ -10,8 +10,10 @@
 #include <Adafruit_NAU7802.h>
 #include "Adafruit_MCP9601.h"
 
+#include <MemoryFree.h>
+
 #define TestArduinoScript false
-#define Arduino_or_latte false  // true -> arduino mega / false -> latte
+#define Arduino_or_latte true  // true -> arduino mega / false -> latte
 #define testbench false         // test board uses different addresses for the GPIO expander
 
 #define MAX_SPEED 4.96
@@ -129,29 +131,13 @@ void setup() {
   /////////
   // initialized in startup
 
-  // resets for either arduino mega or panda (default them to high or not reset)
-  if (Arduino_or_latte) {
-    pinMode(5, OUTPUT);
-  }
-  else {
-    pinMode(4, OUTPUT);
-  }
-
   /////////////
   // I2C MUX //
   /////////////
-
-
   I2CMux.begin(Wire);  // Wire instance is passed to the library
 
   for (uint8_t i = 0; i < max_channels; i++) {
-    if (Arduino_or_latte) {
-      digitalWrite(5, HIGH);
-    }
-    else {
-      digitalWrite(4, HIGH);
-    }
-    I2CMux.closeAll();
+    I2CMux.closeAll();  // Set a base state which we know (also the default state on power on)
     I2CMux.openChannel(i);
 
     if (TestArduinoScript)
@@ -229,6 +215,16 @@ void setup() {
     }
     // A1 feedback, A2 SPEED, A3 Current
 
+    // resets for either arduino mega or panda (default them to high or not reset)
+    if (Arduino_or_latte) {
+      pinMode(5, OUTPUT);
+      digitalWrite(5, HIGH);
+    }
+    else {
+      pinMode(4, OUTPUT);
+      digitalWrite(4, HIGH);
+    }
+
     ///////////////
     // LOAD CELL //
     ///////////////
@@ -256,14 +252,8 @@ void setup() {
     // 2. I2C IMU //
     ////////////////
 
-    delay(100);
 
-    if (Arduino_or_latte) {
-      digitalWrite(5, LOW);
-    }
-    else {
-      digitalWrite(4, LOW);
-    }
+    delay(100);
   }
   if (TestArduinoScript){
     Serial.println("done!");
@@ -276,16 +266,6 @@ void setup() {
 }
 
 void command_finder(uint8_t index, String command_from_python) {
-  delay(1);
-  
-  if (Arduino_or_latte) {
-    digitalWrite(5, HIGH);
-  }
-  else {
-    digitalWrite(4, HIGH);
-  }
-
-
   if (TestArduinoScript)
     Serial.println(index);
   switch (index) {
@@ -333,8 +313,8 @@ void command_finder(uint8_t index, String command_from_python) {
       break;
       // Add cases for additional words as needed
   }
-
-  delay(10);
+  Serial.print("freeMemory()=");
+  Serial.println(freeMemory());
 }
 
 void reset_board(){
@@ -870,13 +850,6 @@ void diagnostics_IMU(String command_from_python) {
 }
 
 void loop() {
-  if (Arduino_or_latte) {
-    digitalWrite(5, LOW);
-  }
-  else {
-    digitalWrite(4, LOW);
-  }
-
   // Fun communication! (first test all functions at once then communicate with python)
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n');

@@ -143,15 +143,15 @@ rc1.setup_USB_Controller(controller_numb=controller_numb) # pass in the controll
 #### setup communication with the arduino ####
 if enable_arduino:
     rc1.Enable_Write_arduino(index = 0, arduino_name = "Mega", baud_rate = 115200)
-    rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
+    # rc1.Enable_Write_arduino(index = 1, arduino_name = "Leonardo", baud_rate = 9600)
 
     rc1.set_act_OR_motor(config = np.array([1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 2, 3])) # 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 3
 
     rc1.start_arduino_command(index = 0, HIGH_LOW = 0)
-    rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
+    # rc1.start_arduino_command(index = 1, HIGH_LOW = 1)
 
     rc1.start_diagnostics_AND_controls_thread(index = 0)
-    rc1.start_diagnostics_AND_controls_thread(index = 1)
+    # rc1.start_diagnostics_AND_controls_thread(index = 1)
 
 #### intialize the battery ####
 b1 = Battery_class(verbose=VERBOSE)
