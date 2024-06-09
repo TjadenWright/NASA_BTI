@@ -11,7 +11,7 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte true  // true -> arduino mega / false -> latte
+#define Arduino_or_latte false  // true -> arduino mega / false -> latte
 #define testbench false         // test board uses different addresses for the GPIO expander
 
 #define MAX_SPEED 4.96

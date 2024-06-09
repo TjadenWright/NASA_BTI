@@ -11,7 +11,7 @@
 #include "Adafruit_MCP9601.h"
 
 #define TestArduinoScript false
-#define Arduino_or_latte true  // true -> arduino mega / false -> latte
+#define Arduino_or_latte false  // true -> arduino mega / false -> latte
 #define testbench false         // test board uses different addresses for the GPIO expander
 
 #define MAX_SPEED 4.96
@@ -112,11 +112,9 @@ bool mcp_check[max_channels] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 void setup() {
   // put your setup code here, to run once:
-  if (Arduino_or_latte) {
+  
     Serial.begin(115200);
-  } else {
-    Serial.begin(115200);
-  }
+  
 
   // wait for Serial.print to start
   delay(4000);

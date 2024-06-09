@@ -1992,13 +1992,15 @@ class Rover_Controls:
             # print("RIGHT_Y", right_y)
             if(right_y < 0):
                 direction_act = 1 # go forward
+                PWMAct=255
             else:
                 direction_act = 0 # go back
-            trigger_act = 100*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
+                PWMAct=100
+            trigger_act = PWMAct*max(0, (abs(right_y)-self.dead_zone)*(1/(1-self.dead_zone)))
             # print("trigger_act", trigger_act)
 
             # slew
-            left_x = self.Get_Button_From_Controller('Left_Joystick_Y')
+            left_x = self.Get_Button_From_Controller('Left_Joystick_X')
 
             # print("LEFT_X", left_x)
 
