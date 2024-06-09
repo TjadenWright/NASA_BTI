@@ -487,12 +487,17 @@ class Rover_Controls:
                 with open("error_log.txt", "a") as error_file:
                     error_file.write(current_time + ": Got Stuck on: " + str(index) + ": " + data + ": " + data_get + "\n")
 
-            # if index == 0:
-            #     with open("arduino_log.txt", "a") as error_file:
-            #         error_file.write(current_time + str(index) + ": " + data + ": " + data_get + "\n")
-            if index == 1:
+            if index == 0:
+                with open("arduino_log.txt", "a") as error_file:
+                    error_file.write(current_time + ": " + str(index) + ": " + data + ": " + data_get + "\n")
+            else:
                 with open("leonardo_log.txt", "a") as error_file:
                     error_file.write(current_time + ": " + str(index) + ": " + data + ": " + data_get + "\n")
+
+        if index == 1:
+            data_mem = self.arduino[index].readline().decode('utf-8').strip()
+            with open("mem.txt", "a") as error_file:
+                error_file.write(current_time + ": " + data_mem + "\n")
 
         return str(data_get)
 
