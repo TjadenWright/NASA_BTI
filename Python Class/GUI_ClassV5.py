@@ -330,7 +330,7 @@ class GUI:
             self.autonomy_manual = selected_item
 
             if(selected_item == 0): # manual mode
-                options2 = ["Individual Control", "Forward Drive Mode", "Reverse Drive Mode", "Tank Steer Mode", "Excavate Mode", "Docking Mode (Excavator)", "Docking Mode (Dumptruck)"]
+                options2 = ["Individual Control", "Forward Drive Mode", "Reverse Drive Mode", "Tank Steer Mode", "Excavate Mode", "Excavation Mode (test)", "Docking Mode (Excavator)", "Docking Mode (Dumptruck)"]
 
                 if(self.dropdown_2 is None):
                     self.button_popup.destroy()
